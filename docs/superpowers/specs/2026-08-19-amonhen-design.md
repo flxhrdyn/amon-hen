@@ -119,9 +119,8 @@ Gerbang tiga adalah yang menyelamatkan kasus video bergerak, karena bekerja di r
 
 ### 4.3 Model
 
-MobileCLIP2 dalam format ONNX, dikuantisasi ke INT8 bila memungkinkan.
-Ekspor ONNX tersedia publik, tetapi varian INT8 untuk MobileCLIP2 belum terkonfirmasi dan mungkin perlu dikuantisasi sendiri.
-Verifikasi ketersediaan artefak model adalah tugas pertama dalam rencana implementasi, sebelum apa pun dibangun di atasnya.
+MobileCLIP2 dalam format ONNX. Stage 1 sampai Stage 3 memakai varian FP32 (S0, 286 MB gabungan vision dan text), karena percobaan kuantisasi INT8 dinamis merusak output pada layer Conv yang mendominasi bobot model - lihat temuan terukur di bagian 14.
+Kuantisasi INT8 yang aman membutuhkan kalibrasi statis dengan sampel gambar nyata, dijadwalkan sebagai task benchmark di Stage 4 dan dibandingkan terhadap baseline FP32.
 
 Untuk OCR digunakan engine ONNX ringan seperti RapidOCR.
 
@@ -312,7 +311,11 @@ Yang perlu dihindari adalah kutipan langsung dari buku maupun film, dan pengguna
 
 ## 14. Risiko yang perlu diverifikasi lebih dulu
 
-Ketersediaan MobileCLIP2 ONNX INT8 belum terkonfirmasi. Bila tidak tersedia, kuantisasi perlu dilakukan sendiri dan dampaknya terhadap akurasi harus diukur.
+**Terukur (2026-08-19).** MobileCLIP2 ONNX INT8 resmi tidak tersedia di mana pun yang ditemukan. Model default v1 adalah `plhery/mobileclip2-onnx`, varian S0, FP32: vision encoder `onnx/s0/vision_model.onnx` (44 MB), text encoder `onnx/s0/text_model.onnx` (242 MB), tokenizer `tokenizer.json`. Diukur langsung dari file: `embed_dim=512`, `image_size=256`, input vision `pixel_values` bentuk `(batch,3,256,256)`, output `image_embeds` bentuk `(batch,512)`, input text `input_ids` bentuk `(batch,77)` tanpa attention mask, output `text_embeds` bentuk `(batch,512)`.
+
+Percobaan kuantisasi INT8 dinamis dilakukan dan ditolak. Arsitektur vision encoder didominasi 95 layer `Conv` (kemungkinan besar blok MobileOne/depthwise) dan hanya 8 layer `MatMul`. Mengkuantisasi `Conv` secara dinamis (dengan maupun tanpa `per_channel`) menghasilkan cosine similarity mendekati nol terhadap output FP32 - modelnya rusak, bukan sekadar kurang akurat. Membatasi kuantisasi ke `MatMul` saja menjaga cosine similarity di atas 0.999, tapi ukuran model nyaris tak berkurang (44 MB menjadi 36 MB) karena mayoritas bobot ada di `Conv`. Total ukuran FP32 (vision + text) adalah 286 MB, jauh dari target awal 50-80 MB.
+
+Kesimpulan: kuantisasi Conv yang aman membutuhkan kuantisasi statis dengan kalibrasi memakai sampel gambar nyata, bukan kuantisasi dinamis. Ini pekerjaan pengukuran sungguhan, dipindah ke Stage 4 sebagai task benchmark tersendiri, dibandingkan terhadap baseline FP32 dengan Recall@1/Recall@5/mIoU. Stage 1 sampai Stage 3 dibangun di atas model FP32.
 
 Kecepatan dekode kemungkinan besar mendominasi waktu pengindeksan, bukan inference. Rasio keduanya harus diukur terpisah sebelum target kecepatan apa pun dicantumkan.
 
