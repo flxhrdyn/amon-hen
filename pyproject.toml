@@ -44,3 +44,9 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Typer's documented usage puts typer.Argument()/typer.Option() calls in
+# parameter defaults; that is not the mutable-default-argument bug B008
+# otherwise catches.
+"src/amonhen/cli.py" = ["B008"]
