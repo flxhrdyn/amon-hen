@@ -40,7 +40,24 @@ def add_sample_video(store, path="a.mp4", ts_list=(0, 1000, 2000)):
 
 def test_add_video_and_frames_are_counted(store):
     add_sample_video(store)
-    assert store.stats() == {"videos": 1, "frames": 3}
+    assert store.stats() == {"videos": 1, "frames": 3, "by_reason": {"fixed": 3}}
+
+
+def test_stats_breaks_down_frames_by_kept_reason(store):
+    video_id = store.add_video(
+        path="a.mp4", duration_ms=3000, fps=25.0, size_bytes=123,
+        mtime=1.0, sampler_config_hash="cfg1", model_id="m1",
+    )
+    store.add_frames(
+        video_id,
+        [
+            FrameRecord(ts_ms=0, embedding=basis(0), kept_reason="fixed"),
+            FrameRecord(ts_ms=1000, embedding=basis(1), kept_reason="adaptive"),
+            FrameRecord(ts_ms=2000, embedding=basis(2), kept_reason="adaptive"),
+        ],
+    )
+
+    assert store.stats()["by_reason"] == {"fixed": 1, "adaptive": 2}
 
 
 def test_search_returns_nearest_frame_first(store):
@@ -100,7 +117,7 @@ def test_remove_video_drops_its_frames(store):
 
     store.remove_video(video_id)
 
-    assert store.stats() == {"videos": 0, "frames": 0}
+    assert store.stats() == {"videos": 0, "frames": 0, "by_reason": {}}
     assert store.search_vector(basis(0), limit=5) == []
 
 

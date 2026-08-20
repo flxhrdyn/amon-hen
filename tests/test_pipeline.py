@@ -116,6 +116,49 @@ def test_search_returns_hits_ordered_by_score(store, sample_video):
     assert all(hit.video_path == sample_video for hit in hits)
 
 
+class ConstantEncoder:
+    """Every frame maps to the same embedding, to exercise the dedup gate."""
+
+    embed_dim = DIM
+
+    def embed(self, images):
+        return np.tile(np.eye(1, self.embed_dim, dtype=np.float32), (len(images), 1))
+
+
+def test_embedding_dedup_gate_drops_near_duplicate_embeddings(store, sample_video):
+    result = index_videos(
+        [sample_video],
+        store,
+        IndexConfig(fps=2.0, embed_dedup_threshold=0.99),
+        ConstantEncoder(),
+    )
+
+    assert result.frames_kept == 1
+    assert store.stats()["frames"] == 1
+
+
+def test_embedding_dedup_gate_disabled_by_default(store, sample_video):
+    result = index_videos([sample_video], store, IndexConfig(fps=2.0), ConstantEncoder())
+
+    assert result.frames_kept > 1
+
+
+def test_adaptive_sampler_keeps_no_more_frames_than_fixed(store, sample_video, tmp_path):
+    fixed_result = index_videos(
+        [sample_video], store, IndexConfig(fps=5.0, sampler="fixed"), StubEncoder()
+    )
+
+    with Store(tmp_path / "adaptive.db", embed_dim=DIM) as adaptive_store:
+        adaptive_result = index_videos(
+            [sample_video],
+            adaptive_store,
+            IndexConfig(fps=5.0, sampler="adaptive"),
+            StubEncoder(),
+        )
+
+    assert adaptive_result.frames_kept <= fixed_result.frames_kept
+
+
 def test_expand_paths_finds_videos_in_a_directory(tmp_path, sample_video):
     import shutil
 

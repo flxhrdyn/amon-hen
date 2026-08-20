@@ -70,6 +70,11 @@ def index(
     paths: list[str] = typer.Argument(..., help="Video files or directories to index."),
     db: Path = typer.Option(DEFAULT_DB, "--db", help="Index database path."),
     fps: float = typer.Option(1.0, "--fps", help="Frames sampled per second of video."),
+    sampler: str = typer.Option("fixed", "--sampler", help="Frame sampler: fixed or adaptive."),
+    embed_dedup: float | None = typer.Option(
+        None, "--embed-dedup", help="Drop frames whose embedding cosine similarity to the "
+        "last kept frame exceeds this (0-1). Off by default."
+    ),
     model: str = typer.Option(DEFAULT_MODEL.model_id, "--model", help="Model id."),
     force: bool = typer.Option(False, "--force", help="Re-index even if unchanged."),
     json: bool = typer.Option(False, "--json", help="Emit JSON to stdout."),
@@ -85,7 +90,12 @@ def index(
         result = index_videos(
             paths,
             store,
-            IndexConfig(fps=fps, model_id=model),
+            IndexConfig(
+                fps=fps,
+                sampler=sampler,
+                model_id=model,
+                embed_dedup_threshold=embed_dedup,
+            ),
             _build_image_encoder(model),
             NullReporter(),
             force=force,
@@ -215,6 +225,8 @@ def stats(
 
     typer.echo(f"videos: {totals['videos']}")
     typer.echo(f"frames: {totals['frames']}")
+    for reason, count in totals["by_reason"].items():
+        typer.echo(f"  {reason}: {count}")
 
 
 @app.command()
