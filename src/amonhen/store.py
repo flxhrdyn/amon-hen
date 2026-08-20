@@ -273,7 +273,13 @@ class Store:
             for row in rows
         ]
 
-    def stats(self) -> dict[str, int]:
+    def stats(self) -> dict[str, int | dict[str, int]]:
         videos = self._conn.execute("SELECT COUNT(*) AS n FROM video").fetchone()["n"]
         frames = self._conn.execute("SELECT COUNT(*) AS n FROM frame").fetchone()["n"]
-        return {"videos": int(videos), "frames": int(frames)}
+        by_reason = {
+            row["kept_reason"]: int(row["n"])
+            for row in self._conn.execute(
+                "SELECT kept_reason, COUNT(*) AS n FROM frame GROUP BY kept_reason"
+            ).fetchall()
+        }
+        return {"videos": int(videos), "frames": int(frames), "by_reason": by_reason}
