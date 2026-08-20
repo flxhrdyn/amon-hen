@@ -7,6 +7,7 @@ its vectors came from. The cost of that isolation is paid here, once.
 
 from __future__ import annotations
 
+import hashlib
 import time
 from collections.abc import Iterable
 from dataclasses import dataclass, field
@@ -17,7 +18,7 @@ import numpy as np
 from amonhen import decode
 from amonhen.model_registry import DEFAULT_MODEL
 from amonhen.progress import NullReporter, Reporter
-from amonhen.sample import build_sampler
+from amonhen.sample import Sampler, build_sampler
 from amonhen.store import FrameRecord, Hit, Store
 
 VIDEO_SUFFIXES = {".mp4", ".mkv", ".mov", ".avi", ".webm", ".m4v", ".mpg", ".mpeg"}
@@ -30,6 +31,8 @@ class IndexConfig:
     batch_size: int = 16
     model_id: str = DEFAULT_MODEL.model_id
     embed_dedup_threshold: float | None = None
+    dedup_hamming_threshold: int = 4
+    blur_sharpness_threshold: float | None = None
 
 
 @dataclass
@@ -39,6 +42,27 @@ class IndexResult:
     frames_kept: int = 0
     skipped: list[str] = field(default_factory=list)
     elapsed_s: float = 0.0
+
+
+def _sampler_for(config: IndexConfig) -> Sampler:
+    return build_sampler(
+        config.sampler,
+        fps=config.fps,
+        dedup_hamming_threshold=config.dedup_hamming_threshold,
+        blur_sharpness_threshold=config.blur_sharpness_threshold,
+    )
+
+
+def _index_config_hash(config: IndexConfig) -> str:
+    """Fingerprint every setting that changes which frames end up stored.
+
+    The sampler's own hash covers its gates, but the embedding-dedup gate
+    lives here in the pipeline. Leaving it out would let a user turn it on
+    and have every video silently skipped as already-indexed.
+    """
+    sampler_hash = _sampler_for(config).config_hash()
+    payload = f"{sampler_hash}:embed_dedup={config.embed_dedup_threshold}"
+    return hashlib.sha256(payload.encode()).hexdigest()[:16]
 
 
 def expand_paths(paths: Iterable[str | Path]) -> list[Path]:
@@ -67,8 +91,8 @@ def index_videos(
     force: bool = False,
 ) -> IndexResult:
     reporter = reporter or NullReporter()
-    sampler = build_sampler(config.sampler, fps=config.fps)
-    config_hash = sampler.config_hash()
+    reason = _sampler_for(config).reason
+    config_hash = _index_config_hash(config)
     result = IndexResult()
     run_start = time.monotonic()
 
@@ -100,6 +124,9 @@ def index_videos(
             model_id=config.model_id,
         )
 
+        # Samplers carry per-video state, so each video gets its own.
+        sampler = _sampler_for(config)
+
         decoded = kept = stored = 0
         pending_images: list = []
         pending_ts: list[int] = []
@@ -124,7 +151,7 @@ def index_videos(
                     )
                     if similarity >= config.embed_dedup_threshold:
                         continue
-                records.append(FrameRecord(ts_ms=ts, embedding=vector, kept_reason=sampler.reason))
+                records.append(FrameRecord(ts_ms=ts, embedding=vector, kept_reason=reason))
                 last_embedding[0] = vector
             if records:
                 store.add_frames(video_id, records)

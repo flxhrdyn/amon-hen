@@ -75,6 +75,14 @@ def index(
         None, "--embed-dedup", help="Drop frames whose embedding cosine similarity to the "
         "last kept frame exceeds this (0-1). Off by default."
     ),
+    dedup_distance: int = typer.Option(
+        4, "--dedup-distance", help="Adaptive sampler: drop a frame whose perceptual hash "
+        "is within this Hamming distance (0-64) of the last kept frame."
+    ),
+    blur_threshold: float | None = typer.Option(
+        None, "--blur-threshold", help="Adaptive sampler: drop frames below this sharpness. "
+        "Off by default; the right value depends on resolution and content."
+    ),
     model: str = typer.Option(DEFAULT_MODEL.model_id, "--model", help="Model id."),
     force: bool = typer.Option(False, "--force", help="Re-index even if unchanged."),
     json: bool = typer.Option(False, "--json", help="Emit JSON to stdout."),
@@ -95,6 +103,8 @@ def index(
                 sampler=sampler,
                 model_id=model,
                 embed_dedup_threshold=embed_dedup,
+                dedup_hamming_threshold=dedup_distance,
+                blur_sharpness_threshold=blur_threshold,
             ),
             _build_image_encoder(model),
             NullReporter(),

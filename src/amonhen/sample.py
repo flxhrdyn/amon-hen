@@ -68,17 +68,24 @@ class AdaptiveSampler:
         self,
         fps: float,
         dedup_hamming_threshold: int = 4,
-        blur_sharpness_threshold: float = 10.0,
+        blur_sharpness_threshold: float | None = None,
     ):
         self.fps = fps
         self.dedup_hamming_threshold = dedup_hamming_threshold
+        # No default: sharpness scales with resolution and content, so any
+        # fixed number is wrong somewhere. Measured on a 64x64 test pattern
+        # it sits near 2000, meaning a plausible-looking threshold like 10
+        # silently never fires. Left off until Stage 4 calibrates it.
         self.blur_sharpness_threshold = blur_sharpness_threshold
         self._last_hash: np.ndarray | None = None
 
     def keep(self, frame: np.ndarray) -> bool:
         gray = _grayscale(frame)
 
-        if _sharpness(gray) < self.blur_sharpness_threshold:
+        if (
+            self.blur_sharpness_threshold is not None
+            and _sharpness(gray) < self.blur_sharpness_threshold
+        ):
             return False
 
         current_hash = _phash(gray)
@@ -94,14 +101,23 @@ class AdaptiveSampler:
         payload = (
             f"adaptive:fps={self.fps:.4f}"
             f":dedup={self.dedup_hamming_threshold}"
-            f":blur={self.blur_sharpness_threshold:.4f}"
+            f":blur={self.blur_sharpness_threshold}"
         )
         return hashlib.sha256(payload.encode()).hexdigest()[:16]
 
 
-def build_sampler(name: str, fps: float) -> Sampler:
+def build_sampler(
+    name: str,
+    fps: float,
+    dedup_hamming_threshold: int = 4,
+    blur_sharpness_threshold: float | None = None,
+) -> Sampler:
     if name == "fixed":
         return FixedSampler(fps=fps)
     if name == "adaptive":
-        return AdaptiveSampler(fps=fps)
+        return AdaptiveSampler(
+            fps=fps,
+            dedup_hamming_threshold=dedup_hamming_threshold,
+            blur_sharpness_threshold=blur_sharpness_threshold,
+        )
     raise ValueError(f"unknown sampler: {name!r}")
