@@ -1,0 +1,52 @@
+[project]
+name = "amonhen"
+version = "0.1.0"
+description = "Local, CPU-only video moment retrieval from the command line"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=1.26",
+    "onnxruntime>=1.18",
+    "pillow>=10.0",
+    "sqlite-vec>=0.1.6",
+    "imageio-ffmpeg>=0.5",
+    "typer>=0.12",
+    "huggingface-hub>=0.24",
+    "tokenizers>=0.20",
+]
+
+[project.scripts]
+amon-hen = "amonhen.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/amonhen"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: requires the real model or real video decoding",
+]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Typer's documented usage puts typer.Argument()/typer.Option() calls in
+# parameter defaults; that is not the mutable-default-argument bug B008
+# otherwise catches.
+"src/amonhen/cli.py" = ["B008"]
