@@ -60,11 +60,19 @@ def test_adaptive_sampler_keeps_a_visually_different_frame():
     assert sampler.keep(sharp_frame(2)) is True
 
 
-def test_adaptive_sampler_drops_a_blurry_flat_frame():
-    sampler = AdaptiveSampler(fps=1.0)
+def test_adaptive_sampler_drops_a_blurry_frame_when_a_threshold_is_set():
+    sampler = AdaptiveSampler(fps=1.0, blur_sharpness_threshold=100.0)
     sampler.keep(sharp_frame(1))
 
     assert sampler.keep(frame(50)) is False
+
+
+def test_blur_gate_is_off_unless_a_threshold_is_given():
+    """An uncalibrated blur threshold would throw away real frames."""
+    sampler = AdaptiveSampler(fps=1.0)
+    sampler.keep(sharp_frame(1))
+
+    assert sampler.keep(frame(50)) is True
 
 
 def test_adaptive_sampler_reports_its_reason():

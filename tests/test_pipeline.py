@@ -143,6 +143,40 @@ def test_embedding_dedup_gate_disabled_by_default(store, sample_video):
     assert result.frames_kept > 1
 
 
+def test_changing_embed_dedup_forces_a_reindex(store, sample_video):
+    """A flag that changes which frames get stored must invalidate the index."""
+    index_videos([sample_video], store, IndexConfig(fps=5.0), StubEncoder())
+
+    result = index_videos(
+        [sample_video],
+        store,
+        IndexConfig(fps=5.0, embed_dedup_threshold=0.99),
+        StubEncoder(),
+    )
+
+    assert result.videos == 1
+    assert result.skipped == []
+
+
+def test_sampler_state_does_not_leak_between_videos(store, tmp_path, static_video):
+    """Video 2's first frame must be judged on its own, not against video 1.
+
+    Each static video collapses to exactly one kept frame, so two of them
+    must yield two. A shared sampler would compare video 2's opening frame
+    against video 1's and silently drop it.
+    """
+    import shutil
+
+    second = tmp_path / "second.mp4"
+    shutil.copy(static_video, second)
+
+    result = index_videos(
+        [static_video, second], store, IndexConfig(fps=5.0, sampler="adaptive"), StubEncoder()
+    )
+
+    assert result.frames_kept == 2
+
+
 def test_adaptive_sampler_keeps_no_more_frames_than_fixed(store, sample_video, tmp_path):
     fixed_result = index_videos(
         [sample_video], store, IndexConfig(fps=5.0, sampler="fixed"), StubEncoder()
