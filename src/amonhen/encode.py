@@ -31,18 +31,30 @@ _MEAN = np.array([0.0, 0.0, 0.0], dtype=np.float32)
 _STD = np.array([1.0, 1.0, 1.0], dtype=np.float32)
 
 
+_RESOLVED: dict[str, Path] = {}
+
+
 def ensure_model(spec: ModelSpec) -> Path:
-    """Download the model files on first use and return the local directory."""
+    """Download the model files on first use and return the local directory.
+
+    The result is memoised: resolving a repo costs a round-trip to the
+    Hub, and the text encoder would otherwise pay it on every query.
+    """
+    if spec.repo_id in _RESOLVED:
+        return _RESOLVED[spec.repo_id]
+
     from huggingface_hub import snapshot_download
 
     MODEL_CACHE.mkdir(parents=True, exist_ok=True)
-    return Path(
+    location = Path(
         snapshot_download(
             spec.repo_id,
             cache_dir=str(MODEL_CACHE),
             allow_patterns=[spec.vision_file, spec.text_file, spec.tokenizer_file],
         )
     )
+    _RESOLVED[spec.repo_id] = location
+    return location
 
 
 def _make_session(spec: ModelSpec, filename: str) -> ort.InferenceSession:
@@ -75,8 +87,25 @@ class ImageEncoder:
         return self._session
 
     def _preprocess(self, image: np.ndarray) -> np.ndarray:
+        # MobileCLIP2's preprocessor_config.json asks for a shortest-edge
+        # resize followed by a centre crop. Resizing straight to a square
+        # instead squashes the aspect ratio of every video frame, which
+        # shifts the embedding by roughly 0.03 cosine on a 16:9 source -
+        # the same order as the gap between a good and a mediocre match.
         size = self.spec.image_size
-        pil = Image.fromarray(image).convert("RGB").resize((size, size), Image.BICUBIC)
+        pil = Image.fromarray(image).convert("RGB")
+
+        width, height = pil.size
+        scale = size / min(width, height)
+        pil = pil.resize(
+            (max(size, round(width * scale)), max(size, round(height * scale))),
+            Image.BICUBIC,
+        )
+
+        width, height = pil.size
+        left, top = (width - size) // 2, (height - size) // 2
+        pil = pil.crop((left, top, left + size, top + size))
+
         array = np.asarray(pil, dtype=np.float32) / 255.0
         array = (array - _MEAN) / _STD
         return array.transpose(2, 0, 1)
@@ -103,6 +132,7 @@ class TextEncoder:
         self.spec = spec
         self._factory = session_factory or (lambda s: _make_session(s, s.text_file))
         self._tokenizer = tokenizer
+        self._loaded_tokenizer = None
         self._session = None
 
     @property
@@ -111,15 +141,22 @@ class TextEncoder:
             self._session = self._factory(self.spec)
         return self._session
 
-    def _tokenize(self, text: str) -> np.ndarray:
-        if self._tokenizer is not None:
-            return self._tokenizer(text)
+    def _load_tokenizer(self):
         from tokenizers import Tokenizer
 
         tokenizer = Tokenizer.from_file(str(ensure_model(self.spec) / self.spec.tokenizer_file))
         tokenizer.enable_padding(length=77)
         tokenizer.enable_truncation(max_length=77)
-        ids = tokenizer.encode(text).ids
+        return tokenizer
+
+    def _tokenize(self, text: str) -> np.ndarray:
+        if self._tokenizer is not None:
+            return self._tokenizer(text)
+        # Built once and kept: rebuilding it per query dominated search
+        # latency, at well over a second a call.
+        if self._loaded_tokenizer is None:
+            self._loaded_tokenizer = self._load_tokenizer()
+        ids = self._loaded_tokenizer.encode(text).ids
         return np.asarray([ids], dtype=np.int64)
 
     def embed(self, text: str) -> np.ndarray:

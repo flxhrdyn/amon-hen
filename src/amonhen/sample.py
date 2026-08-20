@@ -49,7 +49,7 @@ def _sharpness(gray: np.ndarray) -> float:
     return float(np.diff(gray, axis=0).var() + np.diff(gray, axis=1).var())
 
 
-def _phash(gray: np.ndarray, size: int = 8) -> np.ndarray:
+def _average_hash(gray: np.ndarray, size: int = 8) -> np.ndarray:
     rows = np.array_split(gray, size, axis=0)
     small = np.array([[cell.mean() for cell in np.array_split(row, size, axis=1)] for row in rows])
     return small > small.mean()
@@ -88,7 +88,7 @@ class AdaptiveSampler:
         ):
             return False
 
-        current_hash = _phash(gray)
+        current_hash = _average_hash(gray)
         if self._last_hash is not None:
             distance = int(np.count_nonzero(current_hash != self._last_hash))
             if distance <= self.dedup_hamming_threshold:

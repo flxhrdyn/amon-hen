@@ -73,6 +73,26 @@ def test_image_encoder_preprocesses_to_model_input_shape():
     assert batch.dtype == np.float32
 
 
+def test_preprocessing_center_crops_instead_of_squashing():
+    """MobileCLIP2 was trained on shortest-edge resize plus a centre crop.
+
+    Stretching a 16:9 frame into a square feeds the model geometry it has
+    never seen, shifting every frame embedding.
+    """
+    fake = FakeSession(DEFAULT_MODEL.embed_dim)
+    encoder = ImageEncoder(DEFAULT_MODEL, session_factory=lambda spec: fake)
+
+    # A wide frame whose edges differ from its centre. A centre crop keeps
+    # only the middle band; a squash drags the edges into view.
+    wide = np.zeros((90, 320, 3), dtype=np.uint8)
+    wide[:, :100] = 255
+    wide[:, 220:] = 255
+
+    encoder.embed([wide])
+
+    assert fake.calls[0].max() == 0.0
+
+
 def test_empty_batch_returns_empty_array_without_calling_the_model():
     fake = FakeSession(DEFAULT_MODEL.embed_dim)
     encoder = ImageEncoder(DEFAULT_MODEL, session_factory=lambda spec: fake)

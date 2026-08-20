@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 
 from amonhen import decode
-from amonhen.model_registry import DEFAULT_MODEL
+from amonhen.model_registry import DEFAULT_MODEL, get_model
 from amonhen.progress import NullReporter, Reporter
 from amonhen.sample import Sampler, build_sampler
 from amonhen.store import FrameRecord, Hit, Store
@@ -59,26 +59,36 @@ def _index_config_hash(config: IndexConfig) -> str:
     The sampler's own hash covers its gates, but the embedding-dedup gate
     lives here in the pipeline. Leaving it out would let a user turn it on
     and have every video silently skipped as already-indexed.
+
+    The model's preprocessing revision is included too, so that correcting
+    how frames are prepared invalidates vectors built the old way instead
+    of leaving two incompatible generations mixed in one index.
     """
     sampler_hash = _sampler_for(config).config_hash()
-    payload = f"{sampler_hash}:embed_dedup={config.embed_dedup_threshold}"
+    payload = (
+        f"{sampler_hash}"
+        f":embed_dedup={config.embed_dedup_threshold}"
+        f":preprocess={get_model(config.model_id).preprocess_version}"
+    )
     return hashlib.sha256(payload.encode()).hexdigest()[:16]
 
 
 def expand_paths(paths: Iterable[str | Path]) -> list[Path]:
+    # Paths are resolved so that a relative and an absolute spelling of the
+    # same file identify one video, not two.
     resolved: list[Path] = []
     for entry in paths:
         entry = Path(entry)
         if entry.is_dir():
             resolved.extend(
                 sorted(
-                    child
+                    child.resolve()
                     for child in entry.rglob("*")
                     if child.is_file() and child.suffix.lower() in VIDEO_SUFFIXES
                 )
             )
         elif entry.is_file():
-            resolved.append(entry)
+            resolved.append(entry.resolve())
     return resolved
 
 
@@ -127,7 +137,7 @@ def index_videos(
         # Samplers carry per-video state, so each video gets its own.
         sampler = _sampler_for(config)
 
-        decoded = kept = stored = 0
+        decoded = stored = 0
         pending_images: list = []
         pending_ts: list[int] = []
         last_embedding: list[np.ndarray | None] = [None]
@@ -157,20 +167,22 @@ def index_videos(
                 store.add_frames(video_id, records)
             return len(records)
 
-        for frame in decode.iter_frames(path, fps=config.fps):
+        for frame in decode.iter_frames(path, fps=config.fps, info=info):
             decoded += 1
             if not sampler.keep(frame.image):
                 continue
-            kept += 1
             pending_images.append(frame.image)
             pending_ts.append(frame.ts_ms)
             if len(pending_images) >= config.batch_size:
                 stored += flush(video_id, pending_images, pending_ts, last_embedding)
                 pending_images = []
                 pending_ts = []
-            reporter.frame_progress(decoded, kept, frame.ts_ms)
+            # Reports frames actually written, so progress and the final
+            # count are the same number rather than two different ones.
+            reporter.frame_progress(decoded, stored, frame.ts_ms)
 
         stored += flush(video_id, pending_images, pending_ts, last_embedding)
+        store.mark_complete(video_id)
 
         elapsed = time.monotonic() - video_start
         reporter.video_finished(key, decoded, stored, elapsed)

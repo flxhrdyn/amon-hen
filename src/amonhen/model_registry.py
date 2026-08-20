@@ -27,6 +27,10 @@ class ModelSpec:
     tokenizer_file: str
     embed_dim: int
     image_size: int
+    # Bumped whenever frame preprocessing changes, so that indexes built
+    # with the old preparation are rebuilt rather than silently compared
+    # against vectors produced a different way.
+    preprocess_version: int = 2
 
 
 MOBILECLIP2_S0 = ModelSpec(
