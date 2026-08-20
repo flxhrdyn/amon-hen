@@ -49,10 +49,10 @@ The first `index` or `search` downloads the model to `~/.amonhen/models/` (about
 ## Use
 
 ```bash
-amon-hen index /path/to/video.mp4          # or a directory of videos
+amon-hen index /path/to/video.mp4 --sampler adaptive   # or a directory of videos
 amon-hen search "a red car"
 amon-hen videos                             # list what's indexed
-amon-hen stats                              # index totals
+amon-hen stats                              # index totals, by kept reason
 ```
 
 Every command supports `--json` for scripting: data goes to stdout, human-readable messages go
@@ -74,6 +74,6 @@ edge hardware, because none has been tested.
 
 ## Status
 
-Early. This ships the core index/search pipeline on a fixed-rate frame sampler and an FP32
-MobileCLIP2 model. The adaptive sampler, segment merging, score calibration, benchmark numbers,
-the interactive session, and OCR are still to come - see the design spec for the full roadmap.
+Early. Ships the core index/search pipeline (fixed or adaptive frame sampler, FP32
+MobileCLIP2). Segment merging, score calibration, benchmark numbers, the interactive
+session, and OCR are still to come - see the design spec for the full roadmap.
