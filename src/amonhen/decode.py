@@ -10,6 +10,7 @@ throw the result away.
 from __future__ import annotations
 
 import subprocess
+import tempfile
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -42,9 +43,11 @@ def _ffmpeg() -> str:
 
 def _ffmpeg_stderr(path: Path) -> str:
     # imageio-ffmpeg ships ffmpeg but not ffprobe, so stream metadata is
-    # read out of ffmpeg's own stderr banner.
+    # read out of ffmpeg's own stderr banner. Giving ffmpeg no output file
+    # makes it print the banner and stop; asking it to write to null would
+    # decode the entire video first, which probe does not need.
     proc = subprocess.run(
-        [_ffmpeg(), "-hide_banner", "-i", str(path), "-f", "null", "-"],
+        [_ffmpeg(), "-hide_banner", "-i", str(path)],
         capture_output=True,
         text=True,
     )
@@ -88,11 +91,15 @@ def probe(path: str | Path) -> VideoInfo:
     return VideoInfo(duration_ms=duration_ms, fps=fps, width=width, height=height)
 
 
-def iter_frames(path: str | Path, fps: float) -> Iterator[Frame]:
+def iter_frames(path: str | Path, fps: float, info: VideoInfo | None = None) -> Iterator[Frame]:
+    """Yield frames thinned to `fps`.
+
+    Pass `info` to reuse metadata the caller has already probed, rather
+    than paying for a second probe of the same file.
+    """
     path = Path(path)
-    info = probe(path)
+    info = info or probe(path)
     frame_bytes = info.width * info.height * 3
-    interval_ms = int(round(1000.0 / fps))
 
     command = [
         _ffmpeg(), "-hide_banner", "-loglevel", "error",
@@ -101,23 +108,37 @@ def iter_frames(path: str | Path, fps: float) -> Iterator[Frame]:
         "-f", "rawvideo", "-pix_fmt", "rgb24",
         "-",
     ]
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    assert proc.stdout is not None
+    # stderr goes to a temporary file rather than a pipe: nothing reads it
+    # until ffmpeg finishes, and a chatty file would otherwise fill the
+    # pipe buffer and deadlock both processes.
+    with tempfile.TemporaryFile() as errors:
+        proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=errors)
+        assert proc.stdout is not None
 
-    index = 0
-    try:
-        while True:
-            buffer = proc.stdout.read(frame_bytes)
-            if len(buffer) < frame_bytes:
-                break
-            image = np.frombuffer(buffer, dtype=np.uint8).reshape(
-                info.height, info.width, 3
-            )
-            yield Frame(ts_ms=index * interval_ms, image=image)
-            index += 1
-    finally:
-        proc.stdout.close()
-        stderr = proc.stderr.read().decode(errors="replace") if proc.stderr else ""
-        code = proc.wait()
-        if code != 0 and index == 0:
-            raise FFmpegError(stderr.strip() or f"ffmpeg exited with {code}")
+        index = 0
+        drained = False
+        try:
+            while True:
+                buffer = proc.stdout.read(frame_bytes)
+                if len(buffer) < frame_bytes:
+                    drained = True
+                    break
+                # frombuffer aliases the read buffer and is read-only;
+                # copy so callers get a normal, writable array.
+                image = np.frombuffer(buffer, dtype=np.uint8).reshape(
+                    info.height, info.width, 3
+                ).copy()
+                yield Frame(ts_ms=int(round(index * 1000.0 / fps)), image=image)
+                index += 1
+        finally:
+            proc.stdout.close()
+            if not drained:
+                # The consumer stopped early. ffmpeg still has work queued,
+                # so end it rather than waiting on a process writing into a
+                # closed pipe.
+                proc.kill()
+            code = proc.wait()
+            if drained and code != 0:
+                errors.seek(0)
+                message = errors.read().decode(errors="replace").strip()
+                raise FFmpegError(message or f"ffmpeg exited with {code}")

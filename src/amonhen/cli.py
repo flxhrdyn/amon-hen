@@ -76,7 +76,7 @@ def index(
         "last kept frame exceeds this (0-1). Off by default."
     ),
     dedup_distance: int = typer.Option(
-        4, "--dedup-distance", help="Adaptive sampler: drop a frame whose perceptual hash "
+        4, "--dedup-distance", help="Adaptive sampler: drop a frame whose average hash "
         "is within this Hamming distance (0-64) of the last kept frame."
     ),
     blur_threshold: float | None = typer.Option(

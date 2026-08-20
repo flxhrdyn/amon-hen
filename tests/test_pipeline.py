@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -141,6 +143,48 @@ def test_embedding_dedup_gate_disabled_by_default(store, sample_video):
     result = index_videos([sample_video], store, IndexConfig(fps=2.0), ConstantEncoder())
 
     assert result.frames_kept > 1
+
+
+class ExplodingEncoder(StubEncoder):
+    """Fails partway through a video, the way Ctrl-C would."""
+
+    def __init__(self, fail_after: int = 1):
+        super().__init__()
+        self.fail_after = fail_after
+        self.calls = 0
+
+    def embed(self, images):
+        self.calls += 1
+        if self.calls > self.fail_after:
+            raise KeyboardInterrupt("interrupted")
+        return super().embed(images)
+
+
+def test_an_interrupted_video_is_reindexed_not_skipped(store, sample_video):
+    """A half-written video must never look complete to the next run."""
+    with pytest.raises(KeyboardInterrupt):
+        index_videos(
+            [sample_video], store, IndexConfig(fps=5.0, batch_size=4), ExplodingEncoder()
+        )
+
+    partial = store.stats()["frames"]
+    result = index_videos([sample_video], store, IndexConfig(fps=5.0, batch_size=4), StubEncoder())
+
+    assert result.skipped == []
+    assert store.stats()["frames"] > partial
+
+
+def test_the_same_file_is_not_indexed_twice_under_different_spellings(
+    store, sample_video, monkeypatch
+):
+    config = IndexConfig(fps=2.0)
+    index_videos([sample_video], store, config, StubEncoder())
+
+    monkeypatch.chdir(Path(sample_video).parent)
+    result = index_videos([Path(sample_video).name], store, config, StubEncoder())
+
+    assert store.stats()["videos"] == 1
+    assert result.skipped != []
 
 
 def test_changing_embed_dedup_forces_a_reindex(store, sample_video):

@@ -35,12 +35,26 @@ def add_sample_video(store, path="a.mp4", ts_list=(0, 1000, 2000)):
             for i, ts in enumerate(ts_list)
         ],
     )
+    store.mark_complete(video_id)
     return video_id
 
 
 def test_add_video_and_frames_are_counted(store):
     add_sample_video(store)
     assert store.stats() == {"videos": 1, "frames": 3, "by_reason": {"fixed": 3}}
+
+
+def test_a_video_needs_reindex_until_it_is_marked_complete(store):
+    video_id = store.add_video(
+        path="a.mp4", duration_ms=3000, fps=25.0, size_bytes=123,
+        mtime=1.0, sampler_config_hash="cfg1", model_id="m1",
+    )
+
+    assert store.needs_reindex("a.mp4", 123, 1.0, "cfg1", "m1")
+
+    store.mark_complete(video_id)
+
+    assert not store.needs_reindex("a.mp4", 123, 1.0, "cfg1", "m1")
 
 
 def test_stats_breaks_down_frames_by_kept_reason(store):

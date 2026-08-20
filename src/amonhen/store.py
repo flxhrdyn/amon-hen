@@ -92,7 +92,8 @@ class Store:
                 indexed_at REAL NOT NULL,
                 sampler_config_hash TEXT NOT NULL,
                 model_id TEXT NOT NULL,
-                score_baseline REAL
+                score_baseline REAL,
+                complete INTEGER NOT NULL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS frame (
@@ -106,6 +107,13 @@ class Store:
             CREATE INDEX IF NOT EXISTS idx_frame_video ON frame(video_id, ts_ms);
             """
         )
+
+        # Databases written before the completion flag existed predate the
+        # fix for interrupted indexing; add the column rather than making
+        # the user throw the index away.
+        columns = {row["name"] for row in cur.execute("PRAGMA table_info(video)")}
+        if "complete" not in columns:
+            cur.execute("ALTER TABLE video ADD COLUMN complete INTEGER NOT NULL DEFAULT 0")
 
         stored_dim = cur.execute(
             "SELECT value FROM meta WHERE key = 'embed_dim'"
@@ -158,6 +166,15 @@ class Store:
         )
         self._conn.commit()
         return int(cur.lastrowid)
+
+    def mark_complete(self, video_id: int) -> None:
+        """Record that every frame of this video made it into the index.
+
+        Until this is called the video counts as needing a re-index, so an
+        interrupted run cannot leave a half-indexed video looking finished.
+        """
+        self._conn.execute("UPDATE video SET complete = 1 WHERE id = ?", (video_id,))
+        self._conn.commit()
 
     def add_frames(self, video_id: int, frames: list[FrameRecord]) -> None:
         if not frames:
@@ -216,7 +233,7 @@ class Store:
     ) -> bool:
         row = self._conn.execute(
             """
-            SELECT size_bytes, mtime, sampler_config_hash, model_id
+            SELECT size_bytes, mtime, sampler_config_hash, model_id, complete
             FROM video WHERE path = ?
             """,
             (path,),
@@ -224,7 +241,8 @@ class Store:
         if row is None:
             return True
         return (
-            row["size_bytes"] != size_bytes
+            not row["complete"]
+            or row["size_bytes"] != size_bytes
             or abs(row["mtime"] - mtime) > 1e-6
             or row["sampler_config_hash"] != sampler_config_hash
             or row["model_id"] != model_id
