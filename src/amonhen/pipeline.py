@@ -12,6 +12,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import numpy as np
+
 from amonhen import decode
 from amonhen.model_registry import DEFAULT_MODEL
 from amonhen.progress import NullReporter, Reporter
@@ -27,6 +29,7 @@ class IndexConfig:
     sampler: str = "fixed"
     batch_size: int = 16
     model_id: str = DEFAULT_MODEL.model_id
+    embed_dedup_threshold: float | None = None
 
 
 @dataclass
@@ -97,21 +100,35 @@ def index_videos(
             model_id=config.model_id,
         )
 
-        decoded = kept = 0
+        decoded = kept = stored = 0
         pending_images: list = []
         pending_ts: list[int] = []
+        last_embedding: list[np.ndarray | None] = [None]
 
-        def flush(video_id: int, pending_images: list, pending_ts: list[int]) -> None:
+        def flush(
+            video_id: int,
+            pending_images: list,
+            pending_ts: list[int],
+            last_embedding: list[np.ndarray | None],
+        ) -> int:
             if not pending_images:
-                return
+                return 0
             vectors = image_encoder.embed(pending_images)
-            store.add_frames(
-                video_id,
-                [
-                    FrameRecord(ts_ms=ts, embedding=vectors[row], kept_reason=sampler.reason)
-                    for row, ts in enumerate(pending_ts)
-                ],
-            )
+            records = []
+            for row, ts in enumerate(pending_ts):
+                vector = vectors[row]
+                if config.embed_dedup_threshold is not None and last_embedding[0] is not None:
+                    similarity = float(
+                        np.dot(vector, last_embedding[0])
+                        / (np.linalg.norm(vector) * np.linalg.norm(last_embedding[0]) + 1e-12)
+                    )
+                    if similarity >= config.embed_dedup_threshold:
+                        continue
+                records.append(FrameRecord(ts_ms=ts, embedding=vector, kept_reason=sampler.reason))
+                last_embedding[0] = vector
+            if records:
+                store.add_frames(video_id, records)
+            return len(records)
 
         for frame in decode.iter_frames(path, fps=config.fps):
             decoded += 1
@@ -121,19 +138,19 @@ def index_videos(
             pending_images.append(frame.image)
             pending_ts.append(frame.ts_ms)
             if len(pending_images) >= config.batch_size:
-                flush(video_id, pending_images, pending_ts)
+                stored += flush(video_id, pending_images, pending_ts, last_embedding)
                 pending_images = []
                 pending_ts = []
             reporter.frame_progress(decoded, kept, frame.ts_ms)
 
-        flush(video_id, pending_images, pending_ts)
+        stored += flush(video_id, pending_images, pending_ts, last_embedding)
 
         elapsed = time.monotonic() - video_start
-        reporter.video_finished(key, decoded, kept, elapsed)
+        reporter.video_finished(key, decoded, stored, elapsed)
 
         result.videos += 1
         result.frames_decoded += decoded
-        result.frames_kept += kept
+        result.frames_kept += stored
 
     result.elapsed_s = time.monotonic() - run_start
     reporter.run_finished(result.videos, result.frames_kept, result.elapsed_s)
