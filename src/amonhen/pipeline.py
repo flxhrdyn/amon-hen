@@ -19,7 +19,8 @@ from amonhen import decode
 from amonhen.model_registry import DEFAULT_MODEL, get_model
 from amonhen.progress import NullReporter, Reporter
 from amonhen.sample import Sampler, build_sampler
-from amonhen.store import FrameRecord, Hit, Store
+from amonhen.segment import Segment, merge_hits
+from amonhen.store import FrameRecord, Store
 
 VIDEO_SUFFIXES = {".mp4", ".mkv", ".mov", ".avi", ".webm", ".m4v", ".mpg", ".mpeg"}
 
@@ -183,6 +184,9 @@ def index_videos(
 
         stored += flush(video_id, pending_images, pending_ts, last_embedding)
         store.mark_complete(video_id)
+        baseline = compute_video_baseline(store, video_id)
+        if baseline is not None:
+            store.set_score_baseline(video_id, baseline)
 
         elapsed = time.monotonic() - video_start
         reporter.video_finished(key, decoded, stored, elapsed)
@@ -196,6 +200,49 @@ def index_videos(
     return result
 
 
-def search(query: str, store: Store, text_encoder, limit: int = 10) -> list[Hit]:
+def compute_video_baseline(
+    store: Store, video_id: int, sample_size: int = 50
+) -> float | None:
+    embeddings = store.sample_frame_embeddings(video_id, sample_size=sample_size)
+    if len(embeddings) < 5:
+        return None
+    matrix = np.stack(embeddings)
+    sims = matrix @ matrix.T
+    # Extract off-diagonal values
+    n = sims.shape[0]
+    off_diag = sims[~np.eye(n, dtype=bool)]
+    if len(off_diag) == 0:
+        return None
+    mean = float(np.mean(off_diag))
+    std = float(np.std(off_diag))
+    return mean + 1.5 * std
+
+
+def search(
+    query: str,
+    store: Store,
+    text_encoder,
+    limit: int = 10,
+    max_gap_ms: int = 4000,
+    min_score: float | None = None,
+    calibrate: bool = True,
+) -> list[Segment]:
     vector = text_encoder.embed(query)
-    return store.search_vector(vector, limit=limit)
+    candidate_k = max(limit * 8, 32)
+    hits = store.search_vector(vector, limit=candidate_k)
+
+    if not hits:
+        return []
+
+    baselines = store.get_score_baselines() if calibrate else {}
+
+    filtered_hits = []
+    for hit in hits:
+        threshold = min_score
+        if threshold is None and calibrate:
+            threshold = baselines.get(hit.video_id)
+        if threshold is not None and hit.score < threshold:
+            continue
+        filtered_hits.append(hit)
+
+    return merge_hits(filtered_hits, max_gap_ms=max_gap_ms, limit=limit)

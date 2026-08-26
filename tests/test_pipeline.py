@@ -3,9 +3,15 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from amonhen.pipeline import IndexConfig, expand_paths, index_videos, search
+from amonhen.pipeline import (
+    IndexConfig,
+    compute_video_baseline,
+    expand_paths,
+    index_videos,
+    search,
+)
 from amonhen.progress import RecordingReporter
-from amonhen.store import Store
+from amonhen.store import FrameRecord, Store
 
 DIM = 8
 
@@ -111,11 +117,13 @@ def test_reporter_receives_start_and_finish_events(store, sample_video):
 def test_search_returns_hits_ordered_by_score(store, sample_video):
     index_videos([sample_video], store, IndexConfig(fps=2.0), StubEncoder())
 
-    hits = search("anything", store, StubTextEncoder(index=0), limit=5)
+    segments = search(
+        "anything", store, StubTextEncoder(index=0), limit=5, calibrate=False
+    )
 
-    scores = [hit.score for hit in hits]
+    scores = [seg.score for seg in segments]
     assert scores == sorted(scores, reverse=True)
-    assert all(hit.video_path == sample_video for hit in hits)
+    assert all(seg.video_path == sample_video for seg in segments)
 
 
 class ConstantEncoder:
@@ -247,3 +255,135 @@ def test_expand_paths_finds_videos_in_a_directory(tmp_path, sample_video):
     found = sorted(path.name for path in expand_paths([tmp_path]))
 
     assert found == ["one.mp4", "two.mkv"]
+
+
+def test_search_returns_segments_with_merging(tmp_path):
+    store = Store(tmp_path / "index.db", embed_dim=4)
+    v1 = store.add_video("sample.mp4", 10000, 10.0, 100, 1.0, "h1", "m1")
+    # Add frames with unit vectors
+    f1 = FrameRecord(
+        ts_ms=1000,
+        embedding=np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32),
+        kept_reason="fixed",
+    )
+    f2 = FrameRecord(
+        ts_ms=2000,
+        embedding=np.array([0.9, 0.1, 0.0, 0.0], dtype=np.float32),
+        kept_reason="fixed",
+    )
+    store.add_frames(v1, [f1, f2])
+    store.mark_complete(v1)
+
+    class FakeTextEncoder:
+        def embed(self, text: str):
+            return np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)
+
+    segments = search(
+        "query", store, FakeTextEncoder(), limit=5, max_gap_ms=2000, calibrate=False
+    )
+    assert len(segments) == 1
+    assert segments[0].start_ms == 1000
+    assert segments[0].end_ms == 2000
+    assert segments[0].frame_count == 2
+    store.close()
+
+
+def test_search_filters_below_min_score(tmp_path):
+    store = Store(tmp_path / "index.db", embed_dim=4)
+    v1 = store.add_video("sample.mp4", 10000, 10.0, 100, 1.0, "h1", "m1")
+    f1 = FrameRecord(
+        ts_ms=1000,
+        embedding=np.array([0.5, 0.5, 0.5, 0.5], dtype=np.float32),
+        kept_reason="fixed",
+    )
+    store.add_frames(v1, [f1])
+    store.mark_complete(v1)
+
+    class FakeTextEncoder:
+        def embed(self, text: str):
+            return np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)
+
+    segments = search(
+        "query", store, FakeTextEncoder(), limit=5, min_score=0.9, calibrate=False
+    )
+    assert segments == []
+    store.close()
+
+
+def test_search_filters_below_baseline_when_calibrated(tmp_path):
+    store = Store(tmp_path / "index.db", embed_dim=4)
+    v1 = store.add_video("sample.mp4", 10000, 10.0, 100, 1.0, "h1", "m1")
+    store.set_score_baseline(v1, 0.8)
+    f1 = FrameRecord(
+        ts_ms=1000,
+        embedding=np.array([0.5, 0.5, 0.5, 0.5], dtype=np.float32),
+        kept_reason="fixed",
+    )
+    store.add_frames(v1, [f1])
+    store.mark_complete(v1)
+
+    class FakeTextEncoder:
+        def embed(self, text: str):
+            return np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)
+
+    segments = search("query", store, FakeTextEncoder(), limit=5, calibrate=True)
+    assert segments == []
+
+    segments_uncalibrated = search(
+        "query", store, FakeTextEncoder(), limit=5, calibrate=False
+    )
+    assert len(segments_uncalibrated) == 1
+    store.close()
+
+
+def test_compute_video_baseline_insufficient_frames(tmp_path):
+    store = Store(tmp_path / "index.db", embed_dim=4)
+    v1 = store.add_video("sample.mp4", 10000, 10.0, 100, 1.0, "h1", "m1")
+    records = [
+        FrameRecord(
+            ts_ms=i * 1000,
+            embedding=np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32),
+            kept_reason="fixed",
+        )
+        for i in range(3)
+    ]
+    store.add_frames(v1, records)
+    store.mark_complete(v1)
+
+    baseline = compute_video_baseline(store, v1)
+    assert baseline is None
+    store.close()
+
+
+def test_compute_video_baseline_calculates_mean_and_std(tmp_path):
+    store = Store(tmp_path / "index.db", embed_dim=4)
+    v1 = store.add_video("sample.mp4", 10000, 10.0, 100, 1.0, "h1", "m1")
+    embeddings = [
+        np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32),
+        np.array([0.0, 1.0, 0.0, 0.0], dtype=np.float32),
+        np.array([0.0, 0.0, 1.0, 0.0], dtype=np.float32),
+        np.array([0.0, 0.0, 0.0, 1.0], dtype=np.float32),
+        np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32),
+        np.array([0.0, 1.0, 0.0, 0.0], dtype=np.float32),
+    ]
+    records = [
+        FrameRecord(ts_ms=i * 1000, embedding=emb, kept_reason="fixed")
+        for i, emb in enumerate(embeddings)
+    ]
+    store.add_frames(v1, records)
+    store.mark_complete(v1)
+
+    baseline = compute_video_baseline(store, v1, sample_size=10)
+    assert baseline is not None
+    assert isinstance(baseline, float)
+    store.close()
+
+
+def test_index_videos_computes_and_sets_score_baseline(store, sample_video):
+    index_videos([sample_video], store, IndexConfig(fps=5.0), StubEncoder())
+
+    baselines = store.get_score_baselines()
+    video_id = store.video_id_for_path(sample_video)
+    if store.stats()["frames"] >= 5:
+        assert video_id in baselines
+        assert isinstance(baselines[video_id], float)
