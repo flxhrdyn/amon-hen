@@ -34,13 +34,14 @@ packages = ["src/amonhen"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src", "."]
 markers = [
     "slow: requires the real model or real video decoding",
 ]
 
 [tool.ruff]
 line-length = 100
-src = ["src", "tests"]
+src = ["src", "tests", "benchmarks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
