@@ -100,6 +100,7 @@ def index_videos(
     image_encoder,
     reporter: Reporter | None = None,
     force: bool = False,
+    text_encoder=None,
 ) -> IndexResult:
     reporter = reporter or NullReporter()
     reason = _sampler_for(config).reason
@@ -184,7 +185,7 @@ def index_videos(
 
         stored += flush(video_id, pending_images, pending_ts, last_embedding)
         store.mark_complete(video_id)
-        baseline = compute_video_baseline(store, video_id)
+        baseline = compute_video_baseline(store, video_id, text_encoder=text_encoder)
         if baseline is not None:
             store.set_score_baseline(video_id, baseline)
 
@@ -200,15 +201,34 @@ def index_videos(
     return result
 
 
+_PROBE_PROMPTS = (
+    "a photo of something",
+    "an everyday object",
+    "a background scene",
+    "indoor or outdoor view",
+    "a general view",
+)
+
+
 def compute_video_baseline(
-    store: Store, video_id: int, sample_size: int = 50
+    store: Store,
+    video_id: int,
+    text_encoder=None,
+    sample_size: int = 50,
 ) -> float | None:
     embeddings = store.sample_frame_embeddings(video_id, sample_size=sample_size)
     if len(embeddings) < 5:
         return None
-    matrix = np.stack(embeddings)
-    sims = matrix @ matrix.T
-    # Extract off-diagonal values
+    frame_matrix = np.stack(embeddings)
+
+    if text_encoder is not None:
+        probe_vectors = np.stack([text_encoder.embed(p) for p in _PROBE_PROMPTS])
+        sims = probe_vectors @ frame_matrix.T
+        mean = float(np.mean(sims))
+        std = float(np.std(sims))
+        return mean + 1.5 * std
+
+    sims = frame_matrix @ frame_matrix.T
     n = sims.shape[0]
     off_diag = sims[~np.eye(n, dtype=bool)]
     if len(off_diag) == 0:

@@ -109,6 +109,7 @@ def index(
             _build_image_encoder(model),
             NullReporter(),
             force=force,
+            text_encoder=_build_text_encoder(model),
         )
     finally:
         store.close()
