@@ -152,3 +152,37 @@ def test_opening_with_a_different_dimension_is_refused(tmp_path):
 
     with pytest.raises(IncompatibleIndexError):
         Store(path, embed_dim=DIM + 1).__enter__()
+
+
+def test_set_and_get_score_baselines(tmp_path):
+    store = Store(tmp_path / "index.db", embed_dim=4)
+    v1 = store.add_video("a.mp4", 1000, 10.0, 100, 1.0, "h1", "m1")
+    v2 = store.add_video("b.mp4", 1000, 10.0, 100, 1.0, "h1", "m1")
+
+    store.set_score_baseline(v1, 0.225)
+    baselines = store.get_score_baselines()
+
+    assert baselines.get(v1) == 0.225
+    assert v2 not in baselines or baselines.get(v2) is None
+    store.close()
+
+
+def test_sample_frame_embeddings(tmp_path):
+    store = Store(tmp_path / "index.db", embed_dim=4)
+    v1 = store.add_video("a.mp4", 10000, 10.0, 100, 1.0, "h1", "m1")
+    records = [
+        FrameRecord(
+            ts_ms=i * 1000,
+            embedding=np.array([0.5, 0.5, 0.5, 0.5], dtype=np.float32),
+            kept_reason="fixed",
+        )
+        for i in range(10)
+    ]
+    store.add_frames(v1, records)
+
+    samples = store.sample_frame_embeddings(v1, sample_size=5)
+    assert len(samples) == 5
+    assert samples[0].shape == (4,)
+    store.close()
+
+

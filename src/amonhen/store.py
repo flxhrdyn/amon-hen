@@ -114,6 +114,8 @@ class Store:
         columns = {row["name"] for row in cur.execute("PRAGMA table_info(video)")}
         if "complete" not in columns:
             cur.execute("ALTER TABLE video ADD COLUMN complete INTEGER NOT NULL DEFAULT 0")
+        if "score_baseline" not in columns:
+            cur.execute("ALTER TABLE video ADD COLUMN score_baseline REAL")
 
         stored_dim = cur.execute(
             "SELECT value FROM meta WHERE key = 'embed_dim'"
@@ -175,6 +177,36 @@ class Store:
         """
         self._conn.execute("UPDATE video SET complete = 1 WHERE id = ?", (video_id,))
         self._conn.commit()
+
+    def set_score_baseline(self, video_id: int, baseline: float) -> None:
+        self._conn.execute(
+            "UPDATE video SET score_baseline = ? WHERE id = ?",
+            (baseline, video_id),
+        )
+        self._conn.commit()
+
+    def get_score_baselines(self) -> dict[int, float]:
+        rows = self._conn.execute(
+            "SELECT id, score_baseline FROM video WHERE score_baseline IS NOT NULL"
+        ).fetchall()
+        return {int(row["id"]): float(row["score_baseline"]) for row in rows}
+
+    def sample_frame_embeddings(
+        self, video_id: int, sample_size: int = 50
+    ) -> list[np.ndarray]:
+        rows = self._conn.execute(
+            """
+            SELECT v.embedding
+            FROM vec_frame v
+            JOIN frame f ON f.id = v.frame_id
+            WHERE f.video_id = ?
+            ORDER BY RANDOM()
+            LIMIT ?
+            """,
+            (video_id, sample_size),
+        ).fetchall()
+        return [np.frombuffer(row["embedding"], dtype=np.float32) for row in rows]
+
 
     def add_frames(self, video_id: int, frames: list[FrameRecord]) -> None:
         if not frames:
