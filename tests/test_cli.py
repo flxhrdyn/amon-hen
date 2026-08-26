@@ -222,3 +222,16 @@ def test_missing_video_file_fails_with_a_clear_message(tmp_path):
     )
 
     assert result.exit_code != 0
+
+
+def test_cli_no_args_launches_interactive_session(tmp_path):
+    from unittest.mock import MagicMock, patch
+
+    db = tmp_path / "index.db"
+    mock_run_session = MagicMock()
+
+    with patch("amonhen.interactive.run_interactive_session", mock_run_session):
+        result = runner.invoke(app, ["--db", str(db)])
+        assert result.exit_code == 0
+        assert mock_run_session.called
+

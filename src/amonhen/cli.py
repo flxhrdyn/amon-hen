@@ -65,6 +65,23 @@ def _format_timestamp(ts_ms: int) -> str:
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds // 100}"
 
 
+@app.callback(invoke_without_command=True)
+def default_entry(
+    ctx: typer.Context,
+    db: Path = typer.Option(DEFAULT_DB, "--db", help="Index database path."),
+    model: str = typer.Option(DEFAULT_MODEL.model_id, "--model", help="Model id."),
+) -> None:
+    """Amon Hen CLI and Interactive Session."""
+    if ctx.invoked_subcommand is None:
+        from amonhen.interactive import run_interactive_session
+
+        store = _open_store(db, model)
+        try:
+            run_interactive_session(store, _build_text_encoder(model), model_id=model)
+        finally:
+            store.close()
+
+
 @app.command()
 def index(
     paths: list[str] = typer.Argument(..., help="Video files or directories to index."),
