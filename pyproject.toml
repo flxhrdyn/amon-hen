@@ -51,3 +51,4 @@ select = ["E", "F", "I", "UP", "B"]
 # parameter defaults; that is not the mutable-default-argument bug B008
 # otherwise catches.
 "src/amonhen/cli.py" = ["B008"]
+"benchmarks/run.py" = ["B008"]
