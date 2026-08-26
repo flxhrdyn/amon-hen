@@ -60,8 +60,119 @@ def test_search_json_output_is_parseable_and_undecorated(tmp_path, sample_video)
 
     payload = json.loads(result.stdout)
     assert isinstance(payload["results"], list)
-    assert {"video", "ts_ms", "score"} <= set(payload["results"][0])
+    assert len(payload["results"]) > 0
+    assert {
+        "video",
+        "start_ms",
+        "end_ms",
+        "best_ts_ms",
+        "score",
+        "frame_count",
+    } <= set(payload["results"][0])
     assert "\x1b[" not in result.stdout
+
+
+def test_search_cli_displays_single_frame_and_range_formatting(tmp_path, sample_video, monkeypatch):
+    import amonhen.cli as cli
+    from amonhen.segment import Segment
+
+    db = tmp_path / "index.db"
+    runner.invoke(app, ["index", sample_video, "--db", str(db)])
+
+    # Stub run_search to return both a range segment and a single-frame segment
+    fake_segments = [
+        Segment(
+            video_id=1,
+            video_path="/path/to/range_video.mp4",
+            start_ms=65000,
+            end_ms=68000,
+            best_ts_ms=66000,
+            score=0.2702,
+            frame_count=4,
+        ),
+        Segment(
+            video_id=1,
+            video_path="/path/to/single_video.mp4",
+            start_ms=6000,
+            end_ms=6000,
+            best_ts_ms=6000,
+            score=0.2631,
+            frame_count=1,
+        ),
+    ]
+    monkeypatch.setattr(cli, "run_search", lambda *args, **kwargs: fake_segments)
+
+    result = runner.invoke(app, ["search", "test", "--db", str(db)])
+    assert result.exit_code == 0
+    lines = result.stdout.strip().splitlines()
+    assert len(lines) == 2
+    # Range segment: 00:01:05.0 - 00:01:08.0
+    assert "00:01:05.0 - 00:01:08.0" in lines[0]
+    assert "range_video.mp4" in lines[0]
+    assert "0.270" in lines[0]
+    # Single-frame segment: 00:00:06.0 with padding to 23 chars
+    assert "00:00:06.0             " in lines[1]
+    assert "single_video.mp4" in lines[1]
+    assert "0.263" in lines[1]
+
+
+def test_search_cli_options_passed_to_run_search(tmp_path, sample_video, monkeypatch):
+    import amonhen.cli as cli
+
+    db = tmp_path / "index.db"
+    runner.invoke(app, ["index", sample_video, "--db", str(db)])
+
+    called_kwargs = {}
+
+    def fake_run_search(query, store, text_encoder, **kwargs):
+        called_kwargs.update(kwargs)
+        return []
+
+    monkeypatch.setattr(cli, "run_search", fake_run_search)
+
+    result = runner.invoke(
+        app,
+        [
+            "search",
+            "test query",
+            "--db",
+            str(db),
+            "--merge-gap",
+            "2.5",
+            "--min-score",
+            "0.75",
+            "--no-calibrate",
+            "--limit",
+            "5",
+        ],
+    )
+    assert result.exit_code == 0
+    assert called_kwargs["max_gap_ms"] == 2500
+    assert called_kwargs["min_score"] == 0.75
+    assert called_kwargs["calibrate"] is False
+    assert called_kwargs["limit"] == 5
+
+
+def test_search_cli_calibrate_flag(tmp_path, sample_video, monkeypatch):
+    import amonhen.cli as cli
+
+    db = tmp_path / "index.db"
+    runner.invoke(app, ["index", sample_video, "--db", str(db)])
+
+    called_kwargs = {}
+
+    def fake_run_search(query, store, text_encoder, **kwargs):
+        called_kwargs.update(kwargs)
+        return []
+
+    monkeypatch.setattr(cli, "run_search", fake_run_search)
+
+    result = runner.invoke(
+        app,
+        ["search", "test query", "--db", str(db), "--calibrate"],
+    )
+    assert result.exit_code == 0
+    assert called_kwargs["calibrate"] is True
 
 
 def test_index_json_output_reports_counts(tmp_path, sample_video):

@@ -140,13 +140,30 @@ def search(
     query: str = typer.Argument(..., help="What to look for."),
     db: Path = typer.Option(DEFAULT_DB, "--db", help="Index database path."),
     limit: int = typer.Option(10, "--limit", "-k", help="Maximum results."),
+    merge_gap: float = typer.Option(
+        4.0, "--merge-gap", help="Max time gap (seconds) between frames to merge into one segment."
+    ),
+    min_score: float | None = typer.Option(
+        None, "--min-score", help="Minimum similarity score threshold (0.0-1.0)."
+    ),
+    calibrate: bool = typer.Option(
+        True, "--calibrate/--no-calibrate", help="Use statistical score baseline calibration."
+    ),
     model: str = typer.Option(DEFAULT_MODEL.model_id, "--model", help="Model id."),
     json: bool = typer.Option(False, "--json", help="Emit JSON to stdout."),
 ) -> None:
     """Find moments matching a text description."""
     store = _open_store(db, model)
     try:
-        hits = run_search(query, store, _build_text_encoder(model), limit=limit)
+        segments = run_search(
+            query,
+            store,
+            _build_text_encoder(model),
+            limit=limit,
+            max_gap_ms=int(merge_gap * 1000),
+            min_score=min_score,
+            calibrate=calibrate,
+        )
     finally:
         store.close()
 
@@ -157,26 +174,31 @@ def search(
                     "query": query,
                     "results": [
                         {
-                            "video": hit.video_path,
-                            "ts_ms": hit.ts_ms,
-                            "score": round(hit.score, 4),
+                            "video": seg.video_path,
+                            "start_ms": seg.start_ms,
+                            "end_ms": seg.end_ms,
+                            "best_ts_ms": seg.best_ts_ms,
+                            "score": round(seg.score, 4),
+                            "frame_count": seg.frame_count,
                         }
-                        for hit in hits
+                        for seg in segments
                     ],
                 }
             )
         )
         return
 
-    if not hits:
+    if not segments:
         typer.echo("No results.", err=True)
         return
 
-    for position, hit in enumerate(hits, start=1):
-        name = Path(hit.video_path).name
-        typer.echo(
-            f"{position:>2}. {_format_timestamp(hit.ts_ms)}  {hit.score:.3f}  {name}"
-        )
+    for position, seg in enumerate(segments, start=1):
+        name = Path(seg.video_path).name
+        if seg.start_ms < seg.end_ms:
+            time_str = f"{_format_timestamp(seg.start_ms)} - {_format_timestamp(seg.end_ms)}"
+        else:
+            time_str = f"{_format_timestamp(seg.start_ms):23}"
+        typer.echo(f"{position:>2}. {time_str}  {seg.score:.3f}  {name}")
 
 
 @app.command()
