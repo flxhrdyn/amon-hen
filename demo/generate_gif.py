@@ -1,4 +1,4 @@
-"""Render Dark Mode Monochrome Aquamarine OpenCode TUI demo GIF with Tolkien tagline in header."""
+"""Render complete End-to-End (E2E) demo GIF for Amon Hen in Dark Mode Monochrome Aquamarine."""
 
 import os
 from pathlib import Path
@@ -50,17 +50,22 @@ def create_base_window() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     draw.ellipse([46, 10, 56, 20], fill=AQUA_PRIMARY)
     draw.text((WIDTH // 2 - 50, 8), "amon-hen", fill=TEXT_MUTED, font=font_small)
 
-    # 1. Top Header Box with Tolkien Tagline
-    draw.rounded_rectangle([20, 44, WIDTH - 20, 114], radius=4, fill=PANEL_BG, outline=BORDER_COL)
-    draw.text((36, 52), "Amon Hen v0.1.0", fill=AQUA_PRIMARY, font=font_bold)
-    draw.text((180, 53), '· "From the Seat of Seeing, no moment remains hidden."', fill=TEXT_SUB, font=font_main)
-    draw.text((36, 76), "Model: MobileCLIP2-S2 (CPU)   Storage: sqlite-vec   Index: 1 video (49 frames)", fill=TEXT_MUTED, font=font_small)
-    draw.text((36, 93), "~/videos/cctv-people-demo.webm", fill=TEXT_MUTED, font=font_small)
-
     return img, draw
 
 
-def render_opencode_screen(
+def render_shell_screen(lines: list[tuple[str, tuple[int, int, int]]]) -> Image.Image:
+    """Render authentic shell terminal screen."""
+    img, draw = create_base_window()
+    x = 28
+    y = 54
+    line_h = 24
+    for line_text, col in lines:
+        draw.text((x, y), line_text, fill=col, font=font_main)
+        y += line_h
+    return img
+
+
+def render_tui_screen(
     query_text: str = "",
     show_query_card: bool = False,
     show_results: bool = False,
@@ -69,7 +74,15 @@ def render_opencode_screen(
     input_text: str = "",
     show_cursor: bool = True,
 ) -> Image.Image:
+    """Render full OpenCode TUI screen."""
     img, draw = create_base_window()
+
+    # 1. Top Header Box with Tolkien Tagline
+    draw.rounded_rectangle([20, 44, WIDTH - 20, 114], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+    draw.text((36, 52), "Amon Hen v0.1.0", fill=AQUA_PRIMARY, font=font_bold)
+    draw.text((180, 53), '· "From the Seat of Seeing, no moment remains hidden."', fill=TEXT_SUB, font=font_main)
+    draw.text((36, 76), "Model: MobileCLIP2-S2 (CPU)   Storage: sqlite-vec   Index: 1 video (49 frames)", fill=TEXT_MUTED, font=font_small)
+    draw.text((36, 93), "~/videos/cctv-people-demo.webm", fill=TEXT_MUTED, font=font_small)
 
     # 2. Query Card
     if show_query_card:
@@ -135,20 +148,66 @@ def main() -> None:
     frames: list[Image.Image] = []
     durations: list[int] = []
 
-    # Scene 1: Initial Screen (Ready)
-    frames.append(render_opencode_screen(input_text="", show_cursor=True))
-    durations.append(900)
+    # === STAGE 1: Shell CLI Indexing ===
+    # 1. Shell Prompt
+    frames.append(render_shell_screen([
+        ("PS C:\\Users\\Felix\\videos> ", AQUA_PRIMARY)
+    ]))
+    durations.append(450)
 
-    # Scene 2: Type Query in Input Box
-    q = "a person holding an umbrella"
-    for i in range(1, len(q) + 1, 2):
-        frames.append(render_opencode_screen(input_text=q[:i], show_cursor=True))
-        durations.append(40)
-    frames.append(render_opencode_screen(input_text=q, show_cursor=True))
+    # 2. Type "amon-hen index demo/ --sampler adaptive"
+    idx_cmd = "amon-hen index demo/ --sampler adaptive"
+    for i in range(1, len(idx_cmd) + 1, 3):
+        frames.append(render_shell_screen([
+            (f"PS C:\\Users\\Felix\\videos> {idx_cmd[:i]}", TEXT_WHITE)
+        ]))
+        durations.append(35)
+    frames.append(render_shell_screen([
+        (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", TEXT_WHITE)
+    ]))
     durations.append(300)
 
-    # Scene 3: Press Enter -> Query Card & Results Appear
-    frames.append(render_opencode_screen(
+    # 3. Indexing execution progress
+    frames.append(render_shell_screen([
+        (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", TEXT_WHITE),
+        ("Indexing cctv-people-demo.webm [==========..........]  50% | 18.5x RT", AQUA_MUTED),
+    ]))
+    durations.append(300)
+
+    frames.append(render_shell_screen([
+        (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", TEXT_WHITE),
+        ("Indexing cctv-people-demo.webm [====================] 100% | 18.5x RT", AQUA_PRIMARY),
+        ("=> Indexed 1 video(s), 49 keyframes stored in ~/.amonhen/index.db (2.3s)", TEXT_WHITE),
+        ("", TEXT_MUTED),
+        ("PS C:\\Users\\Felix\\videos> ", AQUA_PRIMARY),
+    ]))
+    durations.append(900)
+
+    # 4. Type "amon-hen" to launch Interactive TUI Mode
+    launch_cmd = "amon-hen"
+    for i in range(1, len(launch_cmd) + 1, 2):
+        frames.append(render_shell_screen([
+            (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", TEXT_WHITE),
+            ("=> Indexed 1 video(s), 49 keyframes stored in ~/.amonhen/index.db (2.3s)", TEXT_WHITE),
+            ("", TEXT_MUTED),
+            (f"PS C:\\Users\\Felix\\videos> {launch_cmd[:i]}", TEXT_WHITE),
+        ]))
+        durations.append(40)
+
+    # === STAGE 2: Transition into Interactive OpenCode TUI Screen ===
+    frames.append(render_tui_screen(input_text="", show_cursor=True))
+    durations.append(850)
+
+    # 5. Type query in TUI input box
+    q = "a person holding an umbrella"
+    for i in range(1, len(q) + 1, 2):
+        frames.append(render_tui_screen(input_text=q[:i], show_cursor=True))
+        durations.append(35)
+    frames.append(render_tui_screen(input_text=q, show_cursor=True))
+    durations.append(300)
+
+    # 6. Submit query -> Query Card & Result Cards appear
+    frames.append(render_tui_screen(
         query_text=q,
         show_query_card=True,
         show_results=True,
@@ -157,10 +216,10 @@ def main() -> None:
     ))
     durations.append(1800)
 
-    # Scene 4: Type /open 1 in Input Box
+    # 7. Type "/open 1" to launch player
     op = "/open 1"
     for i in range(1, len(op) + 1, 2):
-        frames.append(render_opencode_screen(
+        frames.append(render_tui_screen(
             query_text=q,
             show_query_card=True,
             show_results=True,
@@ -168,8 +227,8 @@ def main() -> None:
             input_text=op[:i],
             show_cursor=True,
         ))
-        durations.append(45)
-    frames.append(render_opencode_screen(
+        durations.append(40)
+    frames.append(render_tui_screen(
         query_text=q,
         show_query_card=True,
         show_results=True,
@@ -177,10 +236,10 @@ def main() -> None:
         input_text=op,
         show_cursor=True,
     ))
-    durations.append(300)
+    durations.append(250)
 
-    # Scene 5: Submit -> Player Launch Notification Card Appears
-    frames.append(render_opencode_screen(
+    # 8. Submit -> Video Launch Notification Toast
+    frames.append(render_tui_screen(
         query_text=q,
         show_query_card=True,
         show_results=True,
@@ -189,12 +248,12 @@ def main() -> None:
         input_text="",
         show_cursor=True,
     ))
-    durations.append(2600)
+    durations.append(2400)
 
-    # Scene 6: Type /exit
+    # 9. Type "/exit"
     ex = "/exit"
     for i in range(1, len(ex) + 1, 2):
-        frames.append(render_opencode_screen(
+        frames.append(render_tui_screen(
             query_text=q,
             show_query_card=True,
             show_results=True,
@@ -203,20 +262,18 @@ def main() -> None:
             input_text=ex[:i],
             show_cursor=True,
         ))
-        durations.append(45)
+        durations.append(40)
 
-    frames.append(render_opencode_screen(
-        query_text=q,
-        show_query_card=True,
-        show_results=True,
-        selected_rank=1,
-        notification_msg="Farewell.",
-        input_text="",
-        show_cursor=True,
-    ))
-    durations.append(2500)
+    # === STAGE 3: Clean Exit back to Shell ===
+    frames.append(render_shell_screen([
+        ("PS C:\\Users\\Felix\\videos> amon-hen", TEXT_WHITE),
+        ("Farewell. The seeing closes.", TEXT_SUB),
+        ("", TEXT_MUTED),
+        ("PS C:\\Users\\Felix\\videos> ", AQUA_PRIMARY),
+    ]))
+    durations.append(3000)
 
-    for path_name in ["demo/demo-tui-v12.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-e2e.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -226,7 +283,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated Aquamarine Monochrome TUI demo ({len(frames)} frames, {Path('demo/demo-tui-v12.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated End-to-End (E2E) demo ({len(frames)} frames, {Path('demo/demo-tui-e2e.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
