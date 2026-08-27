@@ -78,7 +78,7 @@ Evaluated on standard x86-64 / ARM64 CPU environments using `onnxruntime` (singl
 
 ### Quantization Findings:
 1. **Text Transformer:** Quantizes exceptionally well with dynamic INT8 — cutting size by 75% while accelerating CPU text encoding by 2.09x with high fidelity (0.955+ cosine similarity).
-2. **FastViT Vision:** Dynamic INT8 quantization on CPU introduces conversion overhead across FastViT depthwise convolutions. Therefore, **FP32 vision + INT8 text (Hybrid: ~105 MB total)** delivers the optimal balance of fast CPU inference (122 ms total latency), full visual accuracy, and minimal RAM footprint.
+2. **FastViT Vision:** Dynamic INT8 quantization on CPU introduces conversion overhead across FastViT depthwise convolutions. Therefore, **FP32 vision + INT8 text (Hybrid: 105 MB total)** delivers the optimal balance of fast CPU inference (122 ms total latency), full visual accuracy, and minimal RAM footprint.
 3. **Parity:** FP32 ONNX outputs maintain cosine similarity >= {min_cosine:.4f} against original PyTorch weights.
 4. **Frame Embedding Latency:** {latency_ms:.1f} ms per frame on CPU.
 
