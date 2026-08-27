@@ -1,4 +1,4 @@
-"""Render complete End-to-End demo GIF with Rank 1 in Blue and all other ranks in White."""
+"""Render complete End-to-End demo GIF highlighting Tolkien '-ing' turning verbs loading state."""
 
 import os
 from pathlib import Path
@@ -13,12 +13,12 @@ TITLE_BG = (8, 8, 10)            # #08080A Titlebar
 PANEL_BG = (20, 21, 26)          # #14151A Card surface
 BORDER_COL = (42, 44, 54)        # #2A2C36 Subtle border
 
-# Single Accent Color for Rank 1 & Active Interactive Components: Starlight Blue
+# Single Accent Color: Starlight Blue
 BLUE_PRIMARY = (130, 170, 255)   # #82AAFF
 BLUE_BG = (18, 24, 40)           # #121828
 BAR_EMPTY = (30, 32, 42)         # #1E202A
 
-# Monochrome Neutrals for Other Ranks & Text
+# Monochrome Neutrals
 TEXT_WHITE = (240, 243, 248)     # #F0F3F8 Pure White
 TEXT_MUTED = (110, 115, 130)     # #6E7382 Gray metadata
 TEXT_SUB = (165, 170, 185)       # #A5AAB9 Secondary text
@@ -83,13 +83,14 @@ def render_tui_screen(
     indexing_state: tuple[str, float, str] | None = None,
     query_text: str = "",
     show_query_card: bool = False,
+    loading_lines: list[str] | None = None,
     show_results: bool = False,
     selected_rank: int | None = None,
     notification_msg: str | None = None,
     input_text: str = "",
     show_cursor: bool = True,
 ) -> Image.Image:
-    """Render full OpenCode TUI screen with Rank 1 in Blue and other ranks in White."""
+    """Render full OpenCode TUI screen with prominent Tolkien -ing turning verbs."""
     img, draw = create_base_window()
 
     # 1. Top Header Box with Single-Color Blue Seat of Seeing Pixel Art
@@ -117,11 +118,11 @@ def render_tui_screen(
 
     y_content = 122
 
-    # 2. Live Indexing Card
+    # 2. Live Indexing Card (with Tolkien -ing verb)
     if indexing_state:
-        vid_name, pct, spd = indexing_state
+        verb_label, pct, spd = indexing_state
         draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 64], radius=4, fill=PANEL_BG, outline=BORDER_COL)
-        draw.text((36, y_content + 10), f"Indexing: {vid_name}", fill=TEXT_WHITE, font=font_bold)
+        draw.text((36, y_content + 10), f"* {verb_label}", fill=TEXT_WHITE, font=font_bold)
         draw.text((WIDTH - 200, y_content + 10), spd, fill=BLUE_PRIMARY, font=font_bold)
 
         # Progress bar
@@ -138,7 +139,20 @@ def render_tui_screen(
         draw.text((36, y_content + 9), f"> {query_text}", fill=TEXT_WHITE, font=font_main)
         y_content += 44
 
-    # 4. Results Container Cards
+    # 4. Tolkien '-ing' Turning Verbs Loading Block
+    if loading_lines:
+        for idx, line_text in enumerate(loading_lines):
+            is_active = (idx == len(loading_lines) - 1)
+            col = BLUE_PRIMARY if is_active else TEXT_MUTED
+            draw.text((36, y_content + 8), line_text, fill=col, font=font_main)
+            y_content += 24
+
+        # Subtle scanning wave bar
+        draw.rounded_rectangle([36, y_content + 8, 300, y_content + 14], radius=2, fill=BAR_EMPTY)
+        draw.rounded_rectangle([36, y_content + 8, 210, y_content + 14], radius=2, fill=BLUE_PRIMARY)
+        return img
+
+    # 5. Results Container Cards
     if show_results:
         bar_x = WIDTH - 260
 
@@ -157,31 +171,29 @@ def render_tui_screen(
         draw.text((bar_x + 135, y_content + 16), "0.261", fill=BLUE_PRIMARY, font=font_bold)
         y_content += 80
 
-        # Card #2 (All in White)
+        # Card #2 (White)
         draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 52], radius=4, fill=PANEL_BG, outline=BORDER_COL)
         draw.text((36, y_content + 9), "#2   00:00:04.0 -> 00:00:19.0", fill=TEXT_WHITE, font=font_bold)
         draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:11.0", fill=TEXT_MUTED, font=font_small)
-        # White score bar for #2
         draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 120, y_content + 29], radius=2, fill=BAR_EMPTY)
         draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 82, y_content + 29], radius=2, fill=TEXT_WHITE)
         draw.text((bar_x + 135, y_content + 13), "0.247", fill=TEXT_WHITE, font=font_bold)
         y_content += 60
 
-        # Card #3 (All in White)
+        # Card #3 (White)
         draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 52], radius=4, fill=PANEL_BG, outline=BORDER_COL)
         draw.text((36, y_content + 9), "#3   00:00:24.0 -> 00:00:32.0", fill=TEXT_WHITE, font=font_bold)
         draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:28.0", fill=TEXT_MUTED, font=font_small)
-        # White score bar for #3
         draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 120, y_content + 29], radius=2, fill=BAR_EMPTY)
         draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 75, y_content + 29], radius=2, fill=TEXT_WHITE)
         draw.text((bar_x + 135, y_content + 13), "0.227", fill=TEXT_WHITE, font=font_bold)
 
-    # 5. Flash Notification Toast
+    # 6. Flash Notification Toast
     if notification_msg:
         draw.rounded_rectangle([20, 372, WIDTH - 20, 408], radius=4, fill=BLUE_BG, outline=BLUE_PRIMARY)
         draw.text((36, 380), f"=> {notification_msg}", fill=BLUE_PRIMARY, font=font_main)
 
-    # 6. Pinned Bottom Input Box
+    # 7. Pinned Bottom Input Box
     draw.rounded_rectangle([20, 444, WIDTH - 20, 492], radius=4, fill=PANEL_BG, outline=BLUE_PRIMARY, width=2)
     draw.text((36, 456), "amon-hen > ", fill=BLUE_PRIMARY, font=font_bold)
     draw.text((130, 456), input_text, fill=TEXT_WHITE, font=font_main)
@@ -214,7 +226,7 @@ def main() -> None:
         ]))
         durations.append(40)
 
-    # === SCENE 2: Inside TUI — Live Indexing ===
+    # === SCENE 2: Inside TUI — Live Indexing with Tolkien '-ing' Turning Verbs ===
     frames.append(render_tui_screen(indexed_count=0, input_text="", show_cursor=True))
     durations.append(800)
 
@@ -225,26 +237,32 @@ def main() -> None:
     frames.append(render_tui_screen(indexed_count=0, input_text=idx_cmd, show_cursor=True))
     durations.append(250)
 
-    # Indexing Progress animation inside TUI
-    for pct in [0.25, 0.60, 0.90, 1.0]:
-        frames.append(render_tui_screen(
-            indexed_count=0,
-            indexing_state=("cctv-people-demo.webm", pct, "18.5x Realtime"),
-            input_text="",
-            show_cursor=True,
-        ))
-        durations.append(300)
+    # Indexing Progress with turning verb "Gazing" and "Delving"
+    frames.append(render_tui_screen(
+        indexed_count=0,
+        indexing_state=("Gazing across cctv-people-demo.webm", 0.35, "18.5x Realtime"),
+        input_text="",
+        show_cursor=True,
+    ))
+    durations.append(300)
 
-    # Indexing complete, index count updated
+    frames.append(render_tui_screen(
+        indexed_count=0,
+        indexing_state=("Delving keyframes with MobileCLIP2", 0.75, "18.5x Realtime"),
+        input_text="",
+        show_cursor=True,
+    ))
+    durations.append(300)
+
     frames.append(render_tui_screen(
         indexed_count=1,
-        indexing_state=("cctv-people-demo.webm", 1.0, "Done (49 frames)"),
+        indexing_state=("Unveiled 49 moments into index database", 1.0, "Done (49 frames)"),
         input_text="",
         show_cursor=True,
     ))
     durations.append(700)
 
-    # === SCENE 3: Search Querying inside TUI ===
+    # === SCENE 3: Search Querying & Dynamic Tolkien '-ing' Loading Sequence ===
     q = "a person holding an umbrella"
     for i in range(1, len(q) + 1, 2):
         frames.append(render_tui_screen(indexed_count=1, input_text=q[:i], show_cursor=True))
@@ -252,7 +270,49 @@ def main() -> None:
     frames.append(render_tui_screen(indexed_count=1, input_text=q, show_cursor=True))
     durations.append(300)
 
-    # Submit query -> Results Cards pop up
+    # Step A: "Gazing from the Seat of Seeing..."
+    frames.append(render_tui_screen(
+        indexed_count=1,
+        query_text=q,
+        show_query_card=True,
+        loading_lines=[
+            "* Gazing from the Seat of Seeing...",
+        ],
+        input_text="",
+        show_cursor=True,
+    ))
+    durations.append(400)
+
+    # Step B: "Scouring vector index for visual matches..."
+    frames.append(render_tui_screen(
+        indexed_count=1,
+        query_text=q,
+        show_query_card=True,
+        loading_lines=[
+            "* Gazing from the Seat of Seeing...",
+            "* Scouring vector index for visual matches...",
+        ],
+        input_text="",
+        show_cursor=True,
+    ))
+    durations.append(400)
+
+    # Step C: "Discerning moments across timeline..."
+    frames.append(render_tui_screen(
+        indexed_count=1,
+        query_text=q,
+        show_query_card=True,
+        loading_lines=[
+            "* Gazing from the Seat of Seeing...",
+            "* Scouring vector index for visual matches...",
+            "* Discerning moments across timeline (18ms)...",
+        ],
+        input_text="",
+        show_cursor=True,
+    ))
+    durations.append(450)
+
+    # Moments populate!
     frames.append(render_tui_screen(
         indexed_count=1,
         query_text=q,
@@ -320,7 +380,7 @@ def main() -> None:
     ]))
     durations.append(3000)
 
-    for path_name in ["demo/demo-tui-white-other.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-tolkien-ing.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -330,7 +390,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated demo with Rank 1 in Blue and others in White ({len(frames)} frames, {Path('demo/demo-tui-white-other.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated Tolkien '-ing' turning verbs demo ({len(frames)} frames, {Path('demo/demo-tui-tolkien-ing.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
