@@ -25,7 +25,7 @@ def test_default_models_point_to_official_flxhrdyn_namespace():
     s2 = get_model("mobileclip2-s2")
     assert s0.repo_id == "felixhrdyn/mobileclip2-s0-onnx"
     assert s2.repo_id == "felixhrdyn/mobileclip2-s2-onnx"
-    assert s0.vision_file == "vision_model.onnx"
+    assert s0.vision_file == "vision_model_quantized.onnx"
     assert s0.text_file == "text_model_quantized.onnx"
     assert s2.vision_file == "vision_model.onnx"
     assert s2.text_file == "text_model.onnx"
