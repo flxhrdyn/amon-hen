@@ -13,7 +13,7 @@ A fast, lightweight command-line tool and Python library for natural language mo
 Finding specific moments across long video archives typically requires either high-end GPUs to run large multimodal models or naive per-second extraction that produces thousands of redundant frames and bloated vector stores.
 
 Amon Hen bridges this gap by combining:
-- **MobileCLIP2 ([`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)):** CPU-optimized visual-semantic embeddings (512 dimensions) running on a full INT8-quantized vision and text pipeline (~73 MB total RAM footprint).
+- **MobileCLIP2 ([`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)):** CPU-optimized visual-semantic embeddings (512 dimensions) running on a hybrid FP32-vision + INT8-quantized text pipeline (~105 MB total RAM footprint).
 - **Three-Gate Adaptive Sampler:** Filters near-duplicate frames via perceptual hashing, drops blurry frames via Laplacian variance, and eliminates semantic duplicates before storage.
 - **Temporal Segment Merging:** Aggregates contiguous high-similarity frames into coherent time intervals (`start - end`) with peak representative timestamps.
 - **Statistical Score Calibration:** Computes empirical text-to-image noise baselines per video to eliminate false positive results on unmatched queries.
@@ -31,7 +31,7 @@ uv tool install amonhen
 pipx install amonhen
 ```
 
-On first invocation of `index` or `search`, the official INT8 CPU-quantized model artifacts (~73 MB total) are downloaded automatically from [`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx) to `~/.amonhen/models/`. You can pre-fetch them manually:
+On first invocation of `index` or `search`, the official CPU-optimized model artifacts (~105 MB total) are downloaded automatically from [`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx) to `~/.amonhen/models/`. You can pre-fetch them manually:
 
 ```bash
 amon-hen setup
@@ -188,11 +188,11 @@ uv run python -m benchmarks.run --data-dir benchmarks/charades_sta_subset
 
 Measured on CPU (4 threads) using ONNX Runtime with official [`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx) artifacts:
 
-| Component | FP32 Size | INT8 Size | Compression | Latency (FP32 -> INT8) | Deployment |
+| Component | FP32 Size | INT8 Size | Compression | Latency (FP32 -> INT8) | Recommendation |
 |---|:---:|:---:|:---:|:---:|---|
-| **Vision Backbone** | 43.4 MB | 11.3 MB | -74.0% | 111.8 ms -> 1,393.1 ms | **INT8** (minimal storage/memory) |
-| **Text Encoder** | 242.3 MB | 61.3 MB | -74.7% | 21.6 ms -> **10.3 ms** (2.09x faster) | **INT8** (2x speedup on CPU) |
-| **Full Pipeline** | **285.7 MB** | **72.7 MB** | **-74.6%** | **Full INT8 Pipeline** | **Full INT8 (~73 MB Total RAM)** |
+| **Text Encoder** | 242.3 MB | 61.3 MB | -74.7% | 21.6 ms -> **10.3 ms** (2.09x faster) | **INT8** (optimal speed & low RAM) |
+| **Vision Backbone** | 43.4 MB | 11.3 MB | -74.0% | **111.8 ms** -> 1,393.1 ms | **FP32** (optimal for FastViT CPU kernels) |
+| **Full Pipeline** | **285.7 MB** | **72.7 MB** | **-74.6%** | Hybrid: **18.5x Realtime** | **Hybrid** (FP32 Vision + INT8 Text: ~105 MB total) |
 
 ---
 

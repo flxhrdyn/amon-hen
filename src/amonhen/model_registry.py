@@ -36,7 +36,7 @@ class ModelSpec:
 MOBILECLIP2_S0 = ModelSpec(
     model_id="mobileclip2-s0",
     repo_id="felixhrdyn/mobileclip2-s0-onnx",
-    vision_file="vision_model_quantized.onnx",
+    vision_file="vision_model.onnx",
     text_file="text_model_quantized.onnx",
     tokenizer_file="tokenizer.json",
     embed_dim=512,
