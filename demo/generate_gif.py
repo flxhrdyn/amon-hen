@@ -1,4 +1,4 @@
-"""Render complete End-to-End (E2E) demo GIF for Amon Hen in Pure Blue Single Accent Monochrome."""
+"""Render complete End-to-End demo GIF with 100% single-color Blue pixel art and UI."""
 
 import os
 from pathlib import Path
@@ -7,17 +7,17 @@ from PIL import Image, ImageDraw, ImageFont
 WIDTH = 900
 HEIGHT = 580
 
-# Standard CLI Black & Pure Blue Single-Accent Palette
+# Standard CLI Black Background
 BG_COLOR = (12, 12, 14)          # #0C0C0E Standard CLI black
 TITLE_BG = (8, 8, 10)            # #08080A Titlebar
 PANEL_BG = (20, 21, 26)          # #14151A Card surface
 BORDER_COL = (42, 44, 54)        # #2A2C36 Subtle border
 
-# Single Accent Color: Starlight Blue
-BLUE_PRIMARY = (130, 170, 255)   # #82AAFF Vibrant Blue Accent
-BLUE_MUTED = (90, 120, 180)      # #5A78B4 Muted Blue
-BLUE_BG = (18, 24, 40)           # #121828 Blue surface highlight
-BAR_EMPTY = (30, 32, 42)         # #1E202A Score bar track
+# 100% SINGLE ACCENT COLOR: Pure Blue
+BLUE_PRIMARY = (130, 170, 255)   # #82AAFF
+BLUE_MUTED = (90, 120, 180)      # #5A78B4
+BLUE_BG = (18, 24, 40)           # #121828
+BAR_EMPTY = (30, 32, 42)         # #1E202A
 
 # Monochrome Neutrals
 TEXT_WHITE = (240, 243, 248)     # #F0F3F8 White text
@@ -34,7 +34,7 @@ if FONT_PATH:
 else:
     font_main = font_bold = font_small = ImageFont.load_default()
 
-# Seat of Seeing at Amon Hen (Winged Eagle Throne)
+# Seat of Seeing at Amon Hen
 THRONE_PIXELS = [
     " █     █     █ ",
     "███   ███   ███",
@@ -47,20 +47,6 @@ THRONE_PIXELS = [
     " █████████████ ",
     "  ███████████  ",
     "███████████████",
-]
-
-THRONE_PALETTE = [
-    TEXT_WHITE,
-    TEXT_WHITE,
-    TEXT_WHITE,
-    BLUE_PRIMARY,
-    BLUE_PRIMARY,
-    BLUE_PRIMARY,
-    BLUE_PRIMARY,
-    TEXT_MUTED,
-    TEXT_MUTED,
-    TEXT_MUTED,
-    (60, 65, 80),
 ]
 
 
@@ -104,24 +90,23 @@ def render_tui_screen(
     input_text: str = "",
     show_cursor: bool = True,
 ) -> Image.Image:
-    """Render full OpenCode TUI screen with Pure Blue single accent on CLI black."""
+    """Render full OpenCode TUI screen with 100% single color blue pixel art."""
     img, draw = create_base_window()
 
-    # 1. Top Header Box with Seat of Seeing Pixel Art
+    # 1. Top Header Box with Single-Color Blue Seat of Seeing Pixel Art
     draw.rounded_rectangle([20, 44, WIDTH - 20, 114], radius=4, fill=PANEL_BG, outline=BORDER_COL)
 
-    # Draw Seat of Seeing Pixel Art
+    # Draw Seat of Seeing Pixel Art (100% Single-Color BLUE_PRIMARY)
     x_art = 34
     y_art = 50
     px_size = 5
 
     for r_idx, row in enumerate(THRONE_PIXELS):
-        col = THRONE_PALETTE[r_idx]
         for c_idx, ch in enumerate(row):
             if ch != " ":
                 px = x_art + c_idx * px_size
                 py = y_art + r_idx * px_size
-                draw.rectangle([px, py, px + px_size - 1, py + px_size - 1], fill=col)
+                draw.rectangle([px, py, px + px_size - 1, py + px_size - 1], fill=BLUE_PRIMARY)
 
     x_text = x_art + 90
     draw.text((x_text, 52), "Amon Hen v0.1.0", fill=BLUE_PRIMARY, font=font_bold)
@@ -232,7 +217,6 @@ def main() -> None:
     frames.append(render_tui_screen(indexed_count=0, input_text="", show_cursor=True))
     durations.append(800)
 
-    # Type /index demo/
     idx_cmd = "/index demo/"
     for i in range(1, len(idx_cmd) + 1, 2):
         frames.append(render_tui_screen(indexed_count=0, input_text=idx_cmd[:i], show_cursor=True))
@@ -335,7 +319,7 @@ def main() -> None:
     ]))
     durations.append(3000)
 
-    for path_name in ["demo/demo-tui-blue.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-single-blue.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -345,7 +329,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated Pure Blue Monochrome demo ({len(frames)} frames, {Path('demo/demo-tui-blue.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated 100% Single-Color Blue demo ({len(frames)} frames, {Path('demo/demo-tui-single-blue.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
