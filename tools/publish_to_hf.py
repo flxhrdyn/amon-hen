@@ -45,7 +45,7 @@ pipeline_tag: feature-extraction
 
 `{model_variant}` provides standalone ONNX weights and INT8 dynamic quantized variants of Apple's **MobileCLIP2-S0** architecture, optimized for zero-GPU inference with `onnxruntime` across Python, C++, Rust, and mobile/WASM runtimes.
 
-* **Architecture:** FastViT hybrid vision backbone (~12M params) + Transformer text encoder (~15M params)
+* **Architecture:** FastViT hybrid vision backbone (approx. 12M params) + Transformer text encoder (approx. 15M params)
 * **Image Input:** 256 x 256 RGB (shortest-edge resize + center crop, ImageNet normalized)
 * **Embedding Output:** 512 dimensions (L2-normalized unit vectors)
 * **Context Length:** 77 tokens
