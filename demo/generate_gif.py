@@ -1,4 +1,4 @@
-"""Render complete End-to-End demo GIF highlighting Tolkien '-ing' turning verbs loading state."""
+"""Render complete End-to-End demo GIF with crisp, authentic rectangular TUI components (no excessive pills)."""
 
 import os
 from pathlib import Path
@@ -57,10 +57,10 @@ def create_base_window() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     draw.rectangle([0, 0, WIDTH, 32], fill=TITLE_BG)
     draw.line([0, 32, WIDTH, 32], fill=BORDER_COL)
 
-    # Monochrome window controls
-    draw.ellipse([14, 10, 24, 20], fill=(45, 48, 60))
-    draw.ellipse([30, 10, 40, 20], fill=(45, 48, 60))
-    draw.ellipse([46, 10, 56, 20], fill=BLUE_PRIMARY)
+    # Crisp window controls
+    draw.rectangle([14, 11, 22, 19], fill=(45, 48, 60))
+    draw.rectangle([28, 11, 36, 19], fill=(45, 48, 60))
+    draw.rectangle([42, 11, 50, 19], fill=BLUE_PRIMARY)
     draw.text((WIDTH // 2 - 50, 8), "amon-hen", fill=TEXT_MUTED, font=font_small)
 
     return img, draw
@@ -90,11 +90,11 @@ def render_tui_screen(
     input_text: str = "",
     show_cursor: bool = True,
 ) -> Image.Image:
-    """Render full OpenCode TUI screen with prominent Tolkien -ing turning verbs."""
+    """Render authentic crisp rectangular OpenCode TUI screen (clean CLI aesthetic)."""
     img, draw = create_base_window()
 
-    # 1. Top Header Box with Single-Color Blue Seat of Seeing Pixel Art
-    draw.rounded_rectangle([20, 44, WIDTH - 20, 114], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+    # 1. Top Header Box (Crisp rectangular panel)
+    draw.rectangle([20, 44, WIDTH - 20, 114], fill=PANEL_BG, outline=BORDER_COL)
 
     # Draw Seat of Seeing Pixel Art (Single-Color Blue)
     x_art = 34
@@ -113,29 +113,29 @@ def render_tui_screen(
     draw.text((x_text + 140, 53), '· "From the Seat of Seeing, no moment remains hidden."', fill=TEXT_WHITE, font=font_main)
 
     idx_str = f"Index: {indexed_count} video ({indexed_count * 49} frames)" if indexed_count > 0 else "Index: Ready (0 videos)"
-    draw.text((x_text, 76), f"Model: MobileCLIP2-S2 (CPU)   Storage: sqlite-vec   {idx_str}", fill=TEXT_MUTED, font=font_small)
+    draw.text((x_text, 76), f"Model: MobileCLIP2-S0 (CPU)   Storage: sqlite-vec   {idx_str}", fill=TEXT_MUTED, font=font_small)
     draw.text((x_text, 93), "~/videos/demo/", fill=TEXT_MUTED, font=font_small)
 
     y_content = 122
 
-    # 2. Live Indexing Card (with Tolkien -ing verb)
+    # 2. Live Indexing Card (Crisp rectangle)
     if indexing_state:
         verb_label, pct, spd = indexing_state
-        draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 64], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+        draw.rectangle([20, y_content, WIDTH - 20, y_content + 64], fill=PANEL_BG, outline=BORDER_COL)
         draw.text((36, y_content + 10), f"* {verb_label}", fill=TEXT_WHITE, font=font_bold)
         draw.text((WIDTH - 200, y_content + 10), spd, fill=BLUE_PRIMARY, font=font_bold)
 
-        # Progress bar
+        # Crisp rectangular progress bar
         bar_w = WIDTH - 72
-        draw.rounded_rectangle([36, y_content + 36, 36 + bar_w, y_content + 48], radius=2, fill=BAR_EMPTY)
+        draw.rectangle([36, y_content + 36, 36 + bar_w, y_content + 48], fill=BAR_EMPTY)
         fill_w = max(0, min(bar_w, int(bar_w * pct)))
-        if fill_w > 2:
-            draw.rounded_rectangle([36, y_content + 36, 36 + fill_w, y_content + 48], radius=2, fill=BLUE_PRIMARY)
+        if fill_w > 0:
+            draw.rectangle([36, y_content + 36, 36 + fill_w, y_content + 48], fill=BLUE_PRIMARY)
         y_content += 72
 
-    # 3. Query Card
+    # 3. Query Card (Crisp rectangle)
     if show_query_card:
-        draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 36], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+        draw.rectangle([20, y_content, WIDTH - 20, y_content + 36], fill=PANEL_BG, outline=BORDER_COL)
         draw.text((36, y_content + 9), f"> {query_text}", fill=TEXT_WHITE, font=font_main)
         y_content += 44
 
@@ -147,12 +147,12 @@ def render_tui_screen(
             draw.text((36, y_content + 8), line_text, fill=col, font=font_main)
             y_content += 24
 
-        # Subtle scanning wave bar
-        draw.rounded_rectangle([36, y_content + 8, 300, y_content + 14], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([36, y_content + 8, 210, y_content + 14], radius=2, fill=BLUE_PRIMARY)
+        # Crisp scanning bar
+        draw.rectangle([36, y_content + 8, 300, y_content + 14], fill=BAR_EMPTY)
+        draw.rectangle([36, y_content + 8, 210, y_content + 14], fill=BLUE_PRIMARY)
         return img
 
-    # 5. Results Container Cards
+    # 5. Results Container Cards (Crisp rectangular cards)
     if show_results:
         bar_x = WIDTH - 260
 
@@ -160,41 +160,43 @@ def render_tui_screen(
         is_sel_1 = (selected_rank == 1)
         c1_bg = BLUE_BG if is_sel_1 else PANEL_BG
         c1_border = BLUE_PRIMARY if is_sel_1 else BORDER_COL
-        draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 72], radius=4, fill=c1_bg, outline=c1_border, width=2 if is_sel_1 else 1)
+        draw.rectangle([20, y_content, WIDTH - 20, y_content + 72], fill=c1_bg, outline=c1_border, width=2 if is_sel_1 else 1)
         draw.text((36, y_content + 9), "#1   00:00:37.0 -> 00:01:06.0", fill=BLUE_PRIMARY, font=font_bold)
         draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:48.0", fill=TEXT_MUTED, font=font_small)
         draw.text((36, y_content + 50), "=> Action: Type /open 1 to play moment in VLC", fill=BLUE_PRIMARY, font=font_small)
 
-        # Smooth Blue score bar for #1
-        draw.rounded_rectangle([bar_x, y_content + 20, bar_x + 120, y_content + 32], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([bar_x, y_content + 20, bar_x + 90, y_content + 32], radius=2, fill=BLUE_PRIMARY)
+        # Crisp rectangular Blue score bar for #1
+        draw.rectangle([bar_x, y_content + 20, bar_x + 120, y_content + 32], fill=BAR_EMPTY)
+        draw.rectangle([bar_x, y_content + 20, bar_x + 90, y_content + 32], fill=BLUE_PRIMARY)
         draw.text((bar_x + 135, y_content + 16), "0.261", fill=BLUE_PRIMARY, font=font_bold)
         y_content += 80
 
-        # Card #2 (White)
-        draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 52], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+        # Card #2 (Crisp White rectangle)
+        draw.rectangle([20, y_content, WIDTH - 20, y_content + 52], fill=PANEL_BG, outline=BORDER_COL)
         draw.text((36, y_content + 9), "#2   00:00:04.0 -> 00:00:19.0", fill=TEXT_WHITE, font=font_bold)
         draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:11.0", fill=TEXT_MUTED, font=font_small)
-        draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 120, y_content + 29], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 82, y_content + 29], radius=2, fill=TEXT_WHITE)
+        # Crisp White score bar
+        draw.rectangle([bar_x, y_content + 17, bar_x + 120, y_content + 29], fill=BAR_EMPTY)
+        draw.rectangle([bar_x, y_content + 17, bar_x + 82, y_content + 29], fill=TEXT_WHITE)
         draw.text((bar_x + 135, y_content + 13), "0.247", fill=TEXT_WHITE, font=font_bold)
         y_content += 60
 
-        # Card #3 (White)
-        draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 52], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+        # Card #3 (Crisp White rectangle)
+        draw.rectangle([20, y_content, WIDTH - 20, y_content + 52], fill=PANEL_BG, outline=BORDER_COL)
         draw.text((36, y_content + 9), "#3   00:00:24.0 -> 00:00:32.0", fill=TEXT_WHITE, font=font_bold)
         draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:28.0", fill=TEXT_MUTED, font=font_small)
-        draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 120, y_content + 29], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 75, y_content + 29], radius=2, fill=TEXT_WHITE)
+        # Crisp White score bar
+        draw.rectangle([bar_x, y_content + 17, bar_x + 120, y_content + 29], fill=BAR_EMPTY)
+        draw.rectangle([bar_x, y_content + 17, bar_x + 75, y_content + 29], fill=TEXT_WHITE)
         draw.text((bar_x + 135, y_content + 13), "0.227", fill=TEXT_WHITE, font=font_bold)
 
-    # 6. Flash Notification Toast
+    # 6. Flash Notification Toast (Crisp rectangle)
     if notification_msg:
-        draw.rounded_rectangle([20, 372, WIDTH - 20, 408], radius=4, fill=BLUE_BG, outline=BLUE_PRIMARY)
+        draw.rectangle([20, 372, WIDTH - 20, 408], fill=BLUE_BG, outline=BLUE_PRIMARY)
         draw.text((36, 380), f"=> {notification_msg}", fill=BLUE_PRIMARY, font=font_main)
 
-    # 7. Pinned Bottom Input Box
-    draw.rounded_rectangle([20, 444, WIDTH - 20, 492], radius=4, fill=PANEL_BG, outline=BLUE_PRIMARY, width=2)
+    # 7. Pinned Bottom Input Box (Crisp rectangle)
+    draw.rectangle([20, 444, WIDTH - 20, 492], fill=PANEL_BG, outline=BLUE_PRIMARY, width=2)
     draw.text((36, 456), "amon-hen > ", fill=BLUE_PRIMARY, font=font_bold)
     draw.text((130, 456), input_text, fill=TEXT_WHITE, font=font_main)
 
@@ -389,7 +391,7 @@ def main() -> None:
         loop=0,
         optimize=True,
     )
-    print(f"Successfully generated demo ({len(frames)} frames, {out_path.stat().st_size // 1024} KB)")
+    print(f"Successfully generated clean crisp rectangular demo ({len(frames)} frames, {out_path.stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
