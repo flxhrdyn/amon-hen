@@ -1,4 +1,4 @@
-"""Render complete End-to-End demo GIF with 100% single-color Blue pixel art and UI."""
+"""Render complete End-to-End demo GIF with Rank 1 in Blue and all other ranks in White."""
 
 import os
 from pathlib import Path
@@ -13,14 +13,13 @@ TITLE_BG = (8, 8, 10)            # #08080A Titlebar
 PANEL_BG = (20, 21, 26)          # #14151A Card surface
 BORDER_COL = (42, 44, 54)        # #2A2C36 Subtle border
 
-# 100% SINGLE ACCENT COLOR: Pure Blue
+# Single Accent Color for Rank 1 & Active Interactive Components: Starlight Blue
 BLUE_PRIMARY = (130, 170, 255)   # #82AAFF
-BLUE_MUTED = (90, 120, 180)      # #5A78B4
 BLUE_BG = (18, 24, 40)           # #121828
 BAR_EMPTY = (30, 32, 42)         # #1E202A
 
-# Monochrome Neutrals
-TEXT_WHITE = (240, 243, 248)     # #F0F3F8 White text
+# Monochrome Neutrals for Other Ranks & Text
+TEXT_WHITE = (240, 243, 248)     # #F0F3F8 Pure White
 TEXT_MUTED = (110, 115, 130)     # #6E7382 Gray metadata
 TEXT_SUB = (165, 170, 185)       # #A5AAB9 Secondary text
 
@@ -90,13 +89,13 @@ def render_tui_screen(
     input_text: str = "",
     show_cursor: bool = True,
 ) -> Image.Image:
-    """Render full OpenCode TUI screen with 100% single color blue pixel art."""
+    """Render full OpenCode TUI screen with Rank 1 in Blue and other ranks in White."""
     img, draw = create_base_window()
 
     # 1. Top Header Box with Single-Color Blue Seat of Seeing Pixel Art
     draw.rounded_rectangle([20, 44, WIDTH - 20, 114], radius=4, fill=PANEL_BG, outline=BORDER_COL)
 
-    # Draw Seat of Seeing Pixel Art (100% Single-Color BLUE_PRIMARY)
+    # Draw Seat of Seeing Pixel Art (Single-Color Blue)
     x_art = 34
     y_art = 50
     px_size = 5
@@ -143,7 +142,7 @@ def render_tui_screen(
     if show_results:
         bar_x = WIDTH - 260
 
-        # Card #1 (Selected Active Card in Blue)
+        # Card #1 (Selected Active Card in Blue Accent)
         is_sel_1 = (selected_rank == 1)
         c1_bg = BLUE_BG if is_sel_1 else PANEL_BG
         c1_border = BLUE_PRIMARY if is_sel_1 else BORDER_COL
@@ -152,27 +151,29 @@ def render_tui_screen(
         draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:48.0", fill=TEXT_MUTED, font=font_small)
         draw.text((36, y_content + 50), "=> Action: Type /open 1 to play moment in VLC", fill=BLUE_PRIMARY, font=font_small)
 
-        # Smooth Blue score bar #1
+        # Smooth Blue score bar for #1
         draw.rounded_rectangle([bar_x, y_content + 20, bar_x + 120, y_content + 32], radius=2, fill=BAR_EMPTY)
         draw.rounded_rectangle([bar_x, y_content + 20, bar_x + 90, y_content + 32], radius=2, fill=BLUE_PRIMARY)
         draw.text((bar_x + 135, y_content + 16), "0.261", fill=BLUE_PRIMARY, font=font_bold)
         y_content += 80
 
-        # Card #2
+        # Card #2 (All in White)
         draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 52], radius=4, fill=PANEL_BG, outline=BORDER_COL)
         draw.text((36, y_content + 9), "#2   00:00:04.0 -> 00:00:19.0", fill=TEXT_WHITE, font=font_bold)
         draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:11.0", fill=TEXT_MUTED, font=font_small)
+        # White score bar for #2
         draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 120, y_content + 29], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 82, y_content + 29], radius=2, fill=BLUE_MUTED)
+        draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 82, y_content + 29], radius=2, fill=TEXT_WHITE)
         draw.text((bar_x + 135, y_content + 13), "0.247", fill=TEXT_WHITE, font=font_bold)
         y_content += 60
 
-        # Card #3
+        # Card #3 (All in White)
         draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 52], radius=4, fill=PANEL_BG, outline=BORDER_COL)
         draw.text((36, y_content + 9), "#3   00:00:24.0 -> 00:00:32.0", fill=TEXT_WHITE, font=font_bold)
         draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:28.0", fill=TEXT_MUTED, font=font_small)
+        # White score bar for #3
         draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 120, y_content + 29], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 75, y_content + 29], radius=2, fill=BLUE_MUTED)
+        draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 75, y_content + 29], radius=2, fill=TEXT_WHITE)
         draw.text((bar_x + 135, y_content + 13), "0.227", fill=TEXT_WHITE, font=font_bold)
 
     # 5. Flash Notification Toast
@@ -319,7 +320,7 @@ def main() -> None:
     ]))
     durations.append(3000)
 
-    for path_name in ["demo/demo-tui-single-blue.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-white-other.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -329,7 +330,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated 100% Single-Color Blue demo ({len(frames)} frames, {Path('demo/demo-tui-single-blue.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated demo with Rank 1 in Blue and others in White ({len(frames)} frames, {Path('demo/demo-tui-white-other.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
