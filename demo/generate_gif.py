@@ -1,45 +1,50 @@
-"""Render a clean, authentic, professional terminal demo GIF for Amon Hen."""
+"""Render authentic, elegant Tolkien-themed terminal demo GIF for Amon Hen."""
 
 import os
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
-WIDTH = 860
-HEIGHT = 480
-BG_COLOR = (30, 30, 30)         # Clean dark neutral terminal
-TITLE_BG = (42, 42, 42)         # Terminal window titlebar
-BORDER_COLOR = (60, 60, 60)
+WIDTH = 880
+HEIGHT = 520
 
-# Colors - Modern clean syntax
-COLOR_PROMPT = (100, 200, 100)   # Clean green
-COLOR_TUI_PROMPT = (170, 140, 240) # Subtle purple
-COLOR_TEXT = (235, 235, 235)     # Clean white
-COLOR_MUTED = (140, 140, 140)    # Gray metadata
-COLOR_TIME = (100, 180, 240)     # Blue timestamp
-COLOR_SCORE = (130, 215, 130)    # Soft green score
+# Elegant Obsidian & Mithril Palette
+BG_COLOR = (28, 29, 36)          # Deep obsidian stone
+TITLE_BG = (20, 21, 26)          # Dark header
+BORDER_COLOR = (50, 53, 66)
+
+GOLD_TITLE = (229, 192, 123)     # Muted gold
+STONE_GRAY = (130, 137, 151)     # Stone gray
+STARLIGHT_BLUE = (97, 175, 239)  # Starlight pale blue
+MOSS_GREEN = (152, 195, 121)     # Elven moss green
+PROMPT_COLOR = (198, 120, 221)   # Mithril violet
+WHITE_TEXT = (240, 240, 245)     # Clean text
+BOX_BORDER = (75, 82, 99)        # Subtle box line
 
 FONT_PATH = "C:/Windows/Fonts/consola.ttf" if os.path.exists("C:/Windows/Fonts/consola.ttf") else None
+FONT_BOLD_PATH = "C:/Windows/Fonts/consolab.ttf" if os.path.exists("C:/Windows/Fonts/consolab.ttf") else FONT_PATH
+
 if FONT_PATH:
     font = ImageFont.truetype(FONT_PATH, 15)
+    font_bold = ImageFont.truetype(FONT_BOLD_PATH, 15)
     font_small = ImageFont.truetype(FONT_PATH, 13)
 else:
-    font = font_small = ImageFont.load_default()
+    font = font_bold = font_small = ImageFont.load_default()
 
 
 def create_base_frame() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     img = Image.new("RGB", (WIDTH, HEIGHT), BG_COLOR)
     draw = ImageDraw.Draw(img)
 
-    # Window header
+    # Window titlebar
     draw.rectangle([0, 0, WIDTH, 32], fill=TITLE_BG)
     draw.line([0, 32, WIDTH, 32], fill=BORDER_COLOR)
 
-    # Window controls
-    draw.ellipse([14, 10, 24, 20], fill=(255, 95, 86))
-    draw.ellipse([30, 10, 40, 20], fill=(255, 189, 46))
-    draw.ellipse([46, 10, 56, 20], fill=(39, 201, 63))
+    # macOS window controls
+    draw.ellipse([14, 10, 24, 20], fill=(235, 95, 86))
+    draw.ellipse([30, 10, 40, 20], fill=(235, 185, 50))
+    draw.ellipse([46, 10, 56, 20], fill=(55, 195, 85))
 
-    draw.text((WIDTH // 2 - 45, 8), "amon-hen", fill=COLOR_MUTED, font=font_small)
+    draw.text((WIDTH // 2 - 50, 8), "amon-hen", fill=STONE_GRAY, font=font_small)
     return img, draw
 
 
@@ -63,58 +68,54 @@ def main() -> None:
     frames: list[Image.Image] = []
     durations: list[int] = []
 
+    header_box = [
+        [("┌─────────────────────────────────────────────────────────────┐", BOX_BORDER)],
+        [("│  ", BOX_BORDER), ("AMON HEN", GOLD_TITLE), ("  ·  The Seat of Seeing                            │", STONE_GRAY)],
+        [("│  ", BOX_BORDER), ('"From the high seat, no moment remains hidden."            ', STONE_GRAY), ("│", BOX_BORDER)],
+        [("│  ", BOX_BORDER), ("Local Video Engine · MobileCLIP2 (CPU) · 1 video (49 f)    ", STARLIGHT_BLUE), ("│", BOX_BORDER)],
+        [("└─────────────────────────────────────────────────────────────┘", BOX_BORDER)],
+        [],
+    ]
+
     seq = [
-        ("prompt", "$ ", COLOR_PROMPT),
-        ("type", "amon-hen index cctv-demo.webm --sampler adaptive", COLOR_TEXT),
-        ("output", [
-            [("Indexed 1 video(s), 49 frames in 2.7s (18.5x Realtime)", COLOR_SCORE)],
-            [],
-        ]),
-        ("pause", 600),
-        ("prompt", "$ ", COLOR_PROMPT),
-        ("type", "amon-hen", COLOR_TEXT),
-        ("output", [
-            [("amon-hen v0.1.0 (mobileclip2-s2 | cpu)", COLOR_MUTED)],
-            [("Database: ~/.amonhen/index.db (1 video, 49 frames)", COLOR_MUTED)],
-            [],
-            [("Type a query, /open <num>, or /exit.", COLOR_MUTED)],
-            [],
-        ]),
+        ("prompt", "$ ", MOSS_GREEN),
+        ("type", "amon-hen", WHITE_TEXT),
+        ("output", header_box),
         ("pause", 700),
-        ("prompt", "amon-hen> ", COLOR_TUI_PROMPT),
-        ("type", "a person holding an umbrella", COLOR_TEXT),
+        ("prompt", "amon-hen › ", PROMPT_COLOR),
+        ("type", "a person holding an umbrella", WHITE_TEXT),
         ("output", [
-            [(" 1. ", COLOR_MUTED), ("00:00:37.0 - 00:01:06.0  ", COLOR_TIME), ("0.261  ", COLOR_SCORE), ("cctv-demo.webm", COLOR_TEXT)],
-            [(" 2. ", COLOR_MUTED), ("00:00:04.0 - 00:00:19.0  ", COLOR_TIME), ("0.247  ", COLOR_SCORE), ("cctv-demo.webm", COLOR_TEXT)],
-            [(" 3. ", COLOR_MUTED), ("00:00:24.0 - 00:00:32.0  ", COLOR_TIME), ("0.227  ", COLOR_SCORE), ("cctv-demo.webm", COLOR_TEXT)],
+            [(" 1. ", STONE_GRAY), ("00:00:37.0 - 00:01:06.0  ", STARLIGHT_BLUE), ("████████░░ ", GOLD_TITLE), ("0.261  ", MOSS_GREEN), ("cctv-demo.webm", WHITE_TEXT)],
+            [(" 2. ", STONE_GRAY), ("00:00:04.0 - 00:00:19.0  ", STARLIGHT_BLUE), ("███████░░░ ", GOLD_TITLE), ("0.247  ", MOSS_GREEN), ("cctv-demo.webm", WHITE_TEXT)],
+            [(" 3. ", STONE_GRAY), ("00:00:24.0 - 00:00:32.0  ", STARLIGHT_BLUE), ("██████░░░░ ", GOLD_TITLE), ("0.227  ", MOSS_GREEN), ("cctv-demo.webm", WHITE_TEXT)],
             [],
         ]),
-        ("pause", 1600),
-        ("prompt", "amon-hen> ", COLOR_TUI_PROMPT),
-        ("type", "/open 1", COLOR_TEXT),
+        ("pause", 1800),
+        ("prompt", "amon-hen › ", PROMPT_COLOR),
+        ("type", "/open 1", WHITE_TEXT),
         ("output", [
-            [("Opening cctv-demo.webm at 00:00:37.0 (vlc)...", COLOR_SCORE)],
+            [("› Seeking moment at 00:00:37.0 in cctv-demo.webm (vlc)...", MOSS_GREEN)],
             [],
         ]),
-        ("pause", 1200),
-        ("prompt", "amon-hen> ", COLOR_TUI_PROMPT),
-        ("type", "/exit", COLOR_TEXT),
+        ("pause", 1400),
+        ("prompt", "amon-hen › ", PROMPT_COLOR),
+        ("type", "/exit", WHITE_TEXT),
         ("output", [
-            [],
+            [("› The seeing closes. Farewell.", STONE_GRAY)],
         ]),
-        ("pause", 3000),
+        ("pause", 3500),
     ]
 
     current_lines: list[list[tuple[str, tuple[int, int, int]]]] = []
     for action, val, *extra in seq:
         if action == "prompt":
-            col = extra[0] if extra else COLOR_PROMPT
+            col = extra[0] if extra else MOSS_GREEN
             current_lines.append([(str(val), col)])
             frames.append(render_terminal(current_lines))
             durations.append(400)
         elif action == "type":
             cmd = str(val)
-            col = extra[0] if extra else COLOR_TEXT
+            col = extra[0] if extra else WHITE_TEXT
             for i in range(1, len(cmd) + 1, 2):
                 partial = cmd[:i]
                 temp = [list(l) for l in current_lines[:-1]]
@@ -128,7 +129,7 @@ def main() -> None:
             for line in val:
                 current_lines.append(line)
             frames.append(render_terminal(current_lines))
-            durations.append(500)
+            durations.append(450)
         elif action == "pause":
             frames.append(render_terminal(current_lines))
             durations.append(int(val))
@@ -143,7 +144,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Rendered clean GIF: {len(frames)} frames, {Path('demo/demo-tui.gif').stat().st_size // 1024} KB")
+    print(f"Rendered refined Tolkien demo GIF: {len(frames)} frames, {Path('demo/demo-tui.gif').stat().st_size // 1024} KB")
 
 
 if __name__ == "__main__":
