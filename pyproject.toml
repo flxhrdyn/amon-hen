@@ -37,6 +37,7 @@ packages = ["src/amonhen"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "."]
+addopts = "-m 'not slow'"
 markers = [
     "slow: requires the real model or real video decoding",
 ]
@@ -54,3 +55,5 @@ select = ["E", "F", "I", "UP", "B"]
 # otherwise catches.
 "src/amonhen/cli.py" = ["B008"]
 "benchmarks/run.py" = ["B008"]
+"demo/*" = ["E501", "I"]
+

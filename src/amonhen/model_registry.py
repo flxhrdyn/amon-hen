@@ -35,9 +35,19 @@ class ModelSpec:
 
 MOBILECLIP2_S0 = ModelSpec(
     model_id="mobileclip2-s0",
-    repo_id="plhery/mobileclip2-onnx",
-    vision_file="onnx/s0/vision_model.onnx",
-    text_file="onnx/s0/text_model.onnx",
+    repo_id="flxhrdyn/mobileclip2-s0-onnx",
+    vision_file="vision_model.onnx",
+    text_file="text_model.onnx",
+    tokenizer_file="tokenizer.json",
+    embed_dim=512,
+    image_size=256,
+)
+
+MOBILECLIP2_S2 = ModelSpec(
+    model_id="mobileclip2-s2",
+    repo_id="flxhrdyn/mobileclip2-s2-onnx",
+    vision_file="vision_model.onnx",
+    text_file="text_model.onnx",
     tokenizer_file="tokenizer.json",
     embed_dim=512,
     image_size=256,
@@ -45,8 +55,9 @@ MOBILECLIP2_S0 = ModelSpec(
 
 DEFAULT_MODEL = MOBILECLIP2_S0
 
-_REGISTRY = {spec.model_id: spec for spec in (MOBILECLIP2_S0,)}
+_REGISTRY = {spec.model_id: spec for spec in (MOBILECLIP2_S0, MOBILECLIP2_S2)}
 
 
 def get_model(model_id: str) -> ModelSpec:
     return _REGISTRY[model_id]
+
