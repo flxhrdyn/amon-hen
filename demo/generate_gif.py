@@ -1,23 +1,25 @@
-"""Render authentic CLI-first demo GIF preserving 100% of the approved TUI visual styling."""
+"""Render authentic Claude Code-inspired CLI demo GIF for Amon Hen."""
 
 import os
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
-WIDTH = 920
-HEIGHT = 590
-BG_COLOR = (24, 25, 38)          # Obsidian dark
-TITLE_BG = (18, 19, 28)          # Window titlebar
-BORDER_COLOR = (50, 52, 70)
-PANEL_BG = (30, 32, 46)          # Card background
-PANEL_BORDER = (55, 58, 80)
-HIGHLIGHT_BG = (38, 42, 64)
-GOLD_ACCENT = (241, 218, 140)
-GREEN_ACCENT = (80, 250, 123)
-CYAN_ACCENT = (139, 233, 253)
-WHITE_TEXT = (248, 248, 242)
-MUTED_TEXT = (130, 138, 165)
-PROGRESS_EMPTY = (40, 42, 58)
+WIDTH = 900
+HEIGHT = 580
+
+# Clean Dark Monokai/Claude Terminal Palette
+BG_COLOR = (24, 24, 27)          # Deep zinc dark
+TITLE_BG = (18, 18, 20)          # Clean window titlebar
+BORDER_COLOR = (45, 45, 52)
+
+PROMPT_VIOLET = (192, 132, 252)  # Claude Code violet/purple prompt
+GOLD_ACCENT = (250, 204, 21)     # Muted gold
+CYAN_TIME = (56, 189, 248)       # Starlight cyan
+GREEN_ACCENT = (74, 222, 128)    # Clean success green
+WHITE_TEXT = (244, 244, 245)     # Crisp zinc-100 text
+MUTED_GRAY = (113, 113, 122)     # Muted zinc-500
+TREE_LINE = (82, 82, 91)         # Tree lines (zinc-600)
+TAG_BG = (39, 39, 42)            # Subtle inline pill/tag background
 
 FONT_PATH = "C:/Windows/Fonts/consola.ttf" if os.path.exists("C:/Windows/Fonts/consola.ttf") else None
 FONT_BOLD_PATH = "C:/Windows/Fonts/consolab.ttf" if os.path.exists("C:/Windows/Fonts/consolab.ttf") else FONT_PATH
@@ -25,162 +27,40 @@ FONT_BOLD_PATH = "C:/Windows/Fonts/consolab.ttf" if os.path.exists("C:/Windows/F
 if FONT_PATH:
     font_main = ImageFont.truetype(FONT_PATH, 15)
     font_bold = ImageFont.truetype(FONT_BOLD_PATH, 15)
-    font_header = ImageFont.truetype(FONT_BOLD_PATH, 17)
     font_small = ImageFont.truetype(FONT_PATH, 13)
 else:
-    font_main = font_bold = font_header = font_small = ImageFont.load_default()
+    font_main = font_bold = font_small = ImageFont.load_default()
 
 
-def draw_window_frame() -> tuple[Image.Image, ImageDraw.ImageDraw]:
+def create_base_frame() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     img = Image.new("RGB", (WIDTH, HEIGHT), BG_COLOR)
     draw = ImageDraw.Draw(img)
 
     # Titlebar
-    draw.rectangle([0, 0, WIDTH, 34], fill=TITLE_BG)
-    draw.line([0, 34, WIDTH, 34], fill=BORDER_COLOR)
+    draw.rectangle([0, 0, WIDTH, 32], fill=TITLE_BG)
+    draw.line([0, 32, WIDTH, 32], fill=BORDER_COLOR)
 
     # macOS window controls
-    draw.ellipse([14, 11, 24, 21], fill=(255, 95, 86))
-    draw.ellipse([30, 11, 40, 21], fill=(255, 189, 46))
-    draw.ellipse([46, 11, 56, 21], fill=(39, 201, 63))
+    draw.ellipse([14, 10, 24, 20], fill=(239, 68, 68))
+    draw.ellipse([30, 10, 40, 20], fill=(245, 158, 11))
+    draw.ellipse([46, 10, 56, 20], fill=(34, 197, 94))
 
-    # Window title
-    draw.text((WIDTH // 2 - 85, 9), "amon-hen — powershell", fill=MUTED_TEXT, font=font_small)
-
-    # Outer border
-    draw.rectangle([10, 42, WIDTH - 10, HEIGHT - 10], outline=BORDER_COLOR, width=1)
-
+    draw.text((WIDTH // 2 - 50, 8), "amon-hen", fill=MUTED_GRAY, font=font_small)
     return img, draw
 
 
-def draw_clean_progress_bar(
-    draw: ImageDraw.ImageDraw,
-    x: int,
-    y: int,
-    w: int,
-    h: int,
-    progress: float,
-    color: tuple[int, int, int] = GOLD_ACCENT,
-) -> None:
-    """Draw a modern rounded progress bar with smooth vector fill."""
-    draw.rounded_rectangle([x, y, x + w, y + h], radius=3, fill=PROGRESS_EMPTY, outline=BORDER_COLOR)
-    fill_w = max(0, min(w, int(w * progress)))
-    if fill_w > 4:
-        draw.rounded_rectangle([x, y, x + fill_w, y + h], radius=3, fill=color)
+def render_terminal(lines: list[list[tuple[str, tuple[int, int, int]]]]) -> Image.Image:
+    img, draw = create_base_frame()
+    x_start = 24
+    y = 48
+    line_h = 22
 
-
-def render_shell_frame(lines: list[tuple[str, tuple[int, int, int]]]) -> Image.Image:
-    """Render plain shell prompt before/after TUI session."""
-    img, draw = draw_window_frame()
-    x = 24
-    y = 54
-    line_h = 24
-    for text, col in lines:
-        draw.text((x, y), text, fill=col, font=font_main)
+    for line in lines:
+        x = x_start
+        for text, color in line:
+            draw.text((x, y), text, fill=color, font=font_main)
+            x += int(draw.textlength(text, font=font_main))
         y += line_h
-    return img
-
-
-def render_tui_frame(
-    prompt_input: str = "",
-    results: list[dict] | None = None,
-    indexing_state: tuple[str, float, str] | None = None,
-    status_verb: str = "ready",
-    selected_rank: int | None = None,
-    flash_message: str | None = None,
-) -> Image.Image:
-    img, draw = draw_window_frame()
-
-    # --- Top Banner Panel Card ---
-    draw.rectangle([12, 44, WIDTH - 12, 130], fill=PANEL_BG)
-    draw.line([12, 130, WIDTH - 12, 130], fill=BORDER_COLOR)
-
-    banner_text = "  A M O N   H E N  "
-    tagline_text = '"From the Seat of Seeing, no moment remains hidden."'
-    meta_text = "MobileCLIP2-S2  |  sqlite-vec  |  1 video indexed (49 frames)  |  CPU Mode"
-
-    draw.text((WIDTH // 2 - 95, 54), banner_text, fill=GOLD_ACCENT, font=font_header)
-    draw.text((WIDTH // 2 - 215, 80), tagline_text, fill=MUTED_TEXT, font=font_main)
-    draw.text((WIDTH // 2 - 260, 104), meta_text, fill=CYAN_ACCENT, font=font_small)
-
-    y_pos = 144
-
-    # --- Indexing Progress Banner Card ---
-    if indexing_state:
-        vid_name, pct, spd = indexing_state
-        draw.rectangle([20, y_pos, WIDTH - 20, y_pos + 68], fill=PANEL_BG, outline=BORDER_COLOR)
-        draw.text((32, y_pos + 8), f"Indexing: {vid_name}", fill=WHITE_TEXT, font=font_bold)
-        draw.text((WIDTH - 180, y_pos + 8), spd, fill=GREEN_ACCENT, font=font_bold)
-
-        # Progress bar
-        bar_x = 32
-        bar_w = WIDTH - 64
-        bar_y = y_pos + 36
-        draw_clean_progress_bar(draw, bar_x, bar_y, bar_w, 14, pct, color=GREEN_ACCENT)
-        draw.text((WIDTH // 2 - 15, bar_y - 1), f"{int(pct*100)}%", fill=WHITE_TEXT, font=font_small)
-        y_pos += 80
-
-    # --- Results Cards Section ---
-    if results:
-        draw.text((24, y_pos), "RETRIEVED MOMENTS:", fill=GOLD_ACCENT, font=font_bold)
-        draw.text((WIDTH - 300, y_pos), "SIMILARITY SCORE BAR", fill=MUTED_TEXT, font=font_small)
-        y_pos += 24
-
-        for idx, res in enumerate(results, start=1):
-            is_active = (selected_rank == idx)
-            card_bg = HIGHLIGHT_BG if is_active else PANEL_BG
-            card_border = GOLD_ACCENT if is_active else PANEL_BORDER
-
-            card_y = y_pos
-            draw.rounded_rectangle([20, card_y, WIDTH - 20, card_y + 56], radius=4, fill=card_bg, outline=card_border, width=2 if is_active else 1)
-
-            # Rank Badge
-            rank_str = f"#{idx}"
-            draw.text((36, card_y + 16), rank_str, fill=GOLD_ACCENT if is_active else MUTED_TEXT, font=font_header)
-
-            # Time Interval & Video Info
-            time_str = f"{res['start']}  ->  {res['end']}"
-            draw.text((85, card_y + 10), time_str, fill=CYAN_ACCENT, font=font_bold)
-            draw.text((85, card_y + 32), f"File: {res['file']}   Peak: {res['peak']}", fill=MUTED_TEXT, font=font_small)
-
-            # Smooth Score Progress Bar
-            bar_x = WIDTH - 300
-            bar_y = card_y + 20
-            score_val = res["score"]
-            draw_clean_progress_bar(draw, bar_x, bar_y, 140, 14, score_val / 0.35, color=GOLD_ACCENT)
-
-            # Score Number
-            draw.text((WIDTH - 140, card_y + 17), f"{score_val:.3f}", fill=GREEN_ACCENT, font=font_bold)
-
-            if is_active:
-                draw.text((WIDTH - 80, card_y + 17), "PLAY", fill=GREEN_ACCENT, font=font_small)
-
-            y_pos += 66
-
-    # --- Flash Notification Card ---
-    if flash_message:
-        draw.rounded_rectangle([20, HEIGHT - 96, WIDTH - 20, HEIGHT - 64], radius=4, fill=(28, 55, 40), outline=GREEN_ACCENT)
-        draw.text((34, HEIGHT - 87), f">> {flash_message}", fill=GREEN_ACCENT, font=font_main)
-
-    # --- Bottom Prompt Bar (CLI Interactive Input) ---
-    prompt_y = HEIGHT - 52
-    draw.rectangle([12, prompt_y, WIDTH - 12, HEIGHT - 12], fill=PANEL_BG)
-    draw.line([12, prompt_y, WIDTH - 12, prompt_y], fill=BORDER_COLOR)
-
-    # Prompt text
-    prompt_str = "amon-hen > "
-    draw.text((24, prompt_y + 8), prompt_str, fill=(189, 147, 249), font=font_bold)
-    prefix_w = int(draw.textlength(prompt_str, font=font_bold))
-
-    draw.text((24 + prefix_w, prompt_y + 8), prompt_input, fill=WHITE_TEXT, font=font_main)
-
-    # Cursor
-    cursor_x = 24 + prefix_w + int(draw.textlength(prompt_input, font=font_main))
-    draw.rectangle([cursor_x + 2, prompt_y + 9, cursor_x + 10, prompt_y + 27], fill=WHITE_TEXT)
-
-    # Status Right
-    status_str = f"* {status_verb} | /help | /exit"
-    draw.text((WIDTH - 210, prompt_y + 10), status_str, fill=MUTED_TEXT, font=font_small)
 
     return img
 
@@ -189,86 +69,115 @@ def main() -> None:
     frames: list[Image.Image] = []
     durations: list[int] = []
 
-    res1 = [
-        {"start": "00:00:37.0", "end": "00:01:06.0", "file": "cctv-people-demo.webm", "peak": "00:00:48.0", "score": 0.261},
-        {"start": "00:00:04.0", "end": "00:00:19.0", "file": "cctv-people-demo.webm", "peak": "00:00:11.0", "score": 0.247},
-        {"start": "00:00:24.0", "end": "00:00:32.0", "file": "cctv-people-demo.webm", "peak": "00:00:28.0", "score": 0.227},
+    # Claude Code style header (subtle logo, clean status line)
+    claude_header = [
+        [("╭─ ", TREE_LINE), ("amon-hen", GOLD_ACCENT), (" v0.1.0 · The Seat of Seeing", MUTED_GRAY)],
+        [("│  ", TREE_LINE), ("model: ", MUTED_GRAY), ("mobileclip2-s2", CYAN_TIME), ("  storage: ", MUTED_GRAY), ("sqlite-vec (cpu)", GREEN_ACCENT), ("  index: ", MUTED_GRAY), ("1 video (49 frames)", WHITE_TEXT)],
+        [("╰───────────────────────────────────────────────────────────", TREE_LINE)],
+        [],
     ]
 
-    # Scene 1: Initial Shell Prompt
-    frames.append(render_shell_frame([
-        ("PS C:\\Users\\Felix\\videos> ", GREEN_ACCENT)
-    ]))
+    # Indexing progress stream (Claude Code style tool/action call)
+    indexing_stream = [
+        [("╭─ ", TREE_LINE), ("amon-hen", GOLD_ACCENT), (" v0.1.0 · The Seat of Seeing", MUTED_GRAY)],
+        [("│  ", TREE_LINE), ("model: ", MUTED_GRAY), ("mobileclip2-s2", CYAN_TIME), ("  storage: ", MUTED_GRAY), ("sqlite-vec (cpu)", GREEN_ACCENT), ("  index: ", MUTED_GRAY), ("1 video (49 frames)", WHITE_TEXT)],
+        [("╰───────────────────────────────────────────────────────────", TREE_LINE)],
+        [],
+        [("amon-hen ❯ ", PROMPT_VIOLET), ("/index demo/", WHITE_TEXT)],
+        [("  ● Indexing ", GOLD_ACCENT), ("cctv-people-demo.webm", WHITE_TEXT), (" [====================] 100% (18.5x RT)", GREEN_ACCENT)],
+        [("  ✓ Indexed 1 video(s), 49 frames in 2.7s", GREEN_ACCENT)],
+        [],
+    ]
+
+    # Clean Claude Code structured search result stream (Tree branches + inline confidence pills)
+    results_stream = [
+        [("╭─ ", TREE_LINE), ("amon-hen", GOLD_ACCENT), (" v0.1.0 · The Seat of Seeing", MUTED_GRAY)],
+        [("│  ", TREE_LINE), ("model: ", MUTED_GRAY), ("mobileclip2-s2", CYAN_TIME), ("  storage: ", MUTED_GRAY), ("sqlite-vec (cpu)", GREEN_ACCENT), ("  index: ", MUTED_GRAY), ("1 video (49 frames)", WHITE_TEXT)],
+        [("╰───────────────────────────────────────────────────────────", TREE_LINE)],
+        [],
+        [("amon-hen ❯ ", PROMPT_VIOLET), ("a person holding an umbrella", WHITE_TEXT)],
+        [("  Searching moments in vector index... (18ms)", MUTED_GRAY)],
+        [],
+        [("  ┌─ ", TREE_LINE), ("#1  ", GOLD_ACCENT), ("00:00:37.0 - 00:01:06.0  ", CYAN_TIME), ("[████████░░] 0.261", GREEN_ACCENT)],
+        [("  │  ", TREE_LINE), ("File: ", MUTED_GRAY), ("cctv-people-demo.webm", WHITE_TEXT), ("  │  Peak: ", MUTED_GRAY), ("00:00:48.0", CYAN_TIME), (" (high confidence)", MUTED_GRAY)],
+        [("  │  ", TREE_LINE), ("▶ Action: Type ", MUTED_GRAY), ("/open 1", PROMPT_VIOLET), (" to launch video at this timestamp", MUTED_GRAY)],
+        [("  │", TREE_LINE)],
+        [("  ├─ ", TREE_LINE), ("#2  ", MUTED_GRAY), ("00:00:04.0 - 00:00:19.0  ", CYAN_TIME), ("[███████░░░] 0.247", GREEN_ACCENT), ("  cctv-people-demo.webm", MUTED_GRAY)],
+        [("  │", TREE_LINE)],
+        [("  └─ ", TREE_LINE), ("#3  ", MUTED_GRAY), ("00:00:24.0 - 00:00:32.0  ", CYAN_TIME), ("[██████░░░░] 0.227", GREEN_ACCENT), ("  cctv-people-demo.webm", MUTED_GRAY)],
+        [],
+    ]
+
+    open_stream = list(results_stream) + [
+        [("amon-hen ❯ ", PROMPT_VIOLET), ("/open 1", WHITE_TEXT)],
+        [("  ✓ Launching media player at 00:00:48.0 (cctv-people-demo.webm)", GREEN_ACCENT)],
+        [],
+    ]
+
+    exit_stream = list(open_stream) + [
+        [("amon-hen ❯ ", PROMPT_VIOLET), ("/exit", WHITE_TEXT)],
+        [("  Farewell.", MUTED_GRAY)],
+    ]
+
+    # Build sequence
+    # 1. Shell prompt
+    frames.append(render_terminal([[("PS C:\\Users\\Felix\\videos> ", GREEN_ACCENT)]]))
     durations.append(400)
 
-    # Scene 2: Type "amon-hen" in shell
+    # 2. Type amon-hen
     cmd = "amon-hen"
     for i in range(1, len(cmd) + 1, 2):
-        frames.append(render_shell_frame([
-            (f"PS C:\\Users\\Felix\\videos> {cmd[:i]}", WHITE_TEXT)
-        ]))
+        frames.append(render_terminal([[(f"PS C:\\Users\\Felix\\videos> {cmd[:i]}", WHITE_TEXT)]]))
         durations.append(40)
-    frames.append(render_shell_frame([
-        (f"PS C:\\Users\\Felix\\videos> {cmd}", WHITE_TEXT)
-    ]))
+    frames.append(render_terminal([[(f"PS C:\\Users\\Felix\\videos> {cmd}", WHITE_TEXT)]]))
     durations.append(250)
 
-    # Scene 3: TUI Launch & Banner
-    frames.append(render_tui_frame(prompt_input="", status_verb="ready"))
-    durations.append(900)
+    # 3. Header appears
+    frames.append(render_terminal(claude_header + [[("amon-hen ❯ ", PROMPT_VIOLET)]]))
+    durations.append(800)
 
-    # Scene 4: Live Indexing Command
-    for p in [0.20, 0.50, 0.85, 1.0]:
-        frames.append(render_tui_frame(
-            prompt_input="/index demo/",
-            indexing_state=("cctv-people-demo.webm", p, "18.5x Realtime"),
-            status_verb="indexing",
-        ))
-        durations.append(350)
+    # 4. Type query
+    q = "a person holding an umbrella"
+    for i in range(1, len(q) + 1, 2):
+        temp = list(claude_header) + [[("amon-hen ❯ ", PROMPT_VIOLET), (q[:i], WHITE_TEXT)]]
+        frames.append(render_terminal(temp))
+        durations.append(40)
 
-    # Scene 5: Typing Search Query
-    q1 = "a person holding an umbrella"
-    for i in range(1, len(q1) + 1, 2):
-        frames.append(render_tui_frame(prompt_input=q1[:i], status_verb="typing"))
-        durations.append(45)
+    # 5. Search executing
+    temp = list(claude_header) + [
+        [("amon-hen ❯ ", PROMPT_VIOLET), (q, WHITE_TEXT)],
+        [("  Searching moments in vector index... (18ms)", MUTED_GRAY)],
+    ]
+    frames.append(render_terminal(temp))
+    durations.append(500)
 
-    # Scene 6: Searching Animation
-    for verb in ["searching...", "ranking...", "matching..."]:
-        frames.append(render_tui_frame(prompt_input=q1, status_verb=verb))
-        durations.append(180)
-
-    # Scene 7: Display Search Results Cards
-    frames.append(render_tui_frame(prompt_input="", results=res1, status_verb="ready"))
+    # 6. Stream results
+    frames.append(render_terminal(results_stream + [[("amon-hen ❯ ", PROMPT_VIOLET)]]))
     durations.append(1800)
 
-    # Scene 8: Select Result #1
-    for open_cmd in ["/o", "/open", "/open 1"]:
-        frames.append(render_tui_frame(prompt_input=open_cmd, results=res1, selected_rank=1, status_verb="executing"))
-        durations.append(250)
+    # 7. Type /open 1
+    op = "/open 1"
+    for i in range(1, len(op) + 1, 2):
+        temp = list(results_stream) + [[("amon-hen ❯ ", PROMPT_VIOLET), (op[:i], WHITE_TEXT)]]
+        frames.append(render_terminal(temp))
+        durations.append(50)
 
-    # Scene 9: Video Launch Notification
-    frames.append(render_tui_frame(
-        prompt_input="",
-        results=res1,
-        selected_rank=1,
-        flash_message="Launching media player at 00:00:48.0 (cctv-people-demo.webm)...",
-        status_verb="playing",
-    ))
-    durations.append(2800)
+    # 8. Open result
+    frames.append(render_terminal(open_stream + [[("amon-hen ❯ ", PROMPT_VIOLET)]]))
+    durations.append(1600)
 
-    # Scene 10: Exit Session
-    frames.append(render_tui_frame(prompt_input="/exit", results=res1, status_verb="exiting"))
-    durations.append(300)
+    # 9. Type /exit
+    ex = "/exit"
+    for i in range(1, len(ex) + 1, 2):
+        temp = list(open_stream) + [[("amon-hen ❯ ", PROMPT_VIOLET), (ex[:i], WHITE_TEXT)]]
+        frames.append(render_terminal(temp))
+        durations.append(50)
 
-    # Scene 11: Return to Shell
-    frames.append(render_shell_frame([
-        ("PS C:\\Users\\Felix\\videos> amon-hen", WHITE_TEXT),
-        ("Farewell.", MUTED_TEXT),
-        ("PS C:\\Users\\Felix\\videos> ", GREEN_ACCENT),
-    ]))
-    durations.append(2500)
+    # 10. Exit back to shell
+    frames.append(render_terminal(exit_stream + [[("PS C:\\Users\\Felix\\videos> ", GREEN_ACCENT)]]))
+    durations.append(3000)
 
-    for path_name in ["demo/demo-tui-v4.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-v6.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -278,7 +187,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated CLI-first TUI demo ({len(frames)} frames, {Path('demo/demo-tui-v4.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated Claude Code styled CLI demo ({len(frames)} frames, {Path('demo/demo-tui-v6.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
