@@ -1,4 +1,4 @@
-"""Render Dark Mode Monochrome Aquamarine OpenCode TUI demo GIF for Amon Hen."""
+"""Render Dark Mode Monochrome Aquamarine OpenCode TUI demo GIF with Tolkien tagline in header."""
 
 import os
 from pathlib import Path
@@ -44,17 +44,18 @@ def create_base_window() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     draw.rectangle([0, 0, WIDTH, 32], fill=TITLE_BG)
     draw.line([0, 32, WIDTH, 32], fill=BORDER_COL)
 
-    # Monochrome window controls (Dark subtle dots)
+    # Monochrome window controls
     draw.ellipse([14, 10, 24, 20], fill=(60, 68, 80))
     draw.ellipse([30, 10, 40, 20], fill=(60, 68, 80))
     draw.ellipse([46, 10, 56, 20], fill=AQUA_PRIMARY)
     draw.text((WIDTH // 2 - 50, 8), "amon-hen", fill=TEXT_MUTED, font=font_small)
 
-    # 1. Top Header Box (Monochrome + Aquamarine Accent)
-    draw.rounded_rectangle([20, 44, WIDTH - 20, 104], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+    # 1. Top Header Box with Tolkien Tagline
+    draw.rounded_rectangle([20, 44, WIDTH - 20, 114], radius=4, fill=PANEL_BG, outline=BORDER_COL)
     draw.text((36, 52), "Amon Hen v0.1.0", fill=AQUA_PRIMARY, font=font_bold)
-    draw.text((180, 53), "· The Seat of Seeing", fill=TEXT_SUB, font=font_main)
+    draw.text((180, 53), '· "From the Seat of Seeing, no moment remains hidden."', fill=TEXT_SUB, font=font_main)
     draw.text((36, 76), "Model: MobileCLIP2-S2 (CPU)   Storage: sqlite-vec   Index: 1 video (49 frames)", fill=TEXT_MUTED, font=font_small)
+    draw.text((36, 93), "~/videos/cctv-people-demo.webm", fill=TEXT_MUTED, font=font_small)
 
     return img, draw
 
@@ -72,8 +73,8 @@ def render_opencode_screen(
 
     # 2. Query Card
     if show_query_card:
-        draw.rounded_rectangle([20, 114, WIDTH - 20, 152], radius=4, fill=PANEL_BG, outline=BORDER_COL)
-        draw.text((36, 124), f"> {query_text}", fill=TEXT_WHITE, font=font_main)
+        draw.rounded_rectangle([20, 122, WIDTH - 20, 158], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+        draw.text((36, 131), f"> {query_text}", fill=TEXT_WHITE, font=font_main)
 
     # 3. Results Container Cards
     if show_results:
@@ -83,38 +84,38 @@ def render_opencode_screen(
         is_sel_1 = (selected_rank == 1)
         c1_bg = AQUA_BG if is_sel_1 else PANEL_BG
         c1_border = AQUA_PRIMARY if is_sel_1 else BORDER_COL
-        draw.rounded_rectangle([20, 164, WIDTH - 20, 238], radius=4, fill=c1_bg, outline=c1_border, width=2 if is_sel_1 else 1)
-        draw.text((36, 174), "#1   00:00:37.0 -> 00:01:06.0", fill=AQUA_PRIMARY, font=font_bold)
-        draw.text((36, 196), "File: cctv-people-demo.webm   Peak: 00:00:48.0", fill=TEXT_SUB, font=font_small)
-        draw.text((36, 216), "=> Action: Type /open 1 to play moment in VLC", fill=AQUA_PRIMARY, font=font_small)
+        draw.rounded_rectangle([20, 168, WIDTH - 20, 240], radius=4, fill=c1_bg, outline=c1_border, width=2 if is_sel_1 else 1)
+        draw.text((36, 177), "#1   00:00:37.0 -> 00:01:06.0", fill=AQUA_PRIMARY, font=font_bold)
+        draw.text((36, 198), "File: cctv-people-demo.webm   Peak: 00:00:48.0", fill=TEXT_SUB, font=font_small)
+        draw.text((36, 218), "=> Action: Type /open 1 to play moment in VLC", fill=AQUA_PRIMARY, font=font_small)
 
         # Smooth Aquamarine score bar #1
-        draw.rounded_rectangle([bar_x, 186, bar_x + 120, 198], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([bar_x, 186, bar_x + 90, 198], radius=2, fill=AQUA_PRIMARY)
-        draw.text((bar_x + 135, 182), "0.261", fill=AQUA_PRIMARY, font=font_bold)
+        draw.rounded_rectangle([bar_x, 188, bar_x + 120, 200], radius=2, fill=BAR_EMPTY)
+        draw.rounded_rectangle([bar_x, 188, bar_x + 90, 200], radius=2, fill=AQUA_PRIMARY)
+        draw.text((bar_x + 135, 184), "0.261", fill=AQUA_PRIMARY, font=font_bold)
 
         # Card #2
-        draw.rounded_rectangle([20, 248, WIDTH - 20, 302], radius=4, fill=PANEL_BG, outline=BORDER_COL)
-        draw.text((36, 258), "#2   00:00:04.0 -> 00:00:19.0", fill=TEXT_WHITE, font=font_bold)
-        draw.text((36, 280), "File: cctv-people-demo.webm   Peak: 00:00:11.0", fill=TEXT_MUTED, font=font_small)
-        draw.rounded_rectangle([bar_x, 266, bar_x + 120, 278], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([bar_x, 266, bar_x + 82, 278], radius=2, fill=AQUA_MUTED)
-        draw.text((bar_x + 135, 262), "0.247", fill=TEXT_WHITE, font=font_bold)
+        draw.rounded_rectangle([20, 248, WIDTH - 20, 300], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+        draw.text((36, 257), "#2   00:00:04.0 -> 00:00:19.0", fill=TEXT_WHITE, font=font_bold)
+        draw.text((36, 278), "File: cctv-people-demo.webm   Peak: 00:00:11.0", fill=TEXT_MUTED, font=font_small)
+        draw.rounded_rectangle([bar_x, 265, bar_x + 120, 277], radius=2, fill=BAR_EMPTY)
+        draw.rounded_rectangle([bar_x, 265, bar_x + 82, 277], radius=2, fill=AQUA_MUTED)
+        draw.text((bar_x + 135, 261), "0.247", fill=TEXT_WHITE, font=font_bold)
 
         # Card #3
-        draw.rounded_rectangle([20, 312, WIDTH - 20, 366], radius=4, fill=PANEL_BG, outline=BORDER_COL)
-        draw.text((36, 322), "#3   00:00:24.0 -> 00:00:32.0", fill=TEXT_WHITE, font=font_bold)
-        draw.text((36, 344), "File: cctv-people-demo.webm   Peak: 00:00:28.0", fill=TEXT_MUTED, font=font_small)
-        draw.rounded_rectangle([bar_x, 330, bar_x + 120, 342], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([bar_x, 330, bar_x + 75, 342], radius=2, fill=AQUA_MUTED)
-        draw.text((bar_x + 135, 326), "0.227", fill=TEXT_WHITE, font=font_bold)
+        draw.rounded_rectangle([20, 308, WIDTH - 20, 360], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+        draw.text((36, 317), "#3   00:00:24.0 -> 00:00:32.0", fill=TEXT_WHITE, font=font_bold)
+        draw.text((36, 338), "File: cctv-people-demo.webm   Peak: 00:00:28.0", fill=TEXT_MUTED, font=font_small)
+        draw.rounded_rectangle([bar_x, 325, bar_x + 120, 337], radius=2, fill=BAR_EMPTY)
+        draw.rounded_rectangle([bar_x, 325, bar_x + 75, 337], radius=2, fill=AQUA_MUTED)
+        draw.text((bar_x + 135, 321), "0.227", fill=TEXT_WHITE, font=font_bold)
 
     # 4. Flash Notification Toast
     if notification_msg:
-        draw.rounded_rectangle([20, 378, WIDTH - 20, 414], radius=4, fill=AQUA_BG, outline=AQUA_PRIMARY)
-        draw.text((36, 386), f"=> {notification_msg}", fill=AQUA_PRIMARY, font=font_main)
+        draw.rounded_rectangle([20, 372, WIDTH - 20, 408], radius=4, fill=AQUA_BG, outline=AQUA_PRIMARY)
+        draw.text((36, 380), f"=> {notification_msg}", fill=AQUA_PRIMARY, font=font_main)
 
-    # 5. Pinned Bottom Input Box (Aquamarine Focus)
+    # 5. Pinned Bottom Input Box
     draw.rounded_rectangle([20, 444, WIDTH - 20, 492], radius=4, fill=PANEL_BG, outline=AQUA_PRIMARY, width=2)
     draw.text((36, 456), "amon-hen > ", fill=AQUA_PRIMARY, font=font_bold)
     draw.text((130, 456), input_text, fill=TEXT_WHITE, font=font_main)
@@ -215,7 +216,7 @@ def main() -> None:
     ))
     durations.append(2500)
 
-    for path_name in ["demo/demo-tui-v11.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-v12.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -225,7 +226,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated Aquamarine Monochrome TUI demo ({len(frames)} frames, {Path('demo/demo-tui-v11.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated Aquamarine Monochrome TUI demo ({len(frames)} frames, {Path('demo/demo-tui-v12.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
