@@ -23,6 +23,7 @@ amon-hen = "amonhen.cli:app"
 
 [dependency-groups]
 dev = [
+    "onnx>=1.22.0",
     "pytest>=8.0",
     "ruff>=0.6",
 ]
