@@ -45,7 +45,31 @@ amon-hen setup
 
 ## Quick Start
 
-### 1. Index Videos
+### 1. Interactive Session (TUI)
+Running `amon-hen` without subcommands opens an interactive REPL session with persistent history (`↑`/`↓`), visual score bars, and slash commands:
+
+```text
+$ amon-hen
+
+  A M O N   H E N
+  "From the Seat of Seeing, no moment remains hidden."
+  v0.1.0 | model: mobileclip2-s2 | indexed: 1 video(s)
+
+Type your search query, /open <num> to launch video, or /help.
+
+amon-hen> a person holding an umbrella
+ 1. 00:00:37.0 - 00:01:06.0  ████████░░ 0.261  cctv-people-demo.webm
+ 2. 00:00:04.0 - 00:00:19.0  ███████░░░ 0.247  cctv-people-demo.webm
+ 3. 00:00:24.0 - 00:00:32.0  ██████░░░░ 0.227  cctv-people-demo.webm
+
+amon-hen> /open 1
+Opening cctv-people-demo.webm at 00:37.0 in media player...
+
+amon-hen> /exit
+Farewell.
+```
+
+### 2. Index Videos
 Index a single file or an entire directory:
 
 ```bash
@@ -58,8 +82,8 @@ Options:
 - `--embed-dedup FLOAT`: Cosine similarity threshold to skip semantically identical frames (e.g. `0.98`).
 - `--db PATH`: Custom index database location (default: `~/.amonhen/index.db`).
 
-### 2. Search Moments
-Search by describing visual contents in natural text:
+### 3. One-Shot Search
+Search directly from shell scripts or pipelines:
 
 ```bash
 amon-hen search "a person holding an umbrella"
@@ -79,7 +103,7 @@ Options:
 - `--no-calibrate`: Disable automatic statistical baseline filtering.
 - `--json`: Output raw structured JSON to `stdout` (human logs go to `stderr`).
 
-### 3. Inspect Index and Statistics
+### 4. Inspect Index and Statistics
 
 ```bash
 # List indexed videos and frame counts
@@ -97,6 +121,7 @@ All commands support `--json` for scripting and pipeline composition:
 
 | Command | Description |
 |---|---|
+| `amon-hen` | Launch the interactive REPL session with history navigation and media player integration. |
 | `amon-hen index <paths>...` | Extract, filter, embed, and index video frames into SQLite. |
 | `amon-hen search "<query>"` | Retrieve matching video segments by natural language query. |
 | `amon-hen videos` | List all indexed videos, durations, and stored frame counts. |
