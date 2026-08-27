@@ -4,15 +4,7 @@
 
 A fast, lightweight command-line tool and Python library for natural language moment retrieval across local video files. Runs entirely on CPU without discrete GPUs, background daemons, or cloud dependencies.
 
-```bash
-$ amon-hen index ~/videos/ --sampler adaptive
-Indexed 12 video(s), 1420 frames in 1m 08s
-
-$ amon-hen search "a person in a yellow helmet"
- 1. 00:14:20.0 - 00:14:26.0  0.312  warehouse-cam-3.mp4
- 2. 01:02:02.0 - 01:02:08.0  0.298  warehouse-cam-3.mp4
- 3. 00:03:47.0              0.271  site-walkthrough.mp4
-```
+![Amon Hen Demo](demo/demo.gif)
 
 ---
 

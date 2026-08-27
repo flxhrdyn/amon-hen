@@ -36,7 +36,12 @@ def get_turning_verb(seed: int | None = None) -> str:
 def format_score_bar(score: float, width: int = 10) -> str:
     clamped = max(0.0, min(1.0, score))
     filled = int(round(clamped * width))
-    return "█" * filled + "░" * (width - filled)
+    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    try:
+        "█".encode(encoding)
+        return "█" * filled + "░" * (width - filled)
+    except (UnicodeEncodeError, LookupError):
+        return "=" * filled + "-" * (width - filled)
 
 
 def render_banner(
