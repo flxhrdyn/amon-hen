@@ -63,6 +63,17 @@ def publish_model_package(
     from huggingface_hub import HfApi
 
     auth_token = token or os.getenv("HF_TOKEN")
+    if not auth_token:
+        # Check local .env file
+        env_file = Path(".env")
+        if env_file.exists():
+            for line in env_file.read_text(encoding="utf-8").splitlines():
+                if line.startswith("HF_TOKEN="):
+                    val = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    if val:
+                        auth_token = val
+                        break
+
     api = HfApi(token=auth_token)
     api.create_repo(repo_id=repo_id, exist_ok=True, repo_type="model")
     api.upload_folder(
