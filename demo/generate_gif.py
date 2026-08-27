@@ -1,4 +1,4 @@
-"""Render 100% authentic Claude Code & Antigravity CLI styled demo GIF for Amon Hen."""
+"""Render 100% authentic Claude Code & Antigravity CLI demo with iconic Seeing Eye pixel art logo."""
 
 import os
 from pathlib import Path
@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 WIDTH = 900
 HEIGHT = 560
 
-# Antigravity & Claude Code Dark Palette
+# Dark Palette
 BG_COLOR = (24, 24, 27)          # Dark background
 TITLE_BG = (18, 18, 20)          # Titlebar
 BORDER_COLOR = (45, 45, 52)      # Divider line
@@ -18,7 +18,7 @@ TEXT_SUB = (160, 165, 180)       # Subtitle text
 TEXT_MUTED = (113, 113, 122)     # Gray metadata / footer
 TEXT_CYAN = (56, 189, 248)       # Timestamp blue
 TEXT_GREEN = (74, 222, 128)      # Score green
-TEXT_GOLD = (250, 204, 21)       # Gold rank #1
+TEXT_GOLD = (250, 204, 21)       # Gold highlight
 
 FONT_PATH = "C:/Windows/Fonts/consola.ttf" if os.path.exists("C:/Windows/Fonts/consola.ttf") else None
 FONT_BOLD_PATH = "C:/Windows/Fonts/consolab.ttf" if os.path.exists("C:/Windows/Fonts/consolab.ttf") else FONT_PATH
@@ -30,26 +30,30 @@ if FONT_PATH:
 else:
     font_main = font_bold = font_small = ImageFont.load_default()
 
-# Tolkien Pixel Art Tower (similar to Antigravity logo)
-TOWER_PIXELS = [
-    "    ██    ",
-    "   ████   ",
-    "  ██  ██  ",
-    " ████████ ",
-    "██  ██  ██",
-    "██████████",
-    "██  ██  ██",
-    "██      ██",
+# Iconic "Eye of Seeing" Pixel Art Logo (Amon Hen)
+EYE_GRID = [
+    "    ████    ",
+    "  ████████  ",
+    " ███    ███ ",
+    "████ ██ ████",
+    "████ ██ ████",
+    " ███    ███ ",
+    "  ████████  ",
+    "    ████    ",
+    "   ██  ██   ",
+    "  ██    ██  ",
 ]
 COLOR_PALETTE = [
-    (249, 226, 175), # Gold top
-    (249, 226, 175),
-    (235, 160, 100), # Amber
-    (203, 166, 247), # Violet
-    (137, 220, 235), # Cyan
-    (116, 199, 236), # Sky
-    (137, 180, 250), # Blue
-    (180, 190, 254), # Soft blue
+    (249, 226, 175), # Gold brow
+    (250, 179, 135), # Amber
+    (243, 139, 168), # Rose
+    (203, 166, 247), # Violet iris
+    (203, 166, 247), # Violet iris
+    (137, 220, 235), # Starlight cyan
+    (116, 199, 236), # Sky blue
+    (137, 180, 250), # Deep blue
+    (180, 190, 254), # Pedestal
+    (180, 190, 254), # Pedestal
 ]
 
 
@@ -67,12 +71,12 @@ def create_base_screen() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     draw.ellipse([46, 10, 56, 20], fill=(34, 197, 94))
     draw.text((WIDTH // 2 - 50, 8), "amon-hen", fill=TEXT_MUTED, font=font_small)
 
-    # 1. Antigravity / Claude Code Style Header Block
+    # 1. Seeing Eye Pixel Art Logo
     x_art = 28
-    y_art = 48
+    y_art = 46
     pixel_size = 5
 
-    for row_idx, row in enumerate(TOWER_PIXELS):
+    for row_idx, row in enumerate(EYE_GRID):
         col = COLOR_PALETTE[row_idx]
         for col_idx, char in enumerate(row):
             if char != " ":
@@ -80,7 +84,7 @@ def create_base_screen() -> tuple[Image.Image, ImageDraw.ImageDraw]:
                 py = y_art + row_idx * pixel_size
                 draw.rectangle([px, py, px + pixel_size - 1, py + pixel_size - 1], fill=col)
 
-    x_meta = x_art + 68
+    x_meta = x_art + 78
     draw.text((x_meta, y_art), "Amon Hen v0.1.0", fill=TEXT_WHITE, font=font_bold)
     draw.text((x_meta, y_art + 19), "The Seat of Seeing  ·  Local Video Retrieval Engine", fill=TEXT_SUB, font=font_main)
     draw.text((x_meta, y_art + 38), "MobileCLIP2-S2 (CPU)  ·  sqlite-vec (1 video, 49 frames)", fill=TEXT_MUTED, font=font_main)
@@ -98,7 +102,7 @@ def render_screen(
     img, draw = create_base_screen()
 
     # Stream Content Area
-    y_stream = 140
+    y_stream = 142
     if stream_content:
         for line_text, col in stream_content:
             draw.text((28, y_stream), line_text, fill=col, font=font_main)
@@ -128,7 +132,7 @@ def main() -> None:
     frames: list[Image.Image] = []
     durations: list[int] = []
 
-    # Stream sequence
+    # Stream sequence - 100% Pure ASCII characters (0 broken font glyphs)
     results_stream = [
         ("> a person holding an umbrella", TEXT_WHITE),
         ("Searching moments in vector index... (18ms)", TEXT_MUTED),
@@ -143,10 +147,10 @@ def main() -> None:
     open_stream = list(results_stream) + [
         ("", TEXT_MUTED),
         ("> /open 1", TEXT_WHITE),
-        ("✓ Launching media player at 00:00:48.0 (cctv-people-demo.webm)", TEXT_GREEN),
+        ("=> Launching media player at 00:00:48.0 (cctv-people-demo.webm)", TEXT_GREEN),
     ]
 
-    # Scene 1: Initial Launch (Clean state)
+    # Scene 1: Initial Launch
     frames.append(render_screen(prompt_text="", show_cursor=True))
     durations.append(900)
 
@@ -185,7 +189,7 @@ def main() -> None:
     frames.append(render_screen(stream_content=open_stream, prompt_text="", show_cursor=True))
     durations.append(2500)
 
-    for path_name in ["demo/demo-tui-v8.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-v9.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -195,7 +199,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated authentic Claude Code/Antigravity demo ({len(frames)} frames, {Path('demo/demo-tui-v8.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated Seeing Eye Antigravity demo ({len(frames)} frames, {Path('demo/demo-tui-v9.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
