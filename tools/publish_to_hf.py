@@ -84,12 +84,43 @@ Evaluated on standard x86-64 / ARM64 CPU environments using `onnxruntime` (singl
 
 ---
 
+## Deployment Options & Selection Guide
+
+All 4 ONNX files and the tokenizer are hosted in this repository. Users can choose the combination that best fits their memory and latency requirements:
+
+* **Hybrid (Recommended for CPU / Desktop):** `vision_model.onnx` (FP32) + `text_model_quantized.onnx` (INT8)  
+  *Total Size:* **105 MB** | *Vision Latency:* 112 ms | *Text Latency:* 10 ms  
+  *Best for:* Fast on-device inference, semantic search, and video/image indexing.
+
+* **Full INT8 (Ultra-Low Storage & Embedded):** `vision_model_quantized.onnx` (INT8) + `text_model_quantized.onnx` (INT8)  
+  *Total Size:* **72.7 MB** | *Vision Latency:* 1,393 ms | *Text Latency:* 10 ms  
+  *Best for:* Storage-constrained IoT, WASM/browser, and micro-instances where footprint is top priority.
+
+* **Full FP32 (Full Precision Baseline):** `vision_model.onnx` (FP32) + `text_model.onnx` (FP32)  
+  *Total Size:* **285.7 MB** | *Vision Latency:* 112 ms | *Text Latency:* 22 ms  
+  *Best for:* Highest numerical precision and exact PyTorch parity verification.
+
+---
+
 ## Quickstart
 
-Run standalone inference with `onnxruntime` and `tokenizers` without PyTorch:
+### 1. Download Model Files
+Download only the files you need using `huggingface_hub`:
+
+```python
+from huggingface_hub import hf_hub_download
+
+# Example: Download Hybrid configuration (105 MB total)
+vision_path = hf_hub_download(repo_id="felixhrdyn/mobileclip2-s0-onnx", filename="vision_model.onnx")
+text_path = hf_hub_download(repo_id="felixhrdyn/mobileclip2-s0-onnx", filename="text_model_quantized.onnx")
+tokenizer_path = hf_hub_download(repo_id="felixhrdyn/mobileclip2-s0-onnx", filename="tokenizer.json")
+```
+
+### 2. Standalone Inference with ONNX Runtime
+Run inference directly without PyTorch dependencies:
 
 ```bash
-pip install onnxruntime numpy tokenizers pillow
+pip install onnxruntime numpy tokenizers pillow huggingface-hub
 ```
 
 ```python
@@ -98,10 +129,11 @@ import onnxruntime as ort
 from PIL import Image
 from tokenizers import Tokenizer
 
-# 1. Load optimal Hybrid ONNX sessions (FP32 Vision + INT8 Text: ~105 MB total)
+# 1. Load ONNX sessions (Hybrid configuration)
 vis_sess = ort.InferenceSession("vision_model.onnx", providers=["CPUExecutionProvider"])
 txt_sess = ort.InferenceSession("text_model_quantized.onnx", providers=["CPUExecutionProvider"])
 tokenizer = Tokenizer.from_file("tokenizer.json")
+
 
 
 
