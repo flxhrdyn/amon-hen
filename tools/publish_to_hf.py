@@ -68,11 +68,17 @@ pipeline_tag: feature-extraction
 
 ## Benchmarks & Empirical Performance
 
-Measured across standard x86-64 and ARM64 CPUs without GPU acceleration:
+Measured across standard x86-64 and ARM64 CPUs without GPU acceleration (ONNX Runtime, 4 threads):
+
+| Component | FP32 Size | INT8 Size | Compression | Latency (FP32 -> INT8) | Recommendation |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Text Encoder** | 242.3 MB | 61.3 MB | -74.7% | 21.6 ms -> **10.3 ms** (2.09x faster) | **INT8** (optimal speed & low RAM) |
+| **Vision Backbone** | 43.4 MB | 11.3 MB | -74.0% | **111.8 ms** -> 1,393.1 ms | **FP32** (optimal for FastViT CPU kernels) |
+| **Full Pipeline** | **285.7 MB** | **72.7 MB** | **-74.6%** | Hybrid: **18.5x Realtime** | **Hybrid** (FP32 Vision + INT8 Text: ~105 MB total) |
 
 * **Numerical Parity (PyTorch vs ONNX):** Cosine Similarity >= {min_cosine:.4f} (virtually zero loss).
 * **Frame Embedding Latency:** ~{latency_ms:.1f} ms per frame on CPU.
-* **Text Query Latency:** ~18 ms total latency.
+* **Text Query Latency:** ~10-18 ms total latency.
 * **Indexing Throughput:** 17.5x - 18.5x Realtime factor on multi-core CPU.
 * **Memory Footprint:** <= 200 MB RAM peak during full video indexing.
 

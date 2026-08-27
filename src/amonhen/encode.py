@@ -43,13 +43,26 @@ def ensure_model(spec: ModelSpec) -> Path:
     if spec.repo_id in _RESOLVED:
         return _RESOLVED[spec.repo_id]
 
+    import os
     from huggingface_hub import snapshot_download
+
+    auth_token = os.getenv("HF_TOKEN")
+    if not auth_token:
+        env_file = Path(".env")
+        if env_file.exists():
+            for line in env_file.read_text(encoding="utf-8").splitlines():
+                if line.startswith("HF_TOKEN="):
+                    val = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    if val:
+                        auth_token = val
+                        break
 
     MODEL_CACHE.mkdir(parents=True, exist_ok=True)
     location = Path(
         snapshot_download(
             spec.repo_id,
             cache_dir=str(MODEL_CACHE),
+            token=auth_token,
             allow_patterns=[spec.vision_file, spec.text_file, spec.tokenizer_file],
         )
     )

@@ -171,6 +171,16 @@ To reproduce or run benchmark suites locally:
 uv run python -m benchmarks.run --synthetic --samples 5
 ```
 
+### FP32 vs INT8 Quantization Comparison
+
+Measured on CPU (4 threads) using ONNX Runtime with official [`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx) artifacts:
+
+| Component | FP32 Size | INT8 Size | Compression | Latency (FP32 -> INT8) | Recommendation |
+|---|:---:|:---:|:---:|:---:|---|
+| **Text Encoder** | 242.3 MB | 61.3 MB | -74.7% | 21.6 ms -> **10.3 ms** (2.09x faster) | **INT8** (optimal speed & low RAM) |
+| **Vision Backbone** | 43.4 MB | 11.3 MB | -74.0% | **111.8 ms** -> 1,393.1 ms | **FP32** (optimal for FastViT CPU kernels) |
+| **Full Pipeline** | **285.7 MB** | **72.7 MB** | **-74.6%** | Hybrid: **18.5x Realtime** | **Hybrid** (FP32 Vision + INT8 Text: ~105 MB total) |
+
 ---
 
 ## Capabilities and Scope
