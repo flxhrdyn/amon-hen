@@ -13,7 +13,7 @@ A fast, lightweight command-line tool and Python library for natural language mo
 Finding specific moments across long video archives typically requires either high-end GPUs to run large multimodal models or naive per-second extraction that produces thousands of redundant frames and bloated vector stores.
 
 Amon Hen bridges this gap by combining:
-- **MobileCLIP2 ([`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)):** Official lightweight visual-semantic embeddings (512 dimensions) computed efficiently in vectorized CPU batches.
+- **MobileCLIP2 ([`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)):** CPU-optimized visual-semantic embeddings (512 dimensions) running on a hybrid FP32-vision + INT8-quantized text pipeline (~105 MB total RAM footprint).
 - **Three-Gate Adaptive Sampler:** Filters near-duplicate frames via perceptual hashing, drops blurry frames via Laplacian variance, and eliminates semantic duplicates before storage.
 - **Temporal Segment Merging:** Aggregates contiguous high-similarity frames into coherent time intervals (`start - end`) with peak representative timestamps.
 - **Statistical Score Calibration:** Computes empirical text-to-image noise baselines per video to eliminate false positive results on unmatched queries.
@@ -31,7 +31,7 @@ uv tool install amonhen
 pipx install amonhen
 ```
 
-On first invocation of `index` or `search`, the official model artifacts (~286 MB total) are downloaded from [`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx) to `~/.amonhen/models/`. You can pre-fetch them manually:
+On first invocation of `index` or `search`, the official CPU-optimized model artifacts (~105 MB total) are downloaded automatically from [`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx) to `~/.amonhen/models/`. You can pre-fetch them manually:
 
 ```bash
 amon-hen setup
