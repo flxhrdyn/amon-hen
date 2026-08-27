@@ -1,4 +1,4 @@
-"""Render complete End-to-End (E2E) demo GIF for Amon Hen in Royal Gondor Midnight Navy & Mithril White."""
+"""Render complete End-to-End (E2E) demo GIF with Seat of Seeing (Amon Hen) pixel art in header."""
 
 import os
 from pathlib import Path
@@ -29,6 +29,35 @@ if FONT_PATH:
     font_small = ImageFont.truetype(FONT_PATH, 13)
 else:
     font_main = font_bold = font_small = ImageFont.load_default()
+
+# Seat of Seeing at Amon Hen (Winged Eagle Throne on Stone Pedestal)
+THRONE_PIXELS = [
+    " █     █     █ ",
+    "███   ███   ███",
+    "███   ███   ███",
+    "███   ███   ███",
+    "███   ███   ███",
+    "████  ███  ████",
+    "█████ ███ █████",
+    "███████████████",
+    " █████████████ ",
+    "  ███████████  ",
+    "███████████████",
+]
+
+THRONE_PALETTE = [
+    WHITE_PRIMARY,
+    WHITE_PRIMARY,
+    WHITE_PRIMARY,
+    STARLIGHT_BLUE,
+    STARLIGHT_BLUE,
+    STARLIGHT_BLUE,
+    STARLIGHT_BLUE,
+    MUTED_NAVY,
+    MUTED_NAVY,
+    MUTED_NAVY,
+    (80, 100, 150),
+]
 
 
 def create_base_window() -> tuple[Image.Image, ImageDraw.ImageDraw]:
@@ -69,15 +98,30 @@ def render_tui_screen(
     input_text: str = "",
     show_cursor: bool = True,
 ) -> Image.Image:
-    """Render full OpenCode TUI screen in Gondor Navy & White."""
+    """Render full OpenCode TUI screen with Seat of Seeing pixel art."""
     img, draw = create_base_window()
 
-    # 1. Top Header Box with Tolkien Tagline
+    # 1. Top Header Box with Seat of Seeing Pixel Art
     draw.rounded_rectangle([20, 44, WIDTH - 20, 114], radius=4, fill=PANEL_BG, outline=BORDER_COL)
-    draw.text((36, 52), "Amon Hen v0.1.0", fill=WHITE_PRIMARY, font=font_bold)
-    draw.text((180, 53), '· "From the Seat of Seeing, no moment remains hidden."', fill=STARLIGHT_BLUE, font=font_main)
-    draw.text((36, 76), "Model: MobileCLIP2-S2 (CPU)   Storage: sqlite-vec   Index: 1 video (49 frames)", fill=MUTED_NAVY, font=font_small)
-    draw.text((36, 93), "~/videos/cctv-people-demo.webm", fill=MUTED_NAVY, font=font_small)
+
+    # Draw Seat of Seeing Pixel Art
+    x_art = 34
+    y_art = 50
+    px_size = 5
+
+    for r_idx, row in enumerate(THRONE_PIXELS):
+        col = THRONE_PALETTE[r_idx]
+        for c_idx, ch in enumerate(row):
+            if ch != " ":
+                px = x_art + c_idx * px_size
+                py = y_art + r_idx * px_size
+                draw.rectangle([px, py, px + px_size - 1, py + px_size - 1], fill=col)
+
+    x_text = x_art + 90
+    draw.text((x_text, 52), "Amon Hen v0.1.0", fill=WHITE_PRIMARY, font=font_bold)
+    draw.text((x_text + 140, 53), '· "From the Seat of Seeing, no moment remains hidden."', fill=STARLIGHT_BLUE, font=font_main)
+    draw.text((x_text, 76), "Model: MobileCLIP2-S2 (CPU)   Storage: sqlite-vec   Index: 1 video (49 frames)", fill=MUTED_NAVY, font=font_small)
+    draw.text((x_text, 93), "~/videos/cctv-people-demo.webm", fill=MUTED_NAVY, font=font_small)
 
     # 2. Query Card
     if show_query_card:
@@ -259,7 +303,7 @@ def main() -> None:
     ]))
     durations.append(3000)
 
-    for path_name in ["demo/demo-tui-gondor.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-seat.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -269,7 +313,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated Royal Gondor Navy & White demo ({len(frames)} frames, {Path('demo/demo-tui-gondor.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated Seat of Seeing demo ({len(frames)} frames, {Path('demo/demo-tui-seat.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
