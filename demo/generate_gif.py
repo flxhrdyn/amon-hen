@@ -1,4 +1,4 @@
-"""Render complete End-to-End (E2E) demo GIF for Amon Hen in Dark Mode Monochrome Aquamarine."""
+"""Render complete End-to-End (E2E) demo GIF for Amon Hen in Royal Gondor Midnight Navy & Mithril White."""
 
 import os
 from pathlib import Path
@@ -7,23 +7,18 @@ from PIL import Image, ImageDraw, ImageFont
 WIDTH = 900
 HEIGHT = 580
 
-# Dark Mode Monochrome + Aquamarine Palette
-BG_COLOR = (13, 17, 23)          # #0D1117 Deep obsidian black
-TITLE_BG = (9, 12, 16)           # #090C10 Titlebar
-PANEL_BG = (18, 23, 31)          # #12171F Card surface
-BORDER_COL = (38, 44, 56)        # #262C38 Subtle border
+# Royal Gondor Banner Palette: Deep Midnight Navy & Mithril Silver-White
+BG_COLOR = (8, 14, 44)           # #080E2C Deep Gondor Midnight Navy
+TITLE_BG = (5, 9, 30)            # #05091E Titlebar
+PANEL_BG = (14, 23, 62)          # #0E173E Royal Navy Card surface
+BORDER_COL = (32, 48, 105)       # #203069 Royal Border
+HIGHLIGHT_BG = (22, 34, 88)      # #162258 Selected Card Surface
+BAR_EMPTY = (20, 30, 72)         # #141E48 Empty score track
 
-# Single Accent: Aquamarine
-AQUA_PRIMARY = (102, 238, 204)   # #66EECC Vibrant Aquamarine
-AQUA_MUTED = (70, 160, 140)      # #46A08C Muted Aquamarine
-AQUA_DIM = (35, 80, 70)          # #235046 Dim Aquamarine
-AQUA_BG = (16, 36, 32)           # #102420 Aquamarine surface
-BAR_EMPTY = (26, 32, 42)         # #1A202A Score bar track
-
-# Monochrome Neutrals
-TEXT_WHITE = (235, 240, 245)     # #EBF0F5 Crisp white text
-TEXT_SUB = (160, 170, 185)       # #A0AAB9 Subtitle
-TEXT_MUTED = (105, 115, 130)     # #697382 Metadata gray
+# Gondor Accents
+WHITE_PRIMARY = (255, 255, 255)  # #FFFFFF Pure Mithril Silver-White
+STARLIGHT_BLUE = (165, 195, 255) # #A5C3FF Gondor Starlight Blue
+MUTED_NAVY = (120, 140, 185)     # #788CB9 Muted Silver-Navy text
 
 FONT_PATH = "C:/Windows/Fonts/consola.ttf" if os.path.exists("C:/Windows/Fonts/consola.ttf") else None
 FONT_BOLD_PATH = "C:/Windows/Fonts/consolab.ttf" if os.path.exists("C:/Windows/Fonts/consolab.ttf") else FONT_PATH
@@ -45,10 +40,10 @@ def create_base_window() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     draw.line([0, 32, WIDTH, 32], fill=BORDER_COL)
 
     # Monochrome window controls
-    draw.ellipse([14, 10, 24, 20], fill=(60, 68, 80))
-    draw.ellipse([30, 10, 40, 20], fill=(60, 68, 80))
-    draw.ellipse([46, 10, 56, 20], fill=AQUA_PRIMARY)
-    draw.text((WIDTH // 2 - 50, 8), "amon-hen", fill=TEXT_MUTED, font=font_small)
+    draw.ellipse([14, 10, 24, 20], fill=(45, 60, 105))
+    draw.ellipse([30, 10, 40, 20], fill=(45, 60, 105))
+    draw.ellipse([46, 10, 56, 20], fill=WHITE_PRIMARY)
+    draw.text((WIDTH // 2 - 50, 8), "amon-hen", fill=MUTED_NAVY, font=font_small)
 
     return img, draw
 
@@ -74,20 +69,20 @@ def render_tui_screen(
     input_text: str = "",
     show_cursor: bool = True,
 ) -> Image.Image:
-    """Render full OpenCode TUI screen."""
+    """Render full OpenCode TUI screen in Gondor Navy & White."""
     img, draw = create_base_window()
 
     # 1. Top Header Box with Tolkien Tagline
     draw.rounded_rectangle([20, 44, WIDTH - 20, 114], radius=4, fill=PANEL_BG, outline=BORDER_COL)
-    draw.text((36, 52), "Amon Hen v0.1.0", fill=AQUA_PRIMARY, font=font_bold)
-    draw.text((180, 53), '· "From the Seat of Seeing, no moment remains hidden."', fill=TEXT_SUB, font=font_main)
-    draw.text((36, 76), "Model: MobileCLIP2-S2 (CPU)   Storage: sqlite-vec   Index: 1 video (49 frames)", fill=TEXT_MUTED, font=font_small)
-    draw.text((36, 93), "~/videos/cctv-people-demo.webm", fill=TEXT_MUTED, font=font_small)
+    draw.text((36, 52), "Amon Hen v0.1.0", fill=WHITE_PRIMARY, font=font_bold)
+    draw.text((180, 53), '· "From the Seat of Seeing, no moment remains hidden."', fill=STARLIGHT_BLUE, font=font_main)
+    draw.text((36, 76), "Model: MobileCLIP2-S2 (CPU)   Storage: sqlite-vec   Index: 1 video (49 frames)", fill=MUTED_NAVY, font=font_small)
+    draw.text((36, 93), "~/videos/cctv-people-demo.webm", fill=MUTED_NAVY, font=font_small)
 
     # 2. Query Card
     if show_query_card:
         draw.rounded_rectangle([20, 122, WIDTH - 20, 158], radius=4, fill=PANEL_BG, outline=BORDER_COL)
-        draw.text((36, 131), f"> {query_text}", fill=TEXT_WHITE, font=font_main)
+        draw.text((36, 131), f"> {query_text}", fill=WHITE_PRIMARY, font=font_main)
 
     # 3. Results Container Cards
     if show_results:
@@ -95,51 +90,51 @@ def render_tui_screen(
 
         # Card #1 (Selected Active Card)
         is_sel_1 = (selected_rank == 1)
-        c1_bg = AQUA_BG if is_sel_1 else PANEL_BG
-        c1_border = AQUA_PRIMARY if is_sel_1 else BORDER_COL
+        c1_bg = HIGHLIGHT_BG if is_sel_1 else PANEL_BG
+        c1_border = WHITE_PRIMARY if is_sel_1 else BORDER_COL
         draw.rounded_rectangle([20, 168, WIDTH - 20, 240], radius=4, fill=c1_bg, outline=c1_border, width=2 if is_sel_1 else 1)
-        draw.text((36, 177), "#1   00:00:37.0 -> 00:01:06.0", fill=AQUA_PRIMARY, font=font_bold)
-        draw.text((36, 198), "File: cctv-people-demo.webm   Peak: 00:00:48.0", fill=TEXT_SUB, font=font_small)
-        draw.text((36, 218), "=> Action: Type /open 1 to play moment in VLC", fill=AQUA_PRIMARY, font=font_small)
+        draw.text((36, 177), "#1   00:00:37.0 -> 00:01:06.0", fill=WHITE_PRIMARY, font=font_bold)
+        draw.text((36, 198), "File: cctv-people-demo.webm   Peak: 00:00:48.0", fill=STARLIGHT_BLUE, font=font_small)
+        draw.text((36, 218), "=> Action: Type /open 1 to play moment in VLC", fill=WHITE_PRIMARY, font=font_small)
 
-        # Smooth Aquamarine score bar #1
+        # Smooth White score bar #1
         draw.rounded_rectangle([bar_x, 188, bar_x + 120, 200], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([bar_x, 188, bar_x + 90, 200], radius=2, fill=AQUA_PRIMARY)
-        draw.text((bar_x + 135, 184), "0.261", fill=AQUA_PRIMARY, font=font_bold)
+        draw.rounded_rectangle([bar_x, 188, bar_x + 90, 200], radius=2, fill=WHITE_PRIMARY)
+        draw.text((bar_x + 135, 184), "0.261", fill=WHITE_PRIMARY, font=font_bold)
 
         # Card #2
         draw.rounded_rectangle([20, 248, WIDTH - 20, 300], radius=4, fill=PANEL_BG, outline=BORDER_COL)
-        draw.text((36, 257), "#2   00:00:04.0 -> 00:00:19.0", fill=TEXT_WHITE, font=font_bold)
-        draw.text((36, 278), "File: cctv-people-demo.webm   Peak: 00:00:11.0", fill=TEXT_MUTED, font=font_small)
+        draw.text((36, 257), "#2   00:00:04.0 -> 00:00:19.0", fill=STARLIGHT_BLUE, font=font_bold)
+        draw.text((36, 278), "File: cctv-people-demo.webm   Peak: 00:00:11.0", fill=MUTED_NAVY, font=font_small)
         draw.rounded_rectangle([bar_x, 265, bar_x + 120, 277], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([bar_x, 265, bar_x + 82, 277], radius=2, fill=AQUA_MUTED)
-        draw.text((bar_x + 135, 261), "0.247", fill=TEXT_WHITE, font=font_bold)
+        draw.rounded_rectangle([bar_x, 265, bar_x + 82, 277], radius=2, fill=STARLIGHT_BLUE)
+        draw.text((bar_x + 135, 261), "0.247", fill=STARLIGHT_BLUE, font=font_bold)
 
         # Card #3
         draw.rounded_rectangle([20, 308, WIDTH - 20, 360], radius=4, fill=PANEL_BG, outline=BORDER_COL)
-        draw.text((36, 317), "#3   00:00:24.0 -> 00:00:32.0", fill=TEXT_WHITE, font=font_bold)
-        draw.text((36, 338), "File: cctv-people-demo.webm   Peak: 00:00:28.0", fill=TEXT_MUTED, font=font_small)
+        draw.text((36, 317), "#3   00:00:24.0 -> 00:00:32.0", fill=STARLIGHT_BLUE, font=font_bold)
+        draw.text((36, 338), "File: cctv-people-demo.webm   Peak: 00:00:28.0", fill=MUTED_NAVY, font=font_small)
         draw.rounded_rectangle([bar_x, 325, bar_x + 120, 337], radius=2, fill=BAR_EMPTY)
-        draw.rounded_rectangle([bar_x, 325, bar_x + 75, 337], radius=2, fill=AQUA_MUTED)
-        draw.text((bar_x + 135, 321), "0.227", fill=TEXT_WHITE, font=font_bold)
+        draw.rounded_rectangle([bar_x, 325, bar_x + 75, 337], radius=2, fill=STARLIGHT_BLUE)
+        draw.text((bar_x + 135, 321), "0.227", fill=STARLIGHT_BLUE, font=font_bold)
 
     # 4. Flash Notification Toast
     if notification_msg:
-        draw.rounded_rectangle([20, 372, WIDTH - 20, 408], radius=4, fill=AQUA_BG, outline=AQUA_PRIMARY)
-        draw.text((36, 380), f"=> {notification_msg}", fill=AQUA_PRIMARY, font=font_main)
+        draw.rounded_rectangle([20, 372, WIDTH - 20, 408], radius=4, fill=HIGHLIGHT_BG, outline=WHITE_PRIMARY)
+        draw.text((36, 380), f"=> {notification_msg}", fill=WHITE_PRIMARY, font=font_main)
 
     # 5. Pinned Bottom Input Box
-    draw.rounded_rectangle([20, 444, WIDTH - 20, 492], radius=4, fill=PANEL_BG, outline=AQUA_PRIMARY, width=2)
-    draw.text((36, 456), "amon-hen > ", fill=AQUA_PRIMARY, font=font_bold)
-    draw.text((130, 456), input_text, fill=TEXT_WHITE, font=font_main)
+    draw.rounded_rectangle([20, 444, WIDTH - 20, 492], radius=4, fill=PANEL_BG, outline=WHITE_PRIMARY, width=2)
+    draw.text((36, 456), "amon-hen > ", fill=STARLIGHT_BLUE, font=font_bold)
+    draw.text((130, 456), input_text, fill=WHITE_PRIMARY, font=font_main)
 
     if show_cursor:
         cx = 130 + int(draw.textlength(input_text, font=font_main))
-        draw.rectangle([cx + 2, 458, cx + 10, 474], fill=AQUA_PRIMARY)
+        draw.rectangle([cx + 2, 458, cx + 10, 474], fill=WHITE_PRIMARY)
 
     # Footer Shortcuts
-    draw.text((24, 508), "[Enter] Submit  ·  /open <id> Play Moment  ·  /videos List  ·  /exit Quit", fill=TEXT_MUTED, font=font_small)
-    draw.text((WIDTH - 160, 508), "MobileCLIP2 · CPU", fill=TEXT_MUTED, font=font_small)
+    draw.text((24, 508), "[Enter] Submit  ·  /open <id> Play Moment  ·  /videos List  ·  /exit Quit", fill=MUTED_NAVY, font=font_small)
+    draw.text((WIDTH - 160, 508), "MobileCLIP2 · CPU", fill=MUTED_NAVY, font=font_small)
 
     return img
 
@@ -149,48 +144,44 @@ def main() -> None:
     durations: list[int] = []
 
     # === STAGE 1: Shell CLI Indexing ===
-    # 1. Shell Prompt
     frames.append(render_shell_screen([
-        ("PS C:\\Users\\Felix\\videos> ", AQUA_PRIMARY)
+        ("PS C:\\Users\\Felix\\videos> ", STARLIGHT_BLUE)
     ]))
     durations.append(450)
 
-    # 2. Type "amon-hen index demo/ --sampler adaptive"
     idx_cmd = "amon-hen index demo/ --sampler adaptive"
     for i in range(1, len(idx_cmd) + 1, 3):
         frames.append(render_shell_screen([
-            (f"PS C:\\Users\\Felix\\videos> {idx_cmd[:i]}", TEXT_WHITE)
+            (f"PS C:\\Users\\Felix\\videos> {idx_cmd[:i]}", WHITE_PRIMARY)
         ]))
         durations.append(35)
     frames.append(render_shell_screen([
-        (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", TEXT_WHITE)
-    ]))
-    durations.append(300)
-
-    # 3. Indexing execution progress
-    frames.append(render_shell_screen([
-        (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", TEXT_WHITE),
-        ("Indexing cctv-people-demo.webm [==========..........]  50% | 18.5x RT", AQUA_MUTED),
+        (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", WHITE_PRIMARY)
     ]))
     durations.append(300)
 
     frames.append(render_shell_screen([
-        (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", TEXT_WHITE),
-        ("Indexing cctv-people-demo.webm [====================] 100% | 18.5x RT", AQUA_PRIMARY),
-        ("=> Indexed 1 video(s), 49 keyframes stored in ~/.amonhen/index.db (2.3s)", TEXT_WHITE),
-        ("", TEXT_MUTED),
-        ("PS C:\\Users\\Felix\\videos> ", AQUA_PRIMARY),
+        (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", WHITE_PRIMARY),
+        ("Indexing cctv-people-demo.webm [==========..........]  50% | 18.5x RT", STARLIGHT_BLUE),
+    ]))
+    durations.append(300)
+
+    frames.append(render_shell_screen([
+        (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", WHITE_PRIMARY),
+        ("Indexing cctv-people-demo.webm [====================] 100% | 18.5x RT", WHITE_PRIMARY),
+        ("=> Indexed 1 video(s), 49 keyframes stored in ~/.amonhen/index.db (2.3s)", STARLIGHT_BLUE),
+        ("", MUTED_NAVY),
+        ("PS C:\\Users\\Felix\\videos> ", STARLIGHT_BLUE),
     ]))
     durations.append(900)
 
-    # 4. Type "amon-hen" to launch Interactive TUI Mode
     launch_cmd = "amon-hen"
     for i in range(1, len(launch_cmd) + 1, 2):
         frames.append(render_shell_screen([
-            (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", TEXT_WHITE),
-            ("=> Indexed 1 video(s), 49 keyframes stored in ~/.amonhen/index.db (2.3s)", TEXT_WHITE),
-            ("", TEXT_MUTED),
-            (f"PS C:\\Users\\Felix\\videos> {launch_cmd[:i]}", TEXT_WHITE),
+            (f"PS C:\\Users\\Felix\\videos> {idx_cmd}", WHITE_PRIMARY),
+            ("=> Indexed 1 video(s), 49 keyframes stored in ~/.amonhen/index.db (2.3s)", STARLIGHT_BLUE),
+            ("", MUTED_NAVY),
+            (f"PS C:\\Users\\Felix\\videos> {launch_cmd[:i]}", WHITE_PRIMARY),
         ]))
         durations.append(40)
 
@@ -198,7 +189,6 @@ def main() -> None:
     frames.append(render_tui_screen(input_text="", show_cursor=True))
     durations.append(850)
 
-    # 5. Type query in TUI input box
     q = "a person holding an umbrella"
     for i in range(1, len(q) + 1, 2):
         frames.append(render_tui_screen(input_text=q[:i], show_cursor=True))
@@ -206,7 +196,6 @@ def main() -> None:
     frames.append(render_tui_screen(input_text=q, show_cursor=True))
     durations.append(300)
 
-    # 6. Submit query -> Query Card & Result Cards appear
     frames.append(render_tui_screen(
         query_text=q,
         show_query_card=True,
@@ -216,7 +205,6 @@ def main() -> None:
     ))
     durations.append(1800)
 
-    # 7. Type "/open 1" to launch player
     op = "/open 1"
     for i in range(1, len(op) + 1, 2):
         frames.append(render_tui_screen(
@@ -238,7 +226,6 @@ def main() -> None:
     ))
     durations.append(250)
 
-    # 8. Submit -> Video Launch Notification Toast
     frames.append(render_tui_screen(
         query_text=q,
         show_query_card=True,
@@ -250,7 +237,6 @@ def main() -> None:
     ))
     durations.append(2400)
 
-    # 9. Type "/exit"
     ex = "/exit"
     for i in range(1, len(ex) + 1, 2):
         frames.append(render_tui_screen(
@@ -266,14 +252,14 @@ def main() -> None:
 
     # === STAGE 3: Clean Exit back to Shell ===
     frames.append(render_shell_screen([
-        ("PS C:\\Users\\Felix\\videos> amon-hen", TEXT_WHITE),
-        ("Farewell. The seeing closes.", TEXT_SUB),
-        ("", TEXT_MUTED),
-        ("PS C:\\Users\\Felix\\videos> ", AQUA_PRIMARY),
+        ("PS C:\\Users\\Felix\\videos> amon-hen", WHITE_PRIMARY),
+        ("Farewell. The seeing closes.", STARLIGHT_BLUE),
+        ("", MUTED_NAVY),
+        ("PS C:\\Users\\Felix\\videos> ", STARLIGHT_BLUE),
     ]))
     durations.append(3000)
 
-    for path_name in ["demo/demo-tui-e2e.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-gondor.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -283,7 +269,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated End-to-End (E2E) demo ({len(frames)} frames, {Path('demo/demo-tui-e2e.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated Royal Gondor Navy & White demo ({len(frames)} frames, {Path('demo/demo-tui-gondor.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
