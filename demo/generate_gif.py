@@ -1,4 +1,4 @@
-"""Render authentic Claude Code-inspired CLI demo GIF for Amon Hen."""
+"""Render pixel-perfect Claude Code CLI demo GIF with Tolkien ASCII art header and zero broken glyphs."""
 
 import os
 from pathlib import Path
@@ -7,19 +7,19 @@ from PIL import Image, ImageDraw, ImageFont
 WIDTH = 900
 HEIGHT = 580
 
-# Clean Dark Monokai/Claude Terminal Palette
-BG_COLOR = (24, 24, 27)          # Deep zinc dark
-TITLE_BG = (18, 18, 20)          # Clean window titlebar
+# Clean Dark Theme
+BG_COLOR = (24, 24, 27)          # #18181B zinc-900
+TITLE_BG = (18, 18, 20)          # #121214
 BORDER_COLOR = (45, 45, 52)
 
-PROMPT_VIOLET = (192, 132, 252)  # Claude Code violet/purple prompt
-GOLD_ACCENT = (250, 204, 21)     # Muted gold
+PROMPT_VIOLET = (192, 132, 252)  # Claude Code violet
+GOLD_ACCENT = (250, 204, 21)     # Muted Tolkien gold
 CYAN_TIME = (56, 189, 248)       # Starlight cyan
-GREEN_ACCENT = (74, 222, 128)    # Clean success green
-WHITE_TEXT = (244, 244, 245)     # Crisp zinc-100 text
-MUTED_GRAY = (113, 113, 122)     # Muted zinc-500
-TREE_LINE = (82, 82, 91)         # Tree lines (zinc-600)
-TAG_BG = (39, 39, 42)            # Subtle inline pill/tag background
+GREEN_ACCENT = (74, 222, 128)    # Terminal green
+WHITE_TEXT = (244, 244, 245)     # Primary text
+MUTED_GRAY = (140, 145, 160)     # Metadata gray
+TREE_LINE = (82, 82, 91)         # Tree lines
+BAR_EMPTY = (42, 44, 54)         # Track background
 
 FONT_PATH = "C:/Windows/Fonts/consola.ttf" if os.path.exists("C:/Windows/Fonts/consola.ttf") else None
 FONT_BOLD_PATH = "C:/Windows/Fonts/consolab.ttf" if os.path.exists("C:/Windows/Fonts/consolab.ttf") else FONT_PATH
@@ -49,18 +49,119 @@ def create_base_frame() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     return img, draw
 
 
-def render_terminal(lines: list[list[tuple[str, tuple[int, int, int]]]]) -> Image.Image:
+def render_full_screen(
+    step: str = "init",
+    query_text: str = "",
+    open_cmd: str = "",
+) -> Image.Image:
     img, draw = create_base_frame()
-    x_start = 24
+    x = 24
     y = 48
-    line_h = 22
 
-    for line in lines:
-        x = x_start
-        for text, color in line:
-            draw.text((x, y), text, fill=color, font=font_main)
-            x += int(draw.textlength(text, font=font_main))
-        y += line_h
+    # 1. Tolkien ASCII Art Header
+    draw.text((x, y), "      /\\       ", fill=GOLD_ACCENT, font=font_bold)
+    draw.text((x + 130, y), "A M O N   H E N", fill=GOLD_ACCENT, font=font_bold)
+    draw.text((x + 280, y), "· The Seat of Seeing", fill=WHITE_TEXT, font=font_main)
+
+    y += 20
+    draw.text((x, y), "     /  \\      ", fill=GOLD_ACCENT, font=font_bold)
+    draw.text((x + 130, y), '"From the high seat, no moment remains hidden."', fill=MUTED_GRAY, font=font_main)
+
+    y += 20
+    draw.text((x, y), "    / /\\ \\     ", fill=GOLD_ACCENT, font=font_bold)
+    draw.text((x + 130, y), "Local Video Retrieval Engine · MobileCLIP2 (CPU)", fill=CYAN_TIME, font=font_main)
+
+    y += 20
+    draw.text((x, y), "   /_/  \\_\\    ", fill=GOLD_ACCENT, font=font_bold)
+    draw.text((x + 130, y), "[v0.1.0]  [sqlite-vec]  [indexed: 1 video (49 frames)]", fill=GREEN_ACCENT, font=font_main)
+
+    y += 32
+    draw.line([24, y, WIDTH - 24, y], fill=(45, 45, 52))
+    y += 18
+
+    # 2. Prompt & Query Input
+    if step in ("init", "typing_q"):
+        draw.text((x, y), "amon-hen > ", fill=PROMPT_VIOLET, font=font_bold)
+        draw.text((x + 105, y), query_text, fill=WHITE_TEXT, font=font_main)
+        # Cursor
+        cx = x + 105 + int(draw.textlength(query_text, font=font_main))
+        draw.rectangle([cx + 2, y + 2, cx + 10, y + 18], fill=WHITE_TEXT)
+        return img
+
+    draw.text((x, y), "amon-hen > ", fill=PROMPT_VIOLET, font=font_bold)
+    draw.text((x + 105, y), "a person holding an umbrella", fill=WHITE_TEXT, font=font_main)
+    y += 24
+
+    if step == "searching":
+        draw.text((x, y), "Searching moments in vector index... (18ms)", fill=MUTED_GRAY, font=font_main)
+        return img
+
+    draw.text((x, y), "Searching moments in vector index... (18ms)", fill=MUTED_GRAY, font=font_main)
+    y += 26
+
+    # 3. Results Tree (Claude Code style, crisp glyphs, smooth solid score bars)
+    bar_x = 320
+
+    # Item #1 (Expanded Active Item)
+    draw.text((x, y), "┌─ #1  ", fill=TREE_LINE, font=font_main)
+    draw.text((x + 56, y), "00:00:37.0 - 00:01:06.0  ", fill=CYAN_TIME, font=font_main)
+
+    # Smooth solid score bar
+    draw.rounded_rectangle([bar_x, y + 4, bar_x + 90, y + 14], radius=2, fill=BAR_EMPTY)
+    draw.rounded_rectangle([bar_x, y + 4, bar_x + 68, y + 14], radius=2, fill=GOLD_ACCENT)
+    draw.text((bar_x + 105, y), "0.261", fill=GREEN_ACCENT, font=font_bold)
+
+    y += 20
+    draw.text((x, y), "│  File: cctv-people-demo.webm  │  Peak: 00:00:48.0 (high confidence)", fill=MUTED_GRAY, font=font_main)
+
+    y += 20
+    draw.text((x, y), "│  > Action: Type /open 1 to launch video at this timestamp", fill=GREEN_ACCENT, font=font_main)
+
+    y += 20
+    draw.text((x, y), "│", fill=TREE_LINE, font=font_main)
+
+    # Item #2
+    y += 18
+    draw.text((x, y), "├─ #2  ", fill=TREE_LINE, font=font_main)
+    draw.text((x + 56, y), "00:00:04.0 - 00:00:19.0  ", fill=CYAN_TIME, font=font_main)
+    draw.rounded_rectangle([bar_x, y + 4, bar_x + 90, y + 14], radius=2, fill=BAR_EMPTY)
+    draw.rounded_rectangle([bar_x, y + 4, bar_x + 64, y + 14], radius=2, fill=GOLD_ACCENT)
+    draw.text((bar_x + 105, y), "0.247  cctv-people-demo.webm", fill=MUTED_GRAY, font=font_main)
+
+    y += 20
+    draw.text((x, y), "│", fill=TREE_LINE, font=font_main)
+
+    # Item #3
+    y += 18
+    draw.text((x, y), "└─ #3  ", fill=TREE_LINE, font=font_main)
+    draw.text((x + 56, y), "00:00:24.0 - 00:00:32.0  ", fill=CYAN_TIME, font=font_main)
+    draw.rounded_rectangle([bar_x, y + 4, bar_x + 90, y + 14], radius=2, fill=BAR_EMPTY)
+    draw.rounded_rectangle([bar_x, y + 4, bar_x + 58, y + 14], radius=2, fill=GOLD_ACCENT)
+    draw.text((bar_x + 105, y), "0.227  cctv-people-demo.webm", fill=MUTED_GRAY, font=font_main)
+
+    y += 30
+
+    # 4. Next Prompt Action (/open 1)
+    if step in ("results", "typing_open"):
+        draw.text((x, y), "amon-hen > ", fill=PROMPT_VIOLET, font=font_bold)
+        draw.text((x + 105, y), open_cmd, fill=WHITE_TEXT, font=font_main)
+        cx = x + 105 + int(draw.textlength(open_cmd, font=font_main))
+        draw.rectangle([cx + 2, y + 2, cx + 10, y + 18], fill=WHITE_TEXT)
+        return img
+
+    draw.text((x, y), "amon-hen > ", fill=PROMPT_VIOLET, font=font_bold)
+    draw.text((x + 105, y), "/open 1", fill=WHITE_TEXT, font=font_main)
+    y += 22
+
+    draw.text((x, y), "=> Launching media player at 00:00:48.0 (cctv-people-demo.webm)...", fill=GREEN_ACCENT, font=font_main)
+    y += 28
+
+    # 5. Exit
+    if step == "typing_exit":
+        draw.text((x, y), "amon-hen > ", fill=PROMPT_VIOLET, font=font_bold)
+        draw.text((x + 105, y), "/exit", fill=WHITE_TEXT, font=font_main)
+        y += 22
+        draw.text((x, y), "Farewell.", fill=MUTED_GRAY, font=font_main)
 
     return img
 
@@ -69,115 +170,43 @@ def main() -> None:
     frames: list[Image.Image] = []
     durations: list[int] = []
 
-    # Claude Code style header (subtle logo, clean status line)
-    claude_header = [
-        [("╭─ ", TREE_LINE), ("amon-hen", GOLD_ACCENT), (" v0.1.0 · The Seat of Seeing", MUTED_GRAY)],
-        [("│  ", TREE_LINE), ("model: ", MUTED_GRAY), ("mobileclip2-s2", CYAN_TIME), ("  storage: ", MUTED_GRAY), ("sqlite-vec (cpu)", GREEN_ACCENT), ("  index: ", MUTED_GRAY), ("1 video (49 frames)", WHITE_TEXT)],
-        [("╰───────────────────────────────────────────────────────────", TREE_LINE)],
-        [],
-    ]
+    # 1. Initial Launch with Tolkien ASCII Header
+    frames.append(render_full_screen(step="init"))
+    durations.append(900)
 
-    # Indexing progress stream (Claude Code style tool/action call)
-    indexing_stream = [
-        [("╭─ ", TREE_LINE), ("amon-hen", GOLD_ACCENT), (" v0.1.0 · The Seat of Seeing", MUTED_GRAY)],
-        [("│  ", TREE_LINE), ("model: ", MUTED_GRAY), ("mobileclip2-s2", CYAN_TIME), ("  storage: ", MUTED_GRAY), ("sqlite-vec (cpu)", GREEN_ACCENT), ("  index: ", MUTED_GRAY), ("1 video (49 frames)", WHITE_TEXT)],
-        [("╰───────────────────────────────────────────────────────────", TREE_LINE)],
-        [],
-        [("amon-hen ❯ ", PROMPT_VIOLET), ("/index demo/", WHITE_TEXT)],
-        [("  ● Indexing ", GOLD_ACCENT), ("cctv-people-demo.webm", WHITE_TEXT), (" [====================] 100% (18.5x RT)", GREEN_ACCENT)],
-        [("  ✓ Indexed 1 video(s), 49 frames in 2.7s", GREEN_ACCENT)],
-        [],
-    ]
-
-    # Clean Claude Code structured search result stream (Tree branches + inline confidence pills)
-    results_stream = [
-        [("╭─ ", TREE_LINE), ("amon-hen", GOLD_ACCENT), (" v0.1.0 · The Seat of Seeing", MUTED_GRAY)],
-        [("│  ", TREE_LINE), ("model: ", MUTED_GRAY), ("mobileclip2-s2", CYAN_TIME), ("  storage: ", MUTED_GRAY), ("sqlite-vec (cpu)", GREEN_ACCENT), ("  index: ", MUTED_GRAY), ("1 video (49 frames)", WHITE_TEXT)],
-        [("╰───────────────────────────────────────────────────────────", TREE_LINE)],
-        [],
-        [("amon-hen ❯ ", PROMPT_VIOLET), ("a person holding an umbrella", WHITE_TEXT)],
-        [("  Searching moments in vector index... (18ms)", MUTED_GRAY)],
-        [],
-        [("  ┌─ ", TREE_LINE), ("#1  ", GOLD_ACCENT), ("00:00:37.0 - 00:01:06.0  ", CYAN_TIME), ("[████████░░] 0.261", GREEN_ACCENT)],
-        [("  │  ", TREE_LINE), ("File: ", MUTED_GRAY), ("cctv-people-demo.webm", WHITE_TEXT), ("  │  Peak: ", MUTED_GRAY), ("00:00:48.0", CYAN_TIME), (" (high confidence)", MUTED_GRAY)],
-        [("  │  ", TREE_LINE), ("▶ Action: Type ", MUTED_GRAY), ("/open 1", PROMPT_VIOLET), (" to launch video at this timestamp", MUTED_GRAY)],
-        [("  │", TREE_LINE)],
-        [("  ├─ ", TREE_LINE), ("#2  ", MUTED_GRAY), ("00:00:04.0 - 00:00:19.0  ", CYAN_TIME), ("[███████░░░] 0.247", GREEN_ACCENT), ("  cctv-people-demo.webm", MUTED_GRAY)],
-        [("  │", TREE_LINE)],
-        [("  └─ ", TREE_LINE), ("#3  ", MUTED_GRAY), ("00:00:24.0 - 00:00:32.0  ", CYAN_TIME), ("[██████░░░░] 0.227", GREEN_ACCENT), ("  cctv-people-demo.webm", MUTED_GRAY)],
-        [],
-    ]
-
-    open_stream = list(results_stream) + [
-        [("amon-hen ❯ ", PROMPT_VIOLET), ("/open 1", WHITE_TEXT)],
-        [("  ✓ Launching media player at 00:00:48.0 (cctv-people-demo.webm)", GREEN_ACCENT)],
-        [],
-    ]
-
-    exit_stream = list(open_stream) + [
-        [("amon-hen ❯ ", PROMPT_VIOLET), ("/exit", WHITE_TEXT)],
-        [("  Farewell.", MUTED_GRAY)],
-    ]
-
-    # Build sequence
-    # 1. Shell prompt
-    frames.append(render_terminal([[("PS C:\\Users\\Felix\\videos> ", GREEN_ACCENT)]]))
-    durations.append(400)
-
-    # 2. Type amon-hen
-    cmd = "amon-hen"
-    for i in range(1, len(cmd) + 1, 2):
-        frames.append(render_terminal([[(f"PS C:\\Users\\Felix\\videos> {cmd[:i]}", WHITE_TEXT)]]))
-        durations.append(40)
-    frames.append(render_terminal([[(f"PS C:\\Users\\Felix\\videos> {cmd}", WHITE_TEXT)]]))
-    durations.append(250)
-
-    # 3. Header appears
-    frames.append(render_terminal(claude_header + [[("amon-hen ❯ ", PROMPT_VIOLET)]]))
-    durations.append(800)
-
-    # 4. Type query
+    # 2. Type Query
     q = "a person holding an umbrella"
     for i in range(1, len(q) + 1, 2):
-        temp = list(claude_header) + [[("amon-hen ❯ ", PROMPT_VIOLET), (q[:i], WHITE_TEXT)]]
-        frames.append(render_terminal(temp))
+        frames.append(render_full_screen(step="typing_q", query_text=q[:i]))
         durations.append(40)
+    frames.append(render_full_screen(step="typing_q", query_text=q))
+    durations.append(300)
 
-    # 5. Search executing
-    temp = list(claude_header) + [
-        [("amon-hen ❯ ", PROMPT_VIOLET), (q, WHITE_TEXT)],
-        [("  Searching moments in vector index... (18ms)", MUTED_GRAY)],
-    ]
-    frames.append(render_terminal(temp))
-    durations.append(500)
+    # 3. Searching Status
+    frames.append(render_full_screen(step="searching"))
+    durations.append(600)
 
-    # 6. Stream results
-    frames.append(render_terminal(results_stream + [[("amon-hen ❯ ", PROMPT_VIOLET)]]))
+    # 4. Display Results Tree
+    frames.append(render_full_screen(step="results"))
     durations.append(1800)
 
-    # 7. Type /open 1
+    # 5. Type /open 1
     op = "/open 1"
     for i in range(1, len(op) + 1, 2):
-        temp = list(results_stream) + [[("amon-hen ❯ ", PROMPT_VIOLET), (op[:i], WHITE_TEXT)]]
-        frames.append(render_terminal(temp))
-        durations.append(50)
+        frames.append(render_full_screen(step="typing_open", open_cmd=op[:i]))
+        durations.append(45)
+    frames.append(render_full_screen(step="typing_open", open_cmd=op))
+    durations.append(300)
 
-    # 8. Open result
-    frames.append(render_terminal(open_stream + [[("amon-hen ❯ ", PROMPT_VIOLET)]]))
-    durations.append(1600)
+    # 6. Player Launch Confirmation
+    frames.append(render_full_screen(step="launched"))
+    durations.append(1800)
 
-    # 9. Type /exit
-    ex = "/exit"
-    for i in range(1, len(ex) + 1, 2):
-        temp = list(open_stream) + [[("amon-hen ❯ ", PROMPT_VIOLET), (ex[:i], WHITE_TEXT)]]
-        frames.append(render_terminal(temp))
-        durations.append(50)
-
-    # 10. Exit back to shell
-    frames.append(render_terminal(exit_stream + [[("PS C:\\Users\\Felix\\videos> ", GREEN_ACCENT)]]))
+    # 7. Exit
+    frames.append(render_full_screen(step="typing_exit"))
     durations.append(3000)
 
-    for path_name in ["demo/demo-tui-v6.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-v7.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -187,7 +216,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated Claude Code styled CLI demo ({len(frames)} frames, {Path('demo/demo-tui-v6.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated perfect Tolkien Claude Code CLI demo ({len(frames)} frames, {Path('demo/demo-tui-v7.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
