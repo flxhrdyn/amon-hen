@@ -1,4 +1,4 @@
-"""Render complete all-in-TUI demo GIF showing live indexing inside the TUI for Amon Hen."""
+"""Render demo GIF with standard CLI black background and selective Royal Blue & White accents."""
 
 import os
 from pathlib import Path
@@ -7,18 +7,19 @@ from PIL import Image, ImageDraw, ImageFont
 WIDTH = 900
 HEIGHT = 580
 
-# Royal Gondor Banner Palette: Deep Midnight Navy & Mithril Silver-White
-BG_COLOR = (8, 14, 44)           # #080E2C Deep Gondor Midnight Navy
-TITLE_BG = (5, 9, 30)            # #05091E Titlebar
-PANEL_BG = (14, 23, 62)          # #0E173E Royal Navy Card surface
-BORDER_COL = (32, 48, 105)       # #203069 Royal Border
-HIGHLIGHT_BG = (22, 34, 88)      # #162258 Selected Card Surface
-BAR_EMPTY = (20, 30, 72)         # #141E48 Empty score track
+# Standard CLI Black Palette
+BG_COLOR = (12, 12, 14)          # #0C0C0E Pure standard CLI black
+TITLE_BG = (8, 8, 10)            # #08080A Titlebar
+PANEL_BG = (22, 22, 26)          # #16161A Dark surface panel
+BORDER_COL = (45, 45, 52)        # #2D2D34 Subtle gray border
+HIGHLIGHT_BG = (26, 28, 38)      # #1A1C26 Active card surface
+BAR_EMPTY = (32, 32, 38)         # #202026 Empty score track
 
-# Gondor Accents
-WHITE_PRIMARY = (255, 255, 255)  # #FFFFFF Pure Mithril Silver-White
-STARLIGHT_BLUE = (165, 195, 255) # #A5C3FF Gondor Starlight Blue
-MUTED_NAVY = (120, 140, 185)     # #788CB9 Muted Silver-Navy text
+# Selective Gondor Blue & White Accents
+WHITE_PRIMARY = (255, 255, 255)  # #FFFFFF Pure Mithril White
+STARLIGHT_BLUE = (130, 170, 255) # #82AAFF Gondor Starlight Blue
+TEXT_MUTED = (115, 120, 135)     # #737887 Muted gray
+TEXT_SUB = (165, 170, 185)       # #A5AAB9 Secondary text
 
 FONT_PATH = "C:/Windows/Fonts/consola.ttf" if os.path.exists("C:/Windows/Fonts/consola.ttf") else None
 FONT_BOLD_PATH = "C:/Windows/Fonts/consolab.ttf" if os.path.exists("C:/Windows/Fonts/consolab.ttf") else FONT_PATH
@@ -53,10 +54,10 @@ THRONE_PALETTE = [
     STARLIGHT_BLUE,
     STARLIGHT_BLUE,
     STARLIGHT_BLUE,
-    MUTED_NAVY,
-    MUTED_NAVY,
-    MUTED_NAVY,
-    (80, 100, 150),
+    TEXT_MUTED,
+    TEXT_MUTED,
+    TEXT_MUTED,
+    (70, 75, 90),
 ]
 
 
@@ -69,10 +70,10 @@ def create_base_window() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     draw.line([0, 32, WIDTH, 32], fill=BORDER_COL)
 
     # Monochrome window controls
-    draw.ellipse([14, 10, 24, 20], fill=(45, 60, 105))
-    draw.ellipse([30, 10, 40, 20], fill=(45, 60, 105))
+    draw.ellipse([14, 10, 24, 20], fill=(50, 50, 58))
+    draw.ellipse([30, 10, 40, 20], fill=(50, 50, 58))
     draw.ellipse([46, 10, 56, 20], fill=WHITE_PRIMARY)
-    draw.text((WIDTH // 2 - 50, 8), "amon-hen", fill=MUTED_NAVY, font=font_small)
+    draw.text((WIDTH // 2 - 50, 8), "amon-hen", fill=TEXT_MUTED, font=font_small)
 
     return img, draw
 
@@ -100,7 +101,7 @@ def render_tui_screen(
     input_text: str = "",
     show_cursor: bool = True,
 ) -> Image.Image:
-    """Render full OpenCode TUI screen with live indexing and Seat of Seeing pixel art."""
+    """Render full OpenCode TUI screen with CLI black background and selective Blue & White accents."""
     img, draw = create_base_window()
 
     # 1. Top Header Box with Seat of Seeing Pixel Art
@@ -124,12 +125,12 @@ def render_tui_screen(
     draw.text((x_text + 140, 53), '· "From the Seat of Seeing, no moment remains hidden."', fill=STARLIGHT_BLUE, font=font_main)
 
     idx_str = f"Index: {indexed_count} video ({indexed_count * 49} frames)" if indexed_count > 0 else "Index: Ready (0 videos)"
-    draw.text((x_text, 76), f"Model: MobileCLIP2-S2 (CPU)   Storage: sqlite-vec   {idx_str}", fill=MUTED_NAVY, font=font_small)
-    draw.text((x_text, 93), "~/videos/demo/", fill=MUTED_NAVY, font=font_small)
+    draw.text((x_text, 76), f"Model: MobileCLIP2-S2 (CPU)   Storage: sqlite-vec   {idx_str}", fill=TEXT_MUTED, font=font_small)
+    draw.text((x_text, 93), "~/videos/demo/", fill=TEXT_MUTED, font=font_small)
 
     y_content = 122
 
-    # 2. Live Indexing Card (if indexing inside TUI)
+    # 2. Live Indexing Card
     if indexing_state:
         vid_name, pct, spd = indexing_state
         draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 64], radius=4, fill=PANEL_BG, outline=BORDER_COL)
@@ -172,7 +173,7 @@ def render_tui_screen(
         # Card #2
         draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 52], radius=4, fill=PANEL_BG, outline=BORDER_COL)
         draw.text((36, y_content + 9), "#2   00:00:04.0 -> 00:00:19.0", fill=STARLIGHT_BLUE, font=font_bold)
-        draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:11.0", fill=MUTED_NAVY, font=font_small)
+        draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:11.0", fill=TEXT_MUTED, font=font_small)
         draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 120, y_content + 29], radius=2, fill=BAR_EMPTY)
         draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 82, y_content + 29], radius=2, fill=STARLIGHT_BLUE)
         draw.text((bar_x + 135, y_content + 13), "0.247", fill=STARLIGHT_BLUE, font=font_bold)
@@ -181,7 +182,7 @@ def render_tui_screen(
         # Card #3
         draw.rounded_rectangle([20, y_content, WIDTH - 20, y_content + 52], radius=4, fill=PANEL_BG, outline=BORDER_COL)
         draw.text((36, y_content + 9), "#3   00:00:24.0 -> 00:00:32.0", fill=STARLIGHT_BLUE, font=font_bold)
-        draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:28.0", fill=MUTED_NAVY, font=font_small)
+        draw.text((36, y_content + 30), "File: cctv-people-demo.webm   Peak: 00:00:28.0", fill=TEXT_MUTED, font=font_small)
         draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 120, y_content + 29], radius=2, fill=BAR_EMPTY)
         draw.rounded_rectangle([bar_x, y_content + 17, bar_x + 75, y_content + 29], radius=2, fill=STARLIGHT_BLUE)
         draw.text((bar_x + 135, y_content + 13), "0.227", fill=STARLIGHT_BLUE, font=font_bold)
@@ -201,8 +202,8 @@ def render_tui_screen(
         draw.rectangle([cx + 2, 458, cx + 10, 474], fill=WHITE_PRIMARY)
 
     # Footer Shortcuts
-    draw.text((24, 508), "[Enter] Submit  ·  /index <dir> Index Videos  ·  /open <id> Play  ·  /exit Quit", fill=MUTED_NAVY, font=font_small)
-    draw.text((WIDTH - 160, 508), "MobileCLIP2 · CPU", fill=MUTED_NAVY, font=font_small)
+    draw.text((24, 508), "[Enter] Submit  ·  /index <dir> Index Videos  ·  /open <id> Play  ·  /exit Quit", fill=TEXT_MUTED, font=font_small)
+    draw.text((WIDTH - 160, 508), "MobileCLIP2 · CPU", fill=TEXT_MUTED, font=font_small)
 
     return img
 
@@ -228,7 +229,6 @@ def main() -> None:
     frames.append(render_tui_screen(indexed_count=0, input_text="", show_cursor=True))
     durations.append(800)
 
-    # Type /index demo/
     idx_cmd = "/index demo/"
     for i in range(1, len(idx_cmd) + 1, 2):
         frames.append(render_tui_screen(indexed_count=0, input_text=idx_cmd[:i], show_cursor=True))
@@ -330,12 +330,12 @@ def main() -> None:
     frames.append(render_shell_screen([
         ("PS C:\\Users\\Felix\\videos> amon-hen", WHITE_PRIMARY),
         ("Farewell. The seeing closes.", STARLIGHT_BLUE),
-        ("", MUTED_NAVY),
+        ("", TEXT_MUTED),
         ("PS C:\\Users\\Felix\\videos> ", STARLIGHT_BLUE),
     ]))
     durations.append(3000)
 
-    for path_name in ["demo/demo-tui-live.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-black.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -345,7 +345,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated All-in-TUI demo ({len(frames)} frames, {Path('demo/demo-tui-live.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated Standard Black CLI demo ({len(frames)} frames, {Path('demo/demo-tui-black.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
