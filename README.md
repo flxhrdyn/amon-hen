@@ -152,23 +152,27 @@ Video File
 
 ## Benchmarks
 
-Evaluation is conducted using standard Video Moment Retrieval (VMR) protocols against curated benchmarks (including Charades-STA subsets):
+Evaluated on 20 real Charades-STA test videos (56 temporal grounding queries), using standard VMR metrics.
 
-| Sampler Configuration | Recall@1 (IoU=0.3) | Recall@1 (IoU=0.5) | Recall@5 (IoU=0.3) | mIoU | Indexing Speed | Latency | Storage / Hour |
+| Sampler Configuration | R@1 (IoU=0.3) | R@1 (IoU=0.5) | R@5 (IoU=0.3) | mIoU | Indexing Speed | Latency | Storage / Hour |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Fixed (1.0 fps)** | 1.000 | 1.000 | 1.000 | 0.714 | ~6.8x RT | ~380 ms | ~12.5 MB |
-| **Adaptive (Default)** | 1.000 | 1.000 | 1.000 | 0.714 | ~18.5x RT | ~320 ms | ~4.2 MB |
-| **Adaptive + Embed-Dedup** | 0.950 | 0.900 | 0.980 | 0.685 | ~22.1x RT | ~290 ms | ~2.8 MB |
+| **Fixed (1.0 fps)** | 0.393 | 0.250 | 0.696 | 0.250 | 1.7x RT | 359 ms | 13.0 MB |
+| **Adaptive (Default)** | 0.250 | 0.107 | 0.607 | 0.155 | 4.8x RT | 335 ms | 12.9 MB |
+| **Adaptive + Embed-Dedup** | 0.250 | 0.107 | 0.607 | 0.166 | 4.7x RT | 385 ms | 12.9 MB |
+
+**Fixed 1 fps sampling achieves the best retrieval quality** (R@1@0.3=0.393, R@5@0.3=0.696).
+The Adaptive sampler trades accuracy for indexing throughput.
 
 *Metrics:*
-- **Recall@K (IoU=θ):** Fraction of queries where at least one top-K segment achieves temporal intersection-over-union $\ge \theta$ with ground truth.
+- **R@K (IoU=θ):** Fraction of queries where at least one top-K segment achieves temporal IoU >= θ with ground truth.
 - **mIoU:** Mean Intersection-over-Union across top-1 predictions.
-- **Indexing Speed:** Processing throughput expressed as a multiple of video duration.
+- **Indexing Speed:** Throughput as a multiple of real-time video duration.
 
-To reproduce or run benchmark suites locally:
+To reproduce:
 
 ```bash
-uv run python -m benchmarks.run --synthetic --samples 5
+uv run python tools/prepare_charades_sta.py --videos 20 --out benchmarks/charades_sta_subset
+uv run python -m benchmarks.run --data-dir benchmarks/charades_sta_subset
 ```
 
 ### FP32 vs INT8 Quantization Comparison

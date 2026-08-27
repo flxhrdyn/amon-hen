@@ -79,8 +79,20 @@ Measured across standard x86-64 and ARM64 CPUs without GPU acceleration (ONNX Ru
 * **Numerical Parity (PyTorch vs ONNX):** Cosine Similarity >= {min_cosine:.4f} (virtually zero loss).
 * **Frame Embedding Latency:** ~{latency_ms:.1f} ms per frame on CPU.
 * **Text Query Latency:** ~10-18 ms total latency.
-* **Indexing Throughput:** 17.5x - 18.5x Realtime factor on multi-core CPU.
+* **Indexing Throughput:** 1.7x - 4.8x Realtime factor on CPU (config-dependent).
 * **Memory Footprint:** <= 200 MB RAM peak during full video indexing.
+
+### Video Moment Retrieval: Charades-STA
+
+Evaluated on 20 Charades-STA test videos (56 temporal grounding queries) using the [Amon Hen](https://github.com/flxhrdyn/amon-hen) retrieval pipeline:
+
+| Sampler | R@1 (IoU=0.3) | R@1 (IoU=0.5) | R@5 (IoU=0.3) | mIoU | Latency |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| Fixed (1.0 fps) | 0.393 | 0.250 | 0.696 | 0.250 | 359 ms |
+| Adaptive (Default) | 0.250 | 0.107 | 0.607 | 0.155 | 335 ms |
+| Adaptive + Embed-Dedup | 0.250 | 0.107 | 0.607 | 0.166 | 385 ms |
+
+Fixed 1 fps sampling achieves the best retrieval accuracy (R@1@0.3=0.393, R@5@0.3=0.696). The Adaptive sampler trades some accuracy for higher indexing throughput and lower storage footprint.
 
 ---
 
