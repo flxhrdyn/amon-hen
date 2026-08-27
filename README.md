@@ -45,29 +45,19 @@ amon-hen setup
 
 ## Quick Start
 
-### 1. Interactive Session (TUI)
-Running `amon-hen` without subcommands opens an interactive REPL session with persistent history (`↑`/`↓`), visual score bars, and slash commands:
+### 1. Interactive Mode (TUI)
+Launch the interactive REPL with query history (`↑`/`↓`) and slash commands:
 
-```text
-$ amon-hen
-
-  A M O N   H E N
-  "From the Seat of Seeing, no moment remains hidden."
-  v0.1.0 | model: mobileclip2-s2 | indexed: 1 video(s)
-
-Type your search query, /open <num> to launch video, or /help.
-
-amon-hen> a person holding an umbrella
- 1. 00:00:37.0 - 00:01:06.0  ████████░░ 0.261  cctv-people-demo.webm
- 2. 00:00:04.0 - 00:00:19.0  ███████░░░ 0.247  cctv-people-demo.webm
- 3. 00:00:24.0 - 00:00:32.0  ██████░░░░ 0.227  cctv-people-demo.webm
-
-amon-hen> /open 1
-Opening cctv-people-demo.webm at 00:37.0 in media player...
-
-amon-hen> /exit
-Farewell.
+```bash
+amon-hen
 ```
+
+Within the interactive session:
+- `<query>`: Search moments across indexed videos.
+- `/open <n>`: Jump to and play result `#n` in your default media player.
+- `/videos`: List all indexed videos.
+- `/stats`: Display index breakdown and frame statistics.
+- `/exit`: Quit the session.
 
 ### 2. Index Videos
 Index a single file or an entire directory:
