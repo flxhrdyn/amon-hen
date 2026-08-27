@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def generate_model_card(model_variant: str, min_cosine: float = 0.9998, latency_ms: float = 25.0) -> str:
-    """Generate an industry-standard, ultra-clean Model Card for Hugging Face."""
+    """Generate an industry-standard, clean Model Card for Hugging Face without emojis."""
     variant_name = model_variant.upper()
     return f"""---
 language:
@@ -41,20 +41,20 @@ pipeline_tag: feature-extraction
 
 ---
 
-## 🏛️ Model Overview
+## Model Overview
 
 `{model_variant}` is a standalone ONNX conversion of Apple's **MobileCLIP2-S0** architecture, specifically optimized for edge deployment and zero-GPU local semantic video retrieval in **[Amon Hen](https://github.com/flxhrdyn/amon-hen)**.
 
 ### Key Specifications:
-* **Vision Backbone:** FastViT Hybrid Architecture ($~12\\text{{M}}$ parameters)
-* **Text Encoder:** Lightweight Transformer ($~15\\text{{M}}$ parameters)
-* **Input Image Resolution:** $256 \\times 256$ RGB (shortest-edge resize + center crop)
-* **Embedding Dimension:** $512$ (L2-normalized unit vectors)
-* **Context Length:** $77$ tokens
+* **Vision Backbone:** FastViT Hybrid Architecture (~12M parameters)
+* **Text Encoder:** Lightweight Transformer (~15M parameters)
+* **Input Image Resolution:** 256 x 256 RGB (shortest-edge resize + center crop)
+* **Embedding Dimension:** 512 (L2-normalized unit vectors)
+* **Context Length:** 77 tokens
 
 ---
 
-## 📦 Model Artifacts & Formats
+## Model Artifacts & Formats
 
 | File | Precision | Approximate Size | Recommended Hardware |
 | :--- | :--- | :--- | :--- |
@@ -66,19 +66,19 @@ pipeline_tag: feature-extraction
 
 ---
 
-## ⚡ Benchmarks & Empirical Performance
+## Benchmarks & Empirical Performance
 
 Measured across standard x86-64 and ARM64 CPUs without GPU acceleration:
 
-* **Numerical Parity (PyTorch vs ONNX):** Cosine Similarity $\\ge {min_cosine:.4f}$ (virtually zero loss).
-* **Frame Embedding Latency:** $\\approx {latency_ms:.1f}\\text{{ ms}}$ per frame on CPU.
-* **Text Query Latency:** $\\approx 18\\text{{ ms}}$ total latency.
-* **Indexing Throughput:** $17.5\\times - 18.5\\times\\text{{ Realtime}}$ factor on multi-core CPU.
-* **Memory Footprint:** $\\le 200\\text{{ MB}}$ RAM peak during full video indexing.
+* **Numerical Parity (PyTorch vs ONNX):** Cosine Similarity >= {min_cosine:.4f} (virtually zero loss).
+* **Frame Embedding Latency:** ~{latency_ms:.1f} ms per frame on CPU.
+* **Text Query Latency:** ~18 ms total latency.
+* **Indexing Throughput:** 17.5x - 18.5x Realtime factor on multi-core CPU.
+* **Memory Footprint:** <= 200 MB RAM peak during full video indexing.
 
 ---
 
-## 🚀 Quickstart
+## Quickstart
 
 ### 1. In Amon Hen (Native Video Moment Search CLI)
 ```bash
@@ -118,7 +118,7 @@ print(f"Cosine Similarity: {{similarity:.4f}}")
 
 ---
 
-## 📄 License & Attribution
+## License & Attribution
 
 * Model weights converted from Apple's MobileCLIP repository under Apple Sample Code / MIT license.
 * Packaged and distributed for the [Amon Hen Project](https://github.com/flxhrdyn/amon-hen).
