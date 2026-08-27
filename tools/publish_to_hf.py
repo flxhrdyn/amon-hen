@@ -41,7 +41,7 @@ pipeline_tag: feature-extraction
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://onnxruntime.ai/"><img src="https://img.shields.io/badge/Runtime-ONNX%201.18%2B-blueviolet.svg" alt="ONNX Runtime"></a>
   <img src="https://img.shields.io/badge/Target-100%25%20CPU%20%26%20Edge-brightgreen.svg" alt="Pure CPU">
-  <img src="https://img.shields.io/badge/Size-~105MB%20(Hybrid)-orange.svg" alt="Model Size">
+  <img src="https://img.shields.io/badge/Size-105MB%20(Hybrid)-orange.svg" alt="Model Size">
 </p>
 
 </div>
@@ -53,11 +53,11 @@ pipeline_tag: feature-extraction
 `{model_variant}` is a standalone ONNX export and INT8 quantized distribution of Apple's **MobileCLIP2-S0** architecture. This repository provides pre-converted ONNX weights and quantized variants to enable drop-in, zero-dependency deployment with `onnxruntime` across Python, C++, Rust, and mobile/WASM runtimes.
 
 ### Key Specifications:
-* **Architecture:** Hybrid FastViT vision backbone (~12M parameters) + Lightweight Transformer text encoder (~15M parameters)
+* **Architecture:** Hybrid FastViT vision backbone (approx. 12M parameters) + Lightweight Transformer text encoder (approx. 15M parameters)
 * **Input Image Resolution:** 256 x 256 RGB (shortest-edge resize + center crop, ImageNet normalized)
 * **Embedding Dimension:** 512 (L2-normalized unit vectors)
 * **Context Length:** 77 tokens
-* **Total Parameters:** ~27M
+* **Total Parameters:** approx. 27M
 
 ---
 
@@ -65,11 +65,11 @@ pipeline_tag: feature-extraction
 
 | File | Precision | File Size | Description |
 | :--- | :--- | :--- | :--- |
-| `vision_model.onnx` | **FP32** | ~43.4 MB | FastViT vision backbone (optimal for CPU execution) |
-| `vision_model_quantized.onnx` | **INT8** | ~11.3 MB | Dynamic INT8 quantized vision model |
-| `text_model.onnx` | **FP32** | ~242.3 MB | Full-precision text encoder |
-| `text_model_quantized.onnx` | **INT8** | ~61.3 MB | Dynamic INT8 quantized text encoder (2.09x faster) |
-| `tokenizer.json` | Hugging Face Fast | ~2.1 MB | Standalone CLIP BPE tokenizer |
+| `vision_model.onnx` | **FP32** | 43.4 MB | FastViT vision backbone (optimal for CPU execution) |
+| `vision_model_quantized.onnx` | **INT8** | 11.3 MB | Dynamic INT8 quantized vision model |
+| `text_model.onnx` | **FP32** | 242.3 MB | Full-precision text encoder |
+| `text_model_quantized.onnx` | **INT8** | 61.3 MB | Dynamic INT8 quantized text encoder (2.09x faster) |
+| `tokenizer.json` | Hugging Face Fast | 2.1 MB | Standalone CLIP BPE tokenizer |
 
 ---
 
@@ -81,13 +81,14 @@ Evaluated on standard x86-64 / ARM64 CPU environments using `onnxruntime` (singl
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Text Encoder** | 242.3 MB | 61.3 MB | **-74.7%** | 21.6 ms -> **10.3 ms** (2.09x speedup) | 0.9556 | **INT8** |
 | **Vision Backbone** | 43.4 MB | 11.3 MB | **-74.0%** | **111.8 ms** -> 1,393.1 ms | 0.2252 (dynamic) | **FP32** |
-| **Complete System** | **285.7 MB** | **72.7 MB** | **-74.6%** | **Hybrid: ~122 ms total** | >= {min_cosine:.4f} (FP32) | **Hybrid (FP32 Vision + INT8 Text: ~105 MB)** |
+| **Complete System** | **285.7 MB** | **72.7 MB** | **-74.6%** | **Hybrid: 122 ms total** | >= {min_cosine:.4f} (FP32) | **Hybrid (FP32 Vision + INT8 Text: 105 MB)** |
 
 ### Quantization Findings:
-1. **Text Transformer:** Quantizes exceptionally well with dynamic INT8 — reducing size by ~75% and doubling CPU inference speed while preserving 0.955+ cosine parity.
-2. **FastViT Vision:** Dynamic INT8 quantization adds per-layer conversion overhead to depthwise convolutions on CPU. For CPU deployment without dedicated VNNI/NPU calibration, **FP32 vision + INT8 text** delivers the optimal balance of speed (~122 ms total latency), accuracy, and small memory footprint (~105 MB total).
+1. **Text Transformer:** Quantizes exceptionally well with dynamic INT8 — reducing size by 75% and doubling CPU inference speed while preserving 0.955+ cosine parity.
+2. **FastViT Vision:** Dynamic INT8 quantization adds per-layer conversion overhead to depthwise convolutions on CPU. For CPU deployment without dedicated VNNI/NPU calibration, **FP32 vision + INT8 text** delivers the optimal balance of speed (122 ms total latency), accuracy, and small memory footprint (105 MB total).
 3. **Parity:** FP32 ONNX outputs maintain cosine similarity >= {min_cosine:.4f} against original PyTorch weights.
-4. **Frame Embedding Latency:** ~{latency_ms:.1f} ms per frame on CPU.
+4. **Frame Embedding Latency:** {latency_ms:.1f} ms per frame on CPU.
+
 
 ---
 
