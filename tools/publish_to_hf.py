@@ -86,19 +86,14 @@ Evaluated on standard x86-64 / ARM64 CPU environments using `onnxruntime` (singl
 
 ## Deployment Options & Selection Guide
 
-All 4 ONNX files and the tokenizer are hosted in this repository. Users can choose the combination that best fits their memory and latency requirements:
+All 4 ONNX files and the tokenizer are hosted in this repository. Choose the combination that matches your hardware constraints:
 
-* **Hybrid (Recommended for CPU / Desktop):** `vision_model.onnx` (FP32) + `text_model_quantized.onnx` (INT8)  
-  *Total Size:* **105 MB** | *Vision Latency:* 112 ms | *Text Latency:* 10 ms  
-  *Best for:* Fast on-device inference, semantic search, and video/image indexing.
+| Configuration | Vision Encoder | Text Encoder | Total Size | Vision Latency | Text Latency | Recommended Use Case |
+| :--- | :--- | :--- | :---: | :---: | :---: | :--- |
+| **Hybrid (Recommended)** | `vision_model.onnx` (FP32) | `text_model_quantized.onnx` (INT8) | **105 MB** | **112 ms** | **10 ms** | Standard CPU, desktop, and server deployment (fastest indexing) |
+| **Full INT8** | `vision_model_quantized.onnx` (INT8) | `text_model_quantized.onnx` (INT8) | **72.7 MB** | 1,393 ms | **10 ms** | Extreme storage/memory constraints, embedded devices, WASM |
+| **Full FP32** | `vision_model.onnx` (FP32) | `text_model.onnx` (FP32) | **285.7 MB** | **112 ms** | 22 ms | Full precision baseline and exact PyTorch parity verification |
 
-* **Full INT8 (Ultra-Low Storage & Embedded):** `vision_model_quantized.onnx` (INT8) + `text_model_quantized.onnx` (INT8)  
-  *Total Size:* **72.7 MB** | *Vision Latency:* 1,393 ms | *Text Latency:* 10 ms  
-  *Best for:* Storage-constrained IoT, WASM/browser, and micro-instances where footprint is top priority.
-
-* **Full FP32 (Full Precision Baseline):** `vision_model.onnx` (FP32) + `text_model.onnx` (FP32)  
-  *Total Size:* **285.7 MB** | *Vision Latency:* 112 ms | *Text Latency:* 22 ms  
-  *Best for:* Highest numerical precision and exact PyTorch parity verification.
 
 ---
 
