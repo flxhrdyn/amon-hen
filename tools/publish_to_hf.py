@@ -30,15 +30,19 @@ pipeline_tag: feature-extraction
 
 <div align="center">
 
-# {variant_name} (ONNX & INT8 Quantized)
+<h1 align="center">{variant_name} (ONNX & INT8 Quantized)</h1>
 
-**Lightweight, CPU-native vision-language embedding model based on Apple's MobileCLIP2 architecture.**  
-*Optimized with ONNX Runtime and INT8 dynamic quantization for efficient, zero-GPU inference on laptops, mobile devices, and edge systems.*
+<p align="center">
+  <b>Lightweight, CPU-native vision-language embedding model based on Apple's MobileCLIP2 architecture.</b><br>
+  <i>Optimized with ONNX Runtime and INT8 dynamic quantization for efficient, zero-GPU inference on laptops, mobile devices, and edge systems.</i>
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![ONNX Runtime](https://img.shields.io/badge/Runtime-ONNX%201.18%2B-blueviolet.svg)](https://onnxruntime.ai/)
-[![Pure CPU](https://img.shields.io/badge/Target-100%25%20CPU%20%26%20Edge-brightgreen.svg)]()
-[![Model Size](https://img.shields.io/badge/Size-~105MB%20(Hybrid)-orange.svg)]()
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://onnxruntime.ai/"><img src="https://img.shields.io/badge/Runtime-ONNX%201.18%2B-blueviolet.svg" alt="ONNX Runtime"></a>
+  <img src="https://img.shields.io/badge/Target-100%25%20CPU%20%26%20Edge-brightgreen.svg" alt="Pure CPU">
+  <img src="https://img.shields.io/badge/Size-~105MB%20(Hybrid)-orange.svg" alt="Model Size">
+</p>
 
 </div>
 
