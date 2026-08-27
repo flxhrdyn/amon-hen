@@ -1,24 +1,26 @@
-"""Render 100% authentic Claude Code & Antigravity CLI demo with iconic Seeing Eye pixel art logo."""
+"""Render authentic OpenCode TUI styled demo GIF for Amon Hen."""
 
 import os
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 WIDTH = 900
-HEIGHT = 560
+HEIGHT = 580
 
-# Dark Palette
-BG_COLOR = (24, 24, 27)          # Dark background
-TITLE_BG = (18, 18, 20)          # Titlebar
-BORDER_COLOR = (45, 45, 52)      # Divider line
-PROMPT_BORDER = (55, 57, 72)     # Horizontal divider above prompt
+# OpenCode Dark Slate Theme
+BG_COLOR = (22, 24, 30)          # Slate obsidian
+TITLE_BG = (16, 17, 22)          # Titlebar
+PANEL_BG = (28, 31, 40)          # Card surface
+BORDER_COL = (55, 60, 78)        # Border line
+HIGHLIGHT_BORDER = (245, 185, 65)# Active gold border
+INPUT_BORDER = (170, 130, 245)   # Purple input box border
 
-TEXT_WHITE = (244, 244, 245)     # Primary text
+TEXT_WHITE = (245, 245, 250)     # Primary text
 TEXT_SUB = (160, 165, 180)       # Subtitle text
-TEXT_MUTED = (113, 113, 122)     # Gray metadata / footer
-TEXT_CYAN = (56, 189, 248)       # Timestamp blue
-TEXT_GREEN = (74, 222, 128)      # Score green
-TEXT_GOLD = (250, 204, 21)       # Gold highlight
+TEXT_MUTED = (120, 125, 145)     # Gray metadata
+TEXT_CYAN = (130, 195, 245)      # Starlight cyan timestamp
+TEXT_GREEN = (80, 230, 140)      # Success green
+TEXT_GOLD = (245, 185, 65)       # Gold title
 
 FONT_PATH = "C:/Windows/Fonts/consola.ttf" if os.path.exists("C:/Windows/Fonts/consola.ttf") else None
 FONT_BOLD_PATH = "C:/Windows/Fonts/consolab.ttf" if os.path.exists("C:/Windows/Fonts/consolab.ttf") else FONT_PATH
@@ -30,40 +32,14 @@ if FONT_PATH:
 else:
     font_main = font_bold = font_small = ImageFont.load_default()
 
-# Iconic "Eye of Seeing" Pixel Art Logo (Amon Hen)
-EYE_GRID = [
-    "    ████    ",
-    "  ████████  ",
-    " ███    ███ ",
-    "████ ██ ████",
-    "████ ██ ████",
-    " ███    ███ ",
-    "  ████████  ",
-    "    ████    ",
-    "   ██  ██   ",
-    "  ██    ██  ",
-]
-COLOR_PALETTE = [
-    (249, 226, 175), # Gold brow
-    (250, 179, 135), # Amber
-    (243, 139, 168), # Rose
-    (203, 166, 247), # Violet iris
-    (203, 166, 247), # Violet iris
-    (137, 220, 235), # Starlight cyan
-    (116, 199, 236), # Sky blue
-    (137, 180, 250), # Deep blue
-    (180, 190, 254), # Pedestal
-    (180, 190, 254), # Pedestal
-]
 
-
-def create_base_screen() -> tuple[Image.Image, ImageDraw.ImageDraw]:
+def create_base_window() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     img = Image.new("RGB", (WIDTH, HEIGHT), BG_COLOR)
     draw = ImageDraw.Draw(img)
 
     # Window titlebar
     draw.rectangle([0, 0, WIDTH, 32], fill=TITLE_BG)
-    draw.line([0, 32, WIDTH, 32], fill=BORDER_COLOR)
+    draw.line([0, 32, WIDTH, 32], fill=BORDER_COL)
 
     # macOS window controls
     draw.ellipse([14, 10, 24, 20], fill=(239, 68, 68))
@@ -71,59 +47,82 @@ def create_base_screen() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     draw.ellipse([46, 10, 56, 20], fill=(34, 197, 94))
     draw.text((WIDTH // 2 - 50, 8), "amon-hen", fill=TEXT_MUTED, font=font_small)
 
-    # 1. Seeing Eye Pixel Art Logo
-    x_art = 28
-    y_art = 46
-    pixel_size = 5
-
-    for row_idx, row in enumerate(EYE_GRID):
-        col = COLOR_PALETTE[row_idx]
-        for col_idx, char in enumerate(row):
-            if char != " ":
-                px = x_art + col_idx * pixel_size
-                py = y_art + row_idx * pixel_size
-                draw.rectangle([px, py, px + pixel_size - 1, py + pixel_size - 1], fill=col)
-
-    x_meta = x_art + 78
-    draw.text((x_meta, y_art), "Amon Hen v0.1.0", fill=TEXT_WHITE, font=font_bold)
-    draw.text((x_meta, y_art + 19), "The Seat of Seeing  ·  Local Video Retrieval Engine", fill=TEXT_SUB, font=font_main)
-    draw.text((x_meta, y_art + 38), "MobileCLIP2-S2 (CPU)  ·  sqlite-vec (1 video, 49 frames)", fill=TEXT_MUTED, font=font_main)
-    draw.text((x_meta, y_art + 57), "~/videos/cctv-people-demo.webm", fill=TEXT_MUTED, font=font_small)
+    # 1. Top Header Box (OpenCode style)
+    draw.rounded_rectangle([20, 44, WIDTH - 20, 104], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+    draw.text((36, 52), "Amon Hen v0.1.0", fill=TEXT_GOLD, font=font_bold)
+    draw.text((180, 53), "· The Seat of Seeing", fill=TEXT_SUB, font=font_main)
+    draw.text((36, 76), "Model: MobileCLIP2-S2 (CPU)   Storage: sqlite-vec   Index: 1 video (49 frames)", fill=TEXT_CYAN, font=font_small)
 
     return img, draw
 
 
-def render_screen(
-    stream_content: list[tuple[str, tuple[int, int, int]]] | None = None,
-    prompt_text: str = "",
+def render_opencode_screen(
+    query_text: str = "",
+    show_query_card: bool = False,
+    show_results: bool = False,
+    selected_rank: int | None = None,
+    notification_msg: str | None = None,
+    input_text: str = "",
     show_cursor: bool = True,
-    footer_right: str = "MobileCLIP2 · CPU",
 ) -> Image.Image:
-    img, draw = create_base_screen()
+    img, draw = create_base_window()
 
-    # Stream Content Area
-    y_stream = 142
-    if stream_content:
-        for line_text, col in stream_content:
-            draw.text((28, y_stream), line_text, fill=col, font=font_main)
-            y_stream += 23
+    # 2. Query Card
+    if show_query_card:
+        draw.rounded_rectangle([20, 114, WIDTH - 20, 152], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+        draw.text((36, 124), f"> {query_text}", fill=TEXT_WHITE, font=font_main)
 
-    # Bottom Pinned Interactive Input Box (Claude Code / Antigravity Style)
-    prompt_y = HEIGHT - 74
-    draw.line([0, prompt_y, WIDTH, prompt_y], fill=PROMPT_BORDER)
+    # 3. Results Container Cards
+    if show_results:
+        bar_x = WIDTH - 260
 
-    # > Prompt
-    draw.text((28, prompt_y + 12), "> ", fill=TEXT_SUB, font=font_bold)
-    draw.text((46, prompt_y + 12), prompt_text, fill=TEXT_WHITE, font=font_main)
+        # Card #1
+        is_sel_1 = (selected_rank == 1)
+        c1_bg = (34, 38, 52) if is_sel_1 else PANEL_BG
+        c1_border = HIGHLIGHT_BORDER if is_sel_1 else BORDER_COL
+        draw.rounded_rectangle([20, 164, WIDTH - 20, 238], radius=4, fill=c1_bg, outline=c1_border, width=2 if is_sel_1 else 1)
+        draw.text((36, 174), "#1   00:00:37.0 -> 00:01:06.0", fill=TEXT_CYAN, font=font_bold)
+        draw.text((36, 196), "File: cctv-people-demo.webm   Peak: 00:00:48.0", fill=TEXT_SUB, font=font_small)
+        draw.text((36, 216), "=> Action: Type /open 1 to play moment in VLC", fill=TEXT_GREEN, font=font_small)
+
+        # Smooth score bar #1
+        draw.rounded_rectangle([bar_x, 186, bar_x + 120, 198], radius=2, fill=(45, 50, 68))
+        draw.rounded_rectangle([bar_x, 186, bar_x + 90, 198], radius=2, fill=TEXT_GOLD)
+        draw.text((bar_x + 135, 182), "0.261", fill=TEXT_GREEN, font=font_bold)
+
+        # Card #2
+        draw.rounded_rectangle([20, 248, WIDTH - 20, 302], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+        draw.text((36, 258), "#2   00:00:04.0 -> 00:00:19.0", fill=TEXT_CYAN, font=font_bold)
+        draw.text((36, 280), "File: cctv-people-demo.webm   Peak: 00:00:11.0", fill=TEXT_SUB, font=font_small)
+        draw.rounded_rectangle([bar_x, 266, bar_x + 120, 278], radius=2, fill=(45, 50, 68))
+        draw.rounded_rectangle([bar_x, 266, bar_x + 82, 278], radius=2, fill=TEXT_GOLD)
+        draw.text((bar_x + 135, 262), "0.247", fill=TEXT_GREEN, font=font_bold)
+
+        # Card #3
+        draw.rounded_rectangle([20, 312, WIDTH - 20, 366], radius=4, fill=PANEL_BG, outline=BORDER_COL)
+        draw.text((36, 322), "#3   00:00:24.0 -> 00:00:32.0", fill=TEXT_CYAN, font=font_bold)
+        draw.text((36, 344), "File: cctv-people-demo.webm   Peak: 00:00:28.0", fill=TEXT_SUB, font=font_small)
+        draw.rounded_rectangle([bar_x, 330, bar_x + 120, 342], radius=2, fill=(45, 50, 68))
+        draw.rounded_rectangle([bar_x, 330, bar_x + 75, 342], radius=2, fill=TEXT_GOLD)
+        draw.text((bar_x + 135, 326), "0.227", fill=TEXT_GREEN, font=font_bold)
+
+    # 4. Flash Notification Toast
+    if notification_msg:
+        draw.rounded_rectangle([20, 378, WIDTH - 20, 414], radius=4, fill=(25, 48, 38), outline=TEXT_GREEN)
+        draw.text((36, 386), f"=> {notification_msg}", fill=TEXT_GREEN, font=font_main)
+
+    # 5. Pinned Bottom Input Box (OpenCode Style)
+    draw.rounded_rectangle([20, 444, WIDTH - 20, 492], radius=4, fill=PANEL_BG, outline=INPUT_BORDER, width=2)
+    draw.text((36, 456), "amon-hen > ", fill=INPUT_BORDER, font=font_bold)
+    draw.text((130, 456), input_text, fill=TEXT_WHITE, font=font_main)
 
     if show_cursor:
-        cx = 46 + int(draw.textlength(prompt_text, font=font_main))
-        draw.rectangle([cx + 2, prompt_y + 13, cx + 10, prompt_y + 29], fill=TEXT_WHITE)
+        cx = 130 + int(draw.textlength(input_text, font=font_main))
+        draw.rectangle([cx + 2, 458, cx + 10, 474], fill=TEXT_WHITE)
 
-    # Bottom Footer Status Bar
-    footer_y = HEIGHT - 26
-    draw.text((28, footer_y), "? for shortcuts · /open <id> to play · /exit", fill=TEXT_MUTED, font=font_small)
-    draw.text((WIDTH - 180, footer_y), footer_right, fill=TEXT_MUTED, font=font_small)
+    # Footer Shortcuts
+    draw.text((24, 508), "[Enter] Submit  ·  /open <id> Play Moment  ·  /videos List  ·  /exit Quit", fill=TEXT_MUTED, font=font_small)
+    draw.text((WIDTH - 160, 508), "MobileCLIP2 · CPU", fill=TEXT_MUTED, font=font_small)
 
     return img
 
@@ -132,64 +131,88 @@ def main() -> None:
     frames: list[Image.Image] = []
     durations: list[int] = []
 
-    # Stream sequence - 100% Pure ASCII characters (0 broken font glyphs)
-    results_stream = [
-        ("> a person holding an umbrella", TEXT_WHITE),
-        ("Searching moments in vector index... (18ms)", TEXT_MUTED),
-        ("", TEXT_MUTED),
-        (" 1. 00:00:37.0 - 00:01:06.0  [========  ] 0.261  cctv-people-demo.webm", TEXT_GREEN),
-        ("    Peak: 00:00:48.0  ·  high confidence (type /open 1 to play)", TEXT_MUTED),
-        ("", TEXT_MUTED),
-        (" 2. 00:00:04.0 - 00:00:19.0  [=======   ] 0.247  cctv-people-demo.webm", TEXT_CYAN),
-        (" 3. 00:00:24.0 - 00:00:32.0  [======    ] 0.227  cctv-people-demo.webm", TEXT_CYAN),
-    ]
-
-    open_stream = list(results_stream) + [
-        ("", TEXT_MUTED),
-        ("> /open 1", TEXT_WHITE),
-        ("=> Launching media player at 00:00:48.0 (cctv-people-demo.webm)", TEXT_GREEN),
-    ]
-
-    # Scene 1: Initial Launch
-    frames.append(render_screen(prompt_text="", show_cursor=True))
+    # Scene 1: Initial Screen (Ready)
+    frames.append(render_opencode_screen(input_text="", show_cursor=True))
     durations.append(900)
 
-    # Scene 2: Type Search Query
+    # Scene 2: Type Query in Input Box
     q = "a person holding an umbrella"
     for i in range(1, len(q) + 1, 2):
-        frames.append(render_screen(prompt_text=q[:i], show_cursor=True))
+        frames.append(render_opencode_screen(input_text=q[:i], show_cursor=True))
         durations.append(40)
-    frames.append(render_screen(prompt_text=q, show_cursor=True))
+    frames.append(render_opencode_screen(input_text=q, show_cursor=True))
     durations.append(300)
 
-    # Scene 3: Searching
-    frames.append(render_screen(
-        stream_content=[
-            ("> a person holding an umbrella", TEXT_WHITE),
-            ("Searching moments in vector index... (18ms)", TEXT_MUTED),
-        ],
-        prompt_text="",
+    # Scene 3: Press Enter -> Query Card & Results Appear
+    frames.append(render_opencode_screen(
+        query_text=q,
+        show_query_card=True,
+        show_results=True,
+        input_text="",
         show_cursor=True,
     ))
-    durations.append(500)
-
-    # Scene 4: Stream Results
-    frames.append(render_screen(stream_content=results_stream, prompt_text="", show_cursor=True))
     durations.append(1800)
 
-    # Scene 5: Type /open 1
+    # Scene 4: Type /open 1 in Input Box
     op = "/open 1"
     for i in range(1, len(op) + 1, 2):
-        frames.append(render_screen(stream_content=results_stream, prompt_text=op[:i], show_cursor=True))
+        frames.append(render_opencode_screen(
+            query_text=q,
+            show_query_card=True,
+            show_results=True,
+            selected_rank=1,
+            input_text=op[:i],
+            show_cursor=True,
+        ))
         durations.append(45)
-    frames.append(render_screen(stream_content=results_stream, prompt_text=op, show_cursor=True))
+    frames.append(render_opencode_screen(
+        query_text=q,
+        show_query_card=True,
+        show_results=True,
+        selected_rank=1,
+        input_text=op,
+        show_cursor=True,
+    ))
     durations.append(300)
 
-    # Scene 6: Video Player Launched
-    frames.append(render_screen(stream_content=open_stream, prompt_text="", show_cursor=True))
+    # Scene 5: Submit -> Player Launch Notification Card Appears
+    frames.append(render_opencode_screen(
+        query_text=q,
+        show_query_card=True,
+        show_results=True,
+        selected_rank=1,
+        notification_msg="Launching media player at 00:00:48.0 (cctv-people-demo.webm)...",
+        input_text="",
+        show_cursor=True,
+    ))
+    durations.append(2600)
+
+    # Scene 6: Type /exit
+    ex = "/exit"
+    for i in range(1, len(ex) + 1, 2):
+        frames.append(render_opencode_screen(
+            query_text=q,
+            show_query_card=True,
+            show_results=True,
+            selected_rank=1,
+            notification_msg="Launching media player at 00:00:48.0 (cctv-people-demo.webm)...",
+            input_text=ex[:i],
+            show_cursor=True,
+        ))
+        durations.append(45)
+
+    frames.append(render_opencode_screen(
+        query_text=q,
+        show_query_card=True,
+        show_results=True,
+        selected_rank=1,
+        notification_msg="Farewell.",
+        input_text="",
+        show_cursor=True,
+    ))
     durations.append(2500)
 
-    for path_name in ["demo/demo-tui-v9.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
+    for path_name in ["demo/demo-tui-v10.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
         frames[0].save(
             out_path,
@@ -199,7 +222,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated Seeing Eye Antigravity demo ({len(frames)} frames, {Path('demo/demo-tui-v9.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated OpenCode styled TUI demo ({len(frames)} frames, {Path('demo/demo-tui-v10.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
