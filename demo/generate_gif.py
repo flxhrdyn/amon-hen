@@ -1,4 +1,4 @@
-"""Render full, high-fidelity rich visual TUI demo GIF for Amon Hen."""
+"""Render authentic CLI-first demo GIF preserving 100% of the approved TUI visual styling."""
 
 import os
 from pathlib import Path
@@ -45,7 +45,7 @@ def draw_window_frame() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     draw.ellipse([46, 11, 56, 21], fill=(39, 201, 63))
 
     # Window title
-    draw.text((WIDTH // 2 - 85, 9), "Amon Hen — Seat of Seeing [TUI]", fill=MUTED_TEXT, font=font_small)
+    draw.text((WIDTH // 2 - 85, 9), "amon-hen — powershell", fill=MUTED_TEXT, font=font_small)
 
     # Outer border
     draw.rectangle([10, 42, WIDTH - 10, HEIGHT - 10], outline=BORDER_COLOR, width=1)
@@ -69,11 +69,23 @@ def draw_clean_progress_bar(
         draw.rounded_rectangle([x, y, x + fill_w, y + h], radius=3, fill=color)
 
 
+def render_shell_frame(lines: list[tuple[str, tuple[int, int, int]]]) -> Image.Image:
+    """Render plain shell prompt before/after TUI session."""
+    img, draw = draw_window_frame()
+    x = 24
+    y = 54
+    line_h = 24
+    for text, col in lines:
+        draw.text((x, y), text, fill=col, font=font_main)
+        y += line_h
+    return img
+
+
 def render_tui_frame(
     prompt_input: str = "",
     results: list[dict] | None = None,
     indexing_state: tuple[str, float, str] | None = None,
-    status_verb: str = "surveying",
+    status_verb: str = "ready",
     selected_rank: int | None = None,
     flash_message: str | None = None,
 ) -> Image.Image:
@@ -150,7 +162,7 @@ def render_tui_frame(
         draw.rounded_rectangle([20, HEIGHT - 96, WIDTH - 20, HEIGHT - 64], radius=4, fill=(28, 55, 40), outline=GREEN_ACCENT)
         draw.text((34, HEIGHT - 87), f">> {flash_message}", fill=GREEN_ACCENT, font=font_main)
 
-    # --- Bottom Prompt Bar ---
+    # --- Bottom Prompt Bar (CLI Interactive Input) ---
     prompt_y = HEIGHT - 52
     draw.rectangle([12, prompt_y, WIDTH - 12, HEIGHT - 12], fill=PANEL_BG)
     draw.line([12, prompt_y, WIDTH - 12, prompt_y], fill=BORDER_COLOR)
@@ -167,8 +179,8 @@ def render_tui_frame(
     draw.rectangle([cursor_x + 2, prompt_y + 9, cursor_x + 10, prompt_y + 27], fill=WHITE_TEXT)
 
     # Status Right
-    status_str = f"* {status_verb} | /help"
-    draw.text((WIDTH - 180, prompt_y + 10), status_str, fill=MUTED_TEXT, font=font_small)
+    status_str = f"* {status_verb} | /help | /exit"
+    draw.text((WIDTH - 210, prompt_y + 10), status_str, fill=MUTED_TEXT, font=font_small)
 
     return img
 
@@ -183,11 +195,29 @@ def main() -> None:
         {"start": "00:00:24.0", "end": "00:00:32.0", "file": "cctv-people-demo.webm", "peak": "00:00:28.0", "score": 0.227},
     ]
 
-    # Scene 1: Initial Launch
+    # Scene 1: Initial Shell Prompt
+    frames.append(render_shell_frame([
+        ("PS C:\\Users\\Felix\\videos> ", GREEN_ACCENT)
+    ]))
+    durations.append(400)
+
+    # Scene 2: Type "amon-hen" in shell
+    cmd = "amon-hen"
+    for i in range(1, len(cmd) + 1, 2):
+        frames.append(render_shell_frame([
+            (f"PS C:\\Users\\Felix\\videos> {cmd[:i]}", WHITE_TEXT)
+        ]))
+        durations.append(40)
+    frames.append(render_shell_frame([
+        (f"PS C:\\Users\\Felix\\videos> {cmd}", WHITE_TEXT)
+    ]))
+    durations.append(250)
+
+    # Scene 3: TUI Launch & Banner
     frames.append(render_tui_frame(prompt_input="", status_verb="ready"))
     durations.append(900)
 
-    # Scene 2: Indexing Progress
+    # Scene 4: Live Indexing Command
     for p in [0.20, 0.50, 0.85, 1.0]:
         frames.append(render_tui_frame(
             prompt_input="/index demo/",
@@ -196,35 +226,47 @@ def main() -> None:
         ))
         durations.append(350)
 
-    # Scene 3: Typing Search Query
+    # Scene 5: Typing Search Query
     q1 = "a person holding an umbrella"
     for i in range(1, len(q1) + 1, 2):
         frames.append(render_tui_frame(prompt_input=q1[:i], status_verb="typing"))
         durations.append(45)
 
-    # Scene 4: Searching Animation
-    for verb in ["searching...", "matching...", "ranking..."]:
+    # Scene 6: Searching Animation
+    for verb in ["searching...", "ranking...", "matching..."]:
         frames.append(render_tui_frame(prompt_input=q1, status_verb=verb))
         durations.append(180)
 
-    # Scene 5: Displaying Search Results Cards
+    # Scene 7: Display Search Results Cards
     frames.append(render_tui_frame(prompt_input="", results=res1, status_verb="ready"))
     durations.append(1800)
 
-    # Scene 6: Selecting Result #1
-    for cmd in ["/o", "/open", "/open 1"]:
-        frames.append(render_tui_frame(prompt_input=cmd, results=res1, selected_rank=1, status_verb="executing"))
+    # Scene 8: Select Result #1
+    for open_cmd in ["/o", "/open", "/open 1"]:
+        frames.append(render_tui_frame(prompt_input=open_cmd, results=res1, selected_rank=1, status_verb="executing"))
         durations.append(250)
 
-    # Scene 7: Video Launch Notification
+    # Scene 9: Video Launch Notification
     frames.append(render_tui_frame(
         prompt_input="",
         results=res1,
         selected_rank=1,
         flash_message="Launching media player at 00:00:48.0 (cctv-people-demo.webm)...",
-        status_verb="launched",
+        status_verb="playing",
     ))
-    durations.append(3000)
+    durations.append(2800)
+
+    # Scene 10: Exit Session
+    frames.append(render_tui_frame(prompt_input="/exit", results=res1, status_verb="exiting"))
+    durations.append(300)
+
+    # Scene 11: Return to Shell
+    frames.append(render_shell_frame([
+        ("PS C:\\Users\\Felix\\videos> amon-hen", WHITE_TEXT),
+        ("Farewell.", MUTED_TEXT),
+        ("PS C:\\Users\\Felix\\videos> ", GREEN_ACCENT),
+    ]))
+    durations.append(2500)
 
     for path_name in ["demo/demo-tui-v4.gif", "demo/demo-tui.gif", "demo/demo.gif"]:
         out_path = Path(path_name)
@@ -236,7 +278,7 @@ def main() -> None:
             loop=0,
             optimize=True,
         )
-    print(f"Successfully generated rich TUI demo ({len(frames)} frames, {Path('demo/demo-tui-v4.gif').stat().st_size // 1024} KB)")
+    print(f"Successfully generated CLI-first TUI demo ({len(frames)} frames, {Path('demo/demo-tui-v4.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
