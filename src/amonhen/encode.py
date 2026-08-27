@@ -44,6 +44,7 @@ def ensure_model(spec: ModelSpec) -> Path:
         return _RESOLVED[spec.repo_id]
 
     import os
+
     from huggingface_hub import snapshot_download
 
     auth_token = os.getenv("HF_TOKEN")

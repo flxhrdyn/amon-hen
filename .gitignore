@@ -12,3 +12,4 @@ docs/
 .env.*
 !.env.example
 models/
+benchmarks/charades_sta_subset/

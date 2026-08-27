@@ -57,4 +57,5 @@ select = ["E", "F", "I", "UP", "B"]
 "src/amonhen/cli.py" = ["B008"]
 "benchmarks/run.py" = ["B008"]
 "demo/*" = ["E501", "I"]
+"tools/*" = ["E501"]
 

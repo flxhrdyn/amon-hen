@@ -15,9 +15,12 @@ library_name: onnxruntime
 tags:
 - clip
 - vision
-- video-retrieval
+- text-embeddings
+- multimodal
 - onnx
 - cpu-optimized
+- quantization
+- int8
 - edge-ai
 - mobileclip
 - fastvit
@@ -27,15 +30,15 @@ pipeline_tag: feature-extraction
 
 <div align="center">
 
-# {variant_name} (ONNX CPU & Edge Optimized)
+# {variant_name} (ONNX & INT8 Quantized)
 
-**Lightweight, CPU-native vision-language embedding model for [Amon Hen](https://github.com/flxhrdyn/amon-hen)**  
-*Optimized for pure CPU inference on laptops, low-power edge devices, and embedded servers.*
+**Lightweight, CPU-native vision-language embedding model based on Apple's MobileCLIP2 architecture.**  
+*Optimized with ONNX Runtime and INT8 dynamic quantization for efficient, zero-GPU inference on laptops, mobile devices, and edge systems.*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![ONNX Runtime](https://img.shields.io/badge/Runtime-ONNX%201.18%2B-blueviolet.svg)](https://onnxruntime.ai/)
-[![Pure CPU](https://img.shields.io/badge/Target-100%25%20CPU%20Only-brightgreen.svg)]()
-[![Amon Hen Project](https://img.shields.io/badge/Project-Amon%20Hen-82AAFF.svg)](https://github.com/flxhrdyn/amon-hen)
+[![Pure CPU](https://img.shields.io/badge/Target-100%25%20CPU%20%26%20Edge-brightgreen.svg)]()
+[![Model Size](https://img.shields.io/badge/Size-~105MB%20(Hybrid)-orange.svg)]()
 
 </div>
 
@@ -43,94 +46,100 @@ pipeline_tag: feature-extraction
 
 ## Model Overview
 
-`{model_variant}` is a standalone ONNX conversion of Apple's **MobileCLIP2-S0** architecture, specifically optimized for edge deployment and zero-GPU local semantic video retrieval in **[Amon Hen](https://github.com/flxhrdyn/amon-hen)**.
+`{model_variant}` is a standalone ONNX export and INT8 quantized distribution of Apple's **MobileCLIP2-S0** architecture. This repository provides pre-converted ONNX weights and quantized variants to enable drop-in, zero-dependency deployment with `onnxruntime` across Python, C++, Rust, and mobile/WASM runtimes.
 
 ### Key Specifications:
-* **Vision Backbone:** FastViT Hybrid Architecture (~12M parameters)
-* **Text Encoder:** Lightweight Transformer (~15M parameters)
-* **Input Image Resolution:** 256 x 256 RGB (shortest-edge resize + center crop)
+* **Architecture:** Hybrid FastViT vision backbone (~12M parameters) + Lightweight Transformer text encoder (~15M parameters)
+* **Input Image Resolution:** 256 x 256 RGB (shortest-edge resize + center crop, ImageNet normalized)
 * **Embedding Dimension:** 512 (L2-normalized unit vectors)
 * **Context Length:** 77 tokens
+* **Total Parameters:** ~27M
 
 ---
 
 ## Model Artifacts & Formats
 
-| File | Precision | Approximate Size | Recommended Hardware |
+| File | Precision | File Size | Description |
 | :--- | :--- | :--- | :--- |
-| `vision_model.onnx` | **FP32** (Universal) | ~43 MB | Standard Desktop & Laptop CPUs |
-| `vision_model_quantized.onnx` | **INT8** (Quantized) | ~15 MB | Low-power Edge CPUs (ARM NEON / Cortex-A72+) |
-| `text_model.onnx` | **FP32** | ~242 MB | Baseline Text Retrieval |
-| `text_model_quantized.onnx` | **INT8** | ~65 MB | Fast On-device Text Search |
-| `tokenizer.json` | Hugging Face Fast | ~2.1 MB | Universal Tokenizer |
+| `vision_model.onnx` | **FP32** | ~43.4 MB | FastViT vision backbone (optimal for CPU execution) |
+| `vision_model_quantized.onnx` | **INT8** | ~11.3 MB | Dynamic INT8 quantized vision model |
+| `text_model.onnx` | **FP32** | ~242.3 MB | Full-precision text encoder |
+| `text_model_quantized.onnx` | **INT8** | ~61.3 MB | Dynamic INT8 quantized text encoder (2.09x faster) |
+| `tokenizer.json` | Hugging Face Fast | ~2.1 MB | Standalone CLIP BPE tokenizer |
 
 ---
 
-## Benchmarks & Empirical Performance
+## Benchmarks & Quantization Profile
 
-Measured across standard x86-64 and ARM64 CPUs without GPU acceleration (ONNX Runtime, 4 threads):
+Evaluated on standard x86-64 / ARM64 CPU environments using `onnxruntime` (single-query batch=1, 4 threads):
 
-| Component | FP32 Size | INT8 Size | Compression | Latency (FP32 -> INT8) | Recommendation |
-| :--- | :---: | :---: | :---: | :---: | :--- |
-| **Text Encoder** | 242.3 MB | 61.3 MB | -74.7% | 21.6 ms -> **10.3 ms** (2.09x faster) | **INT8** (optimal speed & low RAM) |
-| **Vision Backbone** | 43.4 MB | 11.3 MB | -74.0% | **111.8 ms** -> 1,393.1 ms | **FP32** (optimal for FastViT CPU kernels) |
-| **Full Pipeline** | **285.7 MB** | **72.7 MB** | **-74.6%** | Hybrid: **18.5x Realtime** | **Hybrid** (FP32 Vision + INT8 Text: ~105 MB total) |
+| Component | FP32 Size | INT8 Size | Size Reduction | Latency (FP32 -> INT8) | Cosine Fidelity | Recommended Mode |
+| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Text Encoder** | 242.3 MB | 61.3 MB | **-74.7%** | 21.6 ms -> **10.3 ms** (2.09x speedup) | 0.9556 | **INT8** |
+| **Vision Backbone** | 43.4 MB | 11.3 MB | **-74.0%** | **111.8 ms** -> 1,393.1 ms | 0.2252 (dynamic) | **FP32** |
+| **Complete System** | **285.7 MB** | **72.7 MB** | **-74.6%** | **Hybrid: ~122 ms total** | >= {min_cosine:.4f} (FP32) | **Hybrid (FP32 Vision + INT8 Text: ~105 MB)** |
 
-* **Numerical Parity (PyTorch vs ONNX):** Cosine Similarity >= {min_cosine:.4f} (virtually zero loss).
-* **Frame Embedding Latency:** ~{latency_ms:.1f} ms per frame on CPU.
-* **Text Query Latency:** ~10-18 ms total latency.
-* **Indexing Throughput:** 1.7x - 4.8x Realtime factor on CPU (config-dependent).
-* **Memory Footprint:** <= 200 MB RAM peak during full video indexing.
-
-### Video Moment Retrieval: Charades-STA
-
-Evaluated on 20 Charades-STA test videos (56 temporal grounding queries) using the [Amon Hen](https://github.com/flxhrdyn/amon-hen) retrieval pipeline:
-
-| Sampler | R@1 (IoU=0.3) | R@1 (IoU=0.5) | R@5 (IoU=0.3) | mIoU | Latency |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| Fixed (1.0 fps) | 0.393 | 0.250 | 0.696 | 0.250 | 359 ms |
-| Adaptive (Default) | 0.250 | 0.107 | 0.607 | 0.155 | 335 ms |
-| Adaptive + Embed-Dedup | 0.250 | 0.107 | 0.607 | 0.166 | 385 ms |
-
-Fixed 1 fps sampling achieves the best retrieval accuracy (R@1@0.3=0.393, R@5@0.3=0.696). The Adaptive sampler trades some accuracy for higher indexing throughput and lower storage footprint.
+### Quantization Findings:
+1. **Text Transformer:** Quantizes exceptionally well with dynamic INT8 — reducing size by ~75% and doubling CPU inference speed while preserving 0.955+ cosine parity.
+2. **FastViT Vision:** Dynamic INT8 quantization adds per-layer conversion overhead to depthwise convolutions on CPU. For CPU deployment without dedicated VNNI/NPU calibration, **FP32 vision + INT8 text** delivers the optimal balance of speed (~122 ms total latency), accuracy, and small memory footprint (~105 MB total).
+3. **Parity:** FP32 ONNX outputs maintain cosine similarity >= {min_cosine:.4f} against original PyTorch weights.
+4. **Frame Embedding Latency:** ~{latency_ms:.1f} ms per frame on CPU.
 
 ---
 
 ## Quickstart
 
-### 1. In Amon Hen (Native Video Moment Search CLI)
-```bash
-# Index a local video collection
-amon-hen index ~/Videos/ --sampler adaptive
+Run standalone inference with `onnxruntime` and `tokenizers` without PyTorch:
 
-# Search semantic moments instantly
-amon-hen search "a red sports car speeding"
+```bash
+pip install onnxruntime numpy tokenizers pillow
 ```
 
-### 2. Standalone Python (ONNX Runtime)
 ```python
 import numpy as np
 import onnxruntime as ort
 from PIL import Image
 from tokenizers import Tokenizer
 
-# Load ONNX sessions
+# 1. Load ONNX sessions (Hybrid: FP32 Vision + INT8 Text)
 vis_sess = ort.InferenceSession("vision_model.onnx", providers=["CPUExecutionProvider"])
-txt_sess = ort.InferenceSession("text_model.onnx", providers=["CPUExecutionProvider"])
+txt_sess = ort.InferenceSession("text_model_quantized.onnx", providers=["CPUExecutionProvider"])
 tokenizer = Tokenizer.from_file("tokenizer.json")
 
-# Encode Image (Preprocessed 256x256 RGB normalized)
-dummy_img = np.random.randn(1, 3, 256, 256).astype(np.float32)
-img_emb = vis_sess.run(None, {{"image": dummy_img}})[0]
+# 2. Preprocess & encode image
+def preprocess_image(image_path: str) -> np.ndarray:
+    img = Image.open(image_path).convert("RGB")
+    # Resize shortest edge to 256, center crop 256x256
+    w, h = img.size
+    scale = 256.0 / min(w, h)
+    img = img.resize((int(w * scale), int(h * scale)), Image.Resampling.BILINEAR)
+    w, h = img.size
+    left = (w - 256) // 2
+    top = (h - 256) // 2
+    img = img.crop((left, top, left + 256, top + 256))
+    
+    arr = np.array(img, dtype=np.float32) / 255.0
+    mean = np.array([0.48145466, 0.4578275, 0.40821073], dtype=np.float32)
+    std = np.array([0.26862954, 0.26130258, 0.27577711], dtype=np.float32)
+    arr = (arr - mean) / std
+    arr = arr.transpose(2, 0, 1)[np.newaxis, ...]
+    return arr.astype(np.float32)
+
+pixel_values = preprocess_image("sample.jpg")
+input_name = vis_sess.get_inputs()[0].name
+img_emb = vis_sess.run(None, {{input_name: pixel_values}})[0]
 img_emb /= np.linalg.norm(img_emb, axis=-1, keepdims=True)
 
-# Encode Text
-encoded = tokenizer.encode("a person walking in the rain")
+# 3. Preprocess & encode text
+query = "a photo of a golden retriever playing in grass"
+encoded = tokenizer.encode(query)
 tokens = np.array([encoded.ids[:77] + [0] * (77 - len(encoded.ids[:77]))], dtype=np.int64)
-txt_emb = txt_sess.run(None, {{"tokens": tokens}})[0]
+txt_input_name = txt_sess.get_inputs()[0].name
+txt_emb = txt_sess.run(None, {{txt_input_name: tokens}})[0]
 txt_emb /= np.linalg.norm(txt_emb, axis=-1, keepdims=True)
 
-similarity = float(img_emb @ txt_emb.T)
+# 4. Compute cosine similarity
+similarity = float(np.dot(img_emb[0], txt_emb[0]))
 print(f"Cosine Similarity: {{similarity:.4f}}")
 ```
 
@@ -138,9 +147,11 @@ print(f"Cosine Similarity: {{similarity:.4f}}")
 
 ## License & Attribution
 
-* Model weights converted from Apple's MobileCLIP repository under Apple Sample Code / MIT license.
-* Packaged and distributed for the [Amon Hen Project](https://github.com/flxhrdyn/amon-hen).
+* Original model architecture and weights by Apple Inc. under Apple Sample Code / MIT license.
+* ONNX conversion and quantization maintained by [@felixhrdyn](https://huggingface.co/felixhrdyn).
+* Used in applications such as [Amon Hen](https://github.com/flxhrdyn/amon-hen) for CPU-native semantic search.
 """
+
 
 
 

@@ -19,14 +19,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import io
 import json
 import struct
 import urllib.request
-import zipfile
 from collections import defaultdict
 from pathlib import Path
-
 
 ANNOTATIONS_URL = (
     "https://huggingface.co/datasets/jwnt4/charades-sta-test/resolve/main/"
@@ -226,7 +223,8 @@ def parse_annotations(text: str) -> dict[str, list[tuple[float, float, str]]]:
 
 
 def get_video_duration(video_path: Path) -> float:
-    import subprocess, json as _json
+    import json as _json
+    import subprocess
     try:
         result = subprocess.run(
             ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", str(video_path)],
@@ -336,7 +334,7 @@ def main() -> None:
     if manifest:
         total_ann = sum(len(m["annotations"]) for m in manifest)
         print(f"Total annotation queries: {total_ann}")
-        print(f"\nRun benchmark with:")
+        print("\nRun benchmark with:")
         print(f"  uv run python -m benchmarks.run --data-dir {out_dir}")
     else:
         print("No videos were successfully prepared.")

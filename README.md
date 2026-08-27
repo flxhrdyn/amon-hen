@@ -152,26 +152,35 @@ Video File
 
 ## Benchmarks
 
-Evaluated on 20 real Charades-STA test videos (56 temporal grounding queries), using standard VMR metrics.
+### Video Moment Retrieval: Charades-STA (Zero-Shot Baseline)
+
+Amon Hen is designed as a lightweight, zero-GPU semantic frame search engine with post-hoc temporal clustering. Evaluated zero-shot (without video-specific training or fine-tuning) on 20 Charades-STA test videos (56 temporal grounding queries):
 
 | Sampler Configuration | R@1 (IoU=0.3) | R@1 (IoU=0.5) | R@5 (IoU=0.3) | mIoU | Indexing Speed | Latency | Storage / Hour |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Fixed (1.0 fps)** | 0.393 | 0.250 | 0.696 | 0.250 | 1.7x RT | 359 ms | 13.0 MB |
-| **Adaptive (Default)** | 0.250 | 0.107 | 0.607 | 0.155 | 4.8x RT | 335 ms | 12.9 MB |
-| **Adaptive + Embed-Dedup** | 0.250 | 0.107 | 0.607 | 0.166 | 4.7x RT | 385 ms | 12.9 MB |
+| **Fixed (1.0 fps)** | **0.393** | **0.250** | **0.696** | **0.250** | 1.7x Realtime | 359 ms | 13.0 MB |
+| **Adaptive (Default)** | 0.250 | 0.107 | 0.607 | 0.155 | **4.8x Realtime** | **335 ms** | 12.9 MB |
+| **Adaptive + Embed-Dedup** | 0.250 | 0.107 | 0.607 | 0.166 | 4.7x Realtime | 385 ms | 12.9 MB |
 
-**Fixed 1 fps sampling achieves the best retrieval quality** (R@1@0.3=0.393, R@5@0.3=0.696).
-The Adaptive sampler trades accuracy for indexing throughput.
+### Evaluation & Design Insights:
+- **Search Usability (Recall@5):** For practical desktop search, **Recall@5 = 0.696** indicates that the relevant video moment is surfaced in the top-5 candidates ~70% of the time in pure zero-shot mode on CPU.
+- **Zero-Shot vs Supervised Context:** Unlike heavy supervised temporal grounding architectures (e.g. VSLNet, 2D-TAN, Moment-DETR) that require GPU clusters and dataset-specific training, Amon Hen operates zero-shot with a ~12M parameter vision backbone, consuming < 200 MB RAM and 0% GPU.
+- **Sampler Trade-offs:**
+  - **Fixed 1.0 fps:** Highest retrieval fidelity (R@1@0.3 = 0.393, R@5 = 0.696) — recommended when search precision is the top priority.
+  - **Adaptive Sampler:** Yields 2.8x faster indexing throughput (up to 4.8x Realtime) via perceptual aHash and Laplacian sharpness gating, ideal for long-form video archives.
 
 *Metrics:*
 - **R@K (IoU=θ):** Fraction of queries where at least one top-K segment achieves temporal IoU >= θ with ground truth.
 - **mIoU:** Mean Intersection-over-Union across top-1 predictions.
-- **Indexing Speed:** Throughput as a multiple of real-time video duration.
+- **Indexing Speed:** Processing throughput expressed as a multiple of video playback duration.
 
 To reproduce:
 
 ```bash
+# 1. Download and extract Charades-STA test subset (20 videos, ~25 MB via ZIP range requests)
 uv run python tools/prepare_charades_sta.py --videos 20 --out benchmarks/charades_sta_subset
+
+# 2. Run benchmark sweep
 uv run python -m benchmarks.run --data-dir benchmarks/charades_sta_subset
 ```
 
