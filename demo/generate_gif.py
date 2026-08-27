@@ -382,16 +382,17 @@ def main() -> None:
     ]))
     durations.append(3000)
 
-    out_path = Path("demo/demo.gif")
-    frames[0].save(
-        out_path,
-        save_all=True,
-        append_images=frames[1:],
-        duration=durations,
-        loop=0,
-        optimize=True,
-    )
-    print(f"Successfully generated clean crisp rectangular demo ({len(frames)} frames, {out_path.stat().st_size // 1024} KB)")
+    for path_name in ["demo/demo-crisp.gif", "demo/demo.gif"]:
+        out_path = Path(path_name)
+        frames[0].save(
+            out_path,
+            save_all=True,
+            append_images=frames[1:],
+            duration=durations,
+            loop=0,
+            optimize=True,
+        )
+    print(f"Successfully generated demo ({len(frames)} frames, {Path('demo/demo-crisp.gif').stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
