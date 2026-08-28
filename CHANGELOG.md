@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.1] - 2026-08-28
+
+### Fixed
+* **macOS SQLite Extension Loading:** Added standalone Python provisioning and runtime check for macOS Python builds lacking dynamic extension support.
+* **PyPI Documentation:** Tailored clean, concise `README_PYPI.md` focused on installation and quickstart usage.
+* **Cross-Platform Test Compatibility:** Fixed ANSI escape code assertions across Unix and Windows CI runners.
+
 ## [0.1.0] - 2026-08-28
+
 
 ### Added
 * **CPU-Native Moment Retrieval:** Natural language video search running entirely on CPU using Apple's MobileCLIP2 architecture and ONNX Runtime.

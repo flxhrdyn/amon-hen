@@ -1,7 +1,8 @@
 [project]
 name = "amon-hen"
-version = "0.1.0"
+version = "0.1.1"
 description = "Local, CPU-only video moment retrieval from the command line"
+
 readme = "README_PYPI.md"
 requires-python = ">=3.11"
 
