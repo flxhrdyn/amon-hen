@@ -42,9 +42,7 @@ def test_evaluate_query_computes_recall_and_miou():
     )
 
     # GT is 12s to 18s (inside seg1)
-    res = evaluate_query(
-        [seg1, seg2], gt_start_s=12.0, gt_end_s=18.0, latency_ms=15.0
-    )
+    res = evaluate_query([seg1, seg2], gt_start_s=12.0, gt_end_s=18.0, latency_ms=15.0)
 
     assert res.r1_03 is True
     assert res.r1_05 is True

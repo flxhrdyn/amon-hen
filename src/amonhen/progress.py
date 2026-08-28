@@ -20,9 +20,7 @@ class Reporter(Protocol):
 
     def frame_progress(self, decoded: int, stored: int, ts_ms: int) -> None: ...
 
-    def video_finished(
-        self, path: str, decoded: int, stored: int, elapsed_s: float
-    ) -> None: ...
+    def video_finished(self, path: str, decoded: int, stored: int, elapsed_s: float) -> None: ...
 
     def run_finished(self, videos: int, frames: int, elapsed_s: float) -> None: ...
 
@@ -112,9 +110,7 @@ class RichReporter:
                 description=desc,
             )
 
-    def video_finished(
-        self, path: str, decoded: int, stored: int, elapsed_s: float
-    ) -> None:
+    def video_finished(self, path: str, decoded: int, stored: int, elapsed_s: float) -> None:
         if self._progress is not None and self._video_task is not None:
             self._progress.update(
                 self._video_task,
@@ -130,4 +126,3 @@ class RichReporter:
     def __del__(self) -> None:
         if getattr(self, "_progress", None) is not None and self._progress.live.is_started:
             self._progress.stop()
-

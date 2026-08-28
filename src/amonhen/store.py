@@ -117,9 +117,7 @@ class Store:
         if "score_baseline" not in columns:
             cur.execute("ALTER TABLE video ADD COLUMN score_baseline REAL")
 
-        stored_dim = cur.execute(
-            "SELECT value FROM meta WHERE key = 'embed_dim'"
-        ).fetchone()
+        stored_dim = cur.execute("SELECT value FROM meta WHERE key = 'embed_dim'").fetchone()
         if stored_dim is None:
             cur.execute(
                 "INSERT INTO meta(key, value) VALUES ('embed_dim', ?)",
@@ -163,8 +161,7 @@ class Store:
                               indexed_at, sampler_config_hash, model_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (path, duration_ms, fps, size_bytes, mtime, time.time(),
-             sampler_config_hash, model_id),
+            (path, duration_ms, fps, size_bytes, mtime, time.time(), sampler_config_hash, model_id),
         )
         self._conn.commit()
         return int(cur.lastrowid)
@@ -191,9 +188,7 @@ class Store:
         ).fetchall()
         return {int(row["id"]): float(row["score_baseline"]) for row in rows}
 
-    def sample_frame_embeddings(
-        self, video_id: int, sample_size: int = 50
-    ) -> list[np.ndarray]:
+    def sample_frame_embeddings(self, video_id: int, sample_size: int = 50) -> list[np.ndarray]:
         rows = self._conn.execute(
             """
             SELECT v.embedding
@@ -206,7 +201,6 @@ class Store:
             (video_id, sample_size),
         ).fetchall()
         return [np.frombuffer(row["embedding"], dtype=np.float32) for row in rows]
-
 
     def add_frames(self, video_id: int, frames: list[FrameRecord]) -> None:
         if not frames:
@@ -281,9 +275,7 @@ class Store:
         )
 
     def video_id_for_path(self, path: str) -> int | None:
-        row = self._conn.execute(
-            "SELECT id FROM video WHERE path = ?", (path,)
-        ).fetchone()
+        row = self._conn.execute("SELECT id FROM video WHERE path = ?", (path,)).fetchone()
         return int(row["id"]) if row else None
 
     def remove_video(self, video_id: int) -> None:

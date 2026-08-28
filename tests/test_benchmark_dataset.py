@@ -10,9 +10,7 @@ def test_load_dataset_parses_json(tmp_path):
         {
             "video_path": str(video_file),
             "duration_s": 20.0,
-            "annotations": [
-                {"query": "person jumping", "start_s": 5.0, "end_s": 10.0}
-            ],
+            "annotations": [{"query": "person jumping", "start_s": 5.0, "end_s": 10.0}],
         }
     ]
     json_path = tmp_path / "annotations.json"

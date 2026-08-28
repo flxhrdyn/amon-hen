@@ -61,4 +61,3 @@ _REGISTRY = {spec.model_id: spec for spec in (MOBILECLIP2_S0, MOBILECLIP2_S2)}
 
 def get_model(model_id: str) -> ModelSpec:
     return _REGISTRY[model_id]
-

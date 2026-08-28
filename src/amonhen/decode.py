@@ -71,9 +71,7 @@ def probe(path: str | Path) -> VideoInfo:
         if line.startswith("Duration:"):
             clock = line.split("Duration:")[1].split(",")[0].strip()
             hours, minutes, seconds = clock.split(":")
-            duration_ms = int(
-                (int(hours) * 3600 + int(minutes) * 60 + float(seconds)) * 1000
-            )
+            duration_ms = int((int(hours) * 3600 + int(minutes) * 60 + float(seconds)) * 1000)
         if "Video:" in line:
             for part in line.split(","):
                 part = part.strip()
@@ -102,10 +100,18 @@ def iter_frames(path: str | Path, fps: float, info: VideoInfo | None = None) -> 
     frame_bytes = info.width * info.height * 3
 
     command = [
-        _ffmpeg(), "-hide_banner", "-loglevel", "error",
-        "-i", str(path),
-        "-vf", f"fps={fps}",
-        "-f", "rawvideo", "-pix_fmt", "rgb24",
+        _ffmpeg(),
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-i",
+        str(path),
+        "-vf",
+        f"fps={fps}",
+        "-f",
+        "rawvideo",
+        "-pix_fmt",
+        "rgb24",
         "-",
     ]
     # stderr goes to a temporary file rather than a pipe: nothing reads it
@@ -125,9 +131,9 @@ def iter_frames(path: str | Path, fps: float, info: VideoInfo | None = None) -> 
                     break
                 # frombuffer aliases the read buffer and is read-only;
                 # copy so callers get a normal, writable array.
-                image = np.frombuffer(buffer, dtype=np.uint8).reshape(
-                    info.height, info.width, 3
-                ).copy()
+                image = (
+                    np.frombuffer(buffer, dtype=np.uint8).reshape(info.height, info.width, 3).copy()
+                )
                 yield Frame(ts_ms=int(round(index * 1000.0 / fps)), image=image)
                 index += 1
         finally:

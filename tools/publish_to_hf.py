@@ -4,7 +4,9 @@ import os
 from pathlib import Path
 
 
-def generate_model_card(model_variant: str, min_cosine: float = 0.9998, latency_ms: float = 25.0) -> str:
+def generate_model_card(
+    model_variant: str, min_cosine: float = 0.9998, latency_ms: float = 25.0
+) -> str:
     """Generate an industry-standard, clean Model Card for Hugging Face without emojis."""
     variant_name = model_variant.upper()
     return f"""---
@@ -150,9 +152,6 @@ print(f"Cosine Similarity: {{similarity:.4f}}")
 * ONNX conversion and quantization maintained by [@felixhrdyn](https://huggingface.co/felixhrdyn).
 * Used in applications such as [Amon Hen](https://github.com/flxhrdyn/amon-hen) for CPU-native semantic search.
 """
-
-
-
 
 
 def publish_model_package(

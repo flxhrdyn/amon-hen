@@ -90,7 +90,7 @@ def _open_index(idx: int, last_results: list[Segment]) -> tuple[str, bool]:
         seg = last_results[idx - 1]
         success = open_video_at(seg.video_path, seg.best_ts_ms)
         ts_s = seg.best_ts_ms / 1000.0
-        time_str = f"{int(ts_s//60):02d}:{ts_s%60:04.1f}"
+        time_str = f"{int(ts_s // 60):02d}:{ts_s % 60:04.1f}"
         if success:
             return f"Opening {Path(seg.video_path).name} at {time_str}...", False
         return f"Could not launch media player for {seg.video_path}", False

@@ -234,4 +234,3 @@ def test_cli_no_args_launches_interactive_session(tmp_path):
         result = runner.invoke(app, ["--db", str(db)])
         assert result.exit_code == 0
         assert mock_run_session.called
-

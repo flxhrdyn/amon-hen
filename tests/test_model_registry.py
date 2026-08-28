@@ -31,4 +31,3 @@ def test_default_models_point_to_official_flxhrdyn_namespace():
     assert s2.text_file == "text_model.onnx"
     assert s2.embed_dim == 512
     assert s2.image_size == 256
-

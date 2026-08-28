@@ -1,1 +1,1 @@
-﻿"""AmonHen benchmarking and evaluation harness."""
+"""AmonHen benchmarking and evaluation harness."""

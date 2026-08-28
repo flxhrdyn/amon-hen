@@ -58,8 +58,4 @@ def render_banner(
         return f"\n{title}\n{tagline}\n{status}\n"
 
     # Subtle ANSI coloring: 33 = muted gold, 90 = stone gray, 36 = pale blue
-    return (
-        f"\n\033[1;33m{title}\033[0m\n"
-        f"\033[3;90m{tagline}\033[0m\n"
-        f"\033[36m{status}\033[0m\n"
-    )
+    return f"\n\033[1;33m{title}\033[0m\n\033[3;90m{tagline}\033[0m\n\033[36m{status}\033[0m\n"

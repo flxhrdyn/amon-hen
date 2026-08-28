@@ -51,9 +51,7 @@ def load_dataset(json_path: Path | str) -> list[VideoDatasetItem]:
     return items
 
 
-def generate_synthetic_benchmark(
-    output_dir: Path | str, count: int = 2
-) -> list[VideoDatasetItem]:
+def generate_synthetic_benchmark(output_dir: Path | str, count: int = 2) -> list[VideoDatasetItem]:
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
@@ -110,7 +108,5 @@ def generate_synthetic_benchmark(
         }
         for item in items
     ]
-    (out_dir / "annotations.json").write_text(
-        json.dumps(manifest, indent=2), encoding="utf-8"
-    )
+    (out_dir / "annotations.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return items

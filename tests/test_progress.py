@@ -47,5 +47,3 @@ def test_rich_reporter_multiple_videos():
     reporter.video_finished("v2.mp4", decoded=6, stored=2, elapsed_s=0.5)
 
     reporter.run_finished(videos=2, frames=6, elapsed_s=1.5)
-
-

@@ -55,9 +55,7 @@ def store(tmp_path):
 
 
 def test_index_writes_frames_for_a_real_video(store, sample_video):
-    result = index_videos(
-        [sample_video], store, IndexConfig(fps=2.0), StubEncoder()
-    )
+    result = index_videos([sample_video], store, IndexConfig(fps=2.0), StubEncoder())
 
     assert result.videos == 1
     assert result.frames_kept > 0
@@ -117,9 +115,7 @@ def test_reporter_receives_start_and_finish_events(store, sample_video):
 def test_search_returns_hits_ordered_by_score(store, sample_video):
     index_videos([sample_video], store, IndexConfig(fps=2.0), StubEncoder())
 
-    segments = search(
-        "anything", store, StubTextEncoder(index=0), limit=5, calibrate=False
-    )
+    segments = search("anything", store, StubTextEncoder(index=0), limit=5, calibrate=False)
 
     scores = [seg.score for seg in segments]
     assert scores == sorted(scores, reverse=True)
@@ -171,9 +167,7 @@ class ExplodingEncoder(StubEncoder):
 def test_an_interrupted_video_is_reindexed_not_skipped(store, sample_video):
     """A half-written video must never look complete to the next run."""
     with pytest.raises(KeyboardInterrupt):
-        index_videos(
-            [sample_video], store, IndexConfig(fps=5.0, batch_size=4), ExplodingEncoder()
-        )
+        index_videos([sample_video], store, IndexConfig(fps=5.0, batch_size=4), ExplodingEncoder())
 
     partial = store.stats()["frames"]
     result = index_videos([sample_video], store, IndexConfig(fps=5.0, batch_size=4), StubEncoder())
@@ -278,9 +272,7 @@ def test_search_returns_segments_with_merging(tmp_path):
         def embed(self, text: str):
             return np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)
 
-    segments = search(
-        "query", store, FakeTextEncoder(), limit=5, max_gap_ms=2000, calibrate=False
-    )
+    segments = search("query", store, FakeTextEncoder(), limit=5, max_gap_ms=2000, calibrate=False)
     assert len(segments) == 1
     assert segments[0].start_ms == 1000
     assert segments[0].end_ms == 2000
@@ -303,9 +295,7 @@ def test_search_filters_below_min_score(tmp_path):
         def embed(self, text: str):
             return np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)
 
-    segments = search(
-        "query", store, FakeTextEncoder(), limit=5, min_score=0.9, calibrate=False
-    )
+    segments = search("query", store, FakeTextEncoder(), limit=5, min_score=0.9, calibrate=False)
     assert segments == []
     store.close()
 
@@ -329,9 +319,7 @@ def test_search_filters_below_baseline_when_calibrated(tmp_path):
     segments = search("query", store, FakeTextEncoder(), limit=5, calibrate=True)
     assert segments == []
 
-    segments_uncalibrated = search(
-        "query", store, FakeTextEncoder(), limit=5, calibrate=False
-    )
+    segments_uncalibrated = search("query", store, FakeTextEncoder(), limit=5, calibrate=False)
     assert len(segments_uncalibrated) == 1
     store.close()
 

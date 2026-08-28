@@ -25,8 +25,13 @@ def store(tmp_path):
 
 def add_sample_video(store, path="a.mp4", ts_list=(0, 1000, 2000)):
     video_id = store.add_video(
-        path=path, duration_ms=3000, fps=25.0, size_bytes=123,
-        mtime=1.0, sampler_config_hash="cfg1", model_id="m1",
+        path=path,
+        duration_ms=3000,
+        fps=25.0,
+        size_bytes=123,
+        mtime=1.0,
+        sampler_config_hash="cfg1",
+        model_id="m1",
     )
     store.add_frames(
         video_id,
@@ -46,8 +51,13 @@ def test_add_video_and_frames_are_counted(store):
 
 def test_a_video_needs_reindex_until_it_is_marked_complete(store):
     video_id = store.add_video(
-        path="a.mp4", duration_ms=3000, fps=25.0, size_bytes=123,
-        mtime=1.0, sampler_config_hash="cfg1", model_id="m1",
+        path="a.mp4",
+        duration_ms=3000,
+        fps=25.0,
+        size_bytes=123,
+        mtime=1.0,
+        sampler_config_hash="cfg1",
+        model_id="m1",
     )
 
     assert store.needs_reindex("a.mp4", 123, 1.0, "cfg1", "m1")
@@ -59,8 +69,13 @@ def test_a_video_needs_reindex_until_it_is_marked_complete(store):
 
 def test_stats_breaks_down_frames_by_kept_reason(store):
     video_id = store.add_video(
-        path="a.mp4", duration_ms=3000, fps=25.0, size_bytes=123,
-        mtime=1.0, sampler_config_hash="cfg1", model_id="m1",
+        path="a.mp4",
+        duration_ms=3000,
+        fps=25.0,
+        size_bytes=123,
+        mtime=1.0,
+        sampler_config_hash="cfg1",
+        model_id="m1",
     )
     store.add_frames(
         video_id,
@@ -184,5 +199,3 @@ def test_sample_frame_embeddings(tmp_path):
     assert len(samples) == 5
     assert samples[0].shape == (4,)
     store.close()
-
-

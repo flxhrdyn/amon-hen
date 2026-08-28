@@ -89,9 +89,7 @@ class ImageEncoder:
         session_factory: Callable[[ModelSpec], object] | None = None,
     ):
         self.spec = spec
-        self._factory = session_factory or (
-            lambda s: _make_session(s, s.vision_file)
-        )
+        self._factory = session_factory or (lambda s: _make_session(s, s.vision_file))
         self._session = None
 
     @property

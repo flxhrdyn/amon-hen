@@ -17,9 +17,18 @@ def sample_video(tmp_path_factory, ffmpeg_bin) -> str:
     path = tmp_path_factory.mktemp("media") / "sample.mp4"
     subprocess.run(
         [
-            ffmpeg_bin, "-hide_banner", "-loglevel", "error", "-y",
-            "-f", "lavfi", "-i", "testsrc=size=32x32:rate=10:duration=4",
-            "-pix_fmt", "yuv420p", str(path),
+            ffmpeg_bin,
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            "testsrc=size=32x32:rate=10:duration=4",
+            "-pix_fmt",
+            "yuv420p",
+            str(path),
         ],
         check=True,
     )
@@ -42,9 +51,22 @@ def static_video(tmp_path_factory, ffmpeg_bin) -> str:
 
     subprocess.run(
         [
-            ffmpeg_bin, "-hide_banner", "-loglevel", "error", "-y",
-            "-loop", "1", "-i", str(still), "-t", "2", "-r", "10",
-            "-pix_fmt", "yuv420p", str(path),
+            ffmpeg_bin,
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-loop",
+            "1",
+            "-i",
+            str(still),
+            "-t",
+            "2",
+            "-r",
+            "10",
+            "-pix_fmt",
+            "yuv420p",
+            str(path),
         ],
         check=True,
     )

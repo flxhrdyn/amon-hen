@@ -146,9 +146,7 @@ def main(
     data_dir: Path | None = typer.Option(
         None, "--data-dir", help="Path to annotations/videos dir."
     ),
-    output: Path | None = typer.Option(
-        None, "--output", "-o", help="Markdown output path."
-    ),
+    output: Path | None = typer.Option(None, "--output", "-o", help="Markdown output path."),
     samples: int = typer.Option(5, "--samples", help="Number of samples if synthetic."),
     synthetic: bool = typer.Option(
         False, "--synthetic", help="Run with generated synthetic dataset."

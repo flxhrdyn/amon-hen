@@ -36,8 +36,8 @@ results = search(
     store=store,
     text_encoder=text_encoder,
     limit=5,
-    max_gap_ms=4000,   # Merge frames within 4.0s gap
-    calibrate=True     # Use per-video score baseline calibration
+    max_gap_ms=4000,  # Merge frames within 4.0s gap
+    calibrate=True,  # Use per-video score baseline calibration
 )
 
 # 4. Process segments

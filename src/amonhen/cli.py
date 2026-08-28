@@ -89,16 +89,22 @@ def index(
     fps: float = typer.Option(1.0, "--fps", help="Frames sampled per second of video."),
     sampler: str = typer.Option("fixed", "--sampler", help="Frame sampler: fixed or adaptive."),
     embed_dedup: float | None = typer.Option(
-        None, "--embed-dedup", help="Drop frames whose embedding cosine similarity to the "
-        "last kept frame exceeds this (0-1). Off by default."
+        None,
+        "--embed-dedup",
+        help="Drop frames whose embedding cosine similarity to the "
+        "last kept frame exceeds this (0-1). Off by default.",
     ),
     dedup_distance: int = typer.Option(
-        4, "--dedup-distance", help="Adaptive sampler: drop a frame whose average hash "
-        "is within this Hamming distance (0-64) of the last kept frame."
+        4,
+        "--dedup-distance",
+        help="Adaptive sampler: drop a frame whose average hash "
+        "is within this Hamming distance (0-64) of the last kept frame.",
     ),
     blur_threshold: float | None = typer.Option(
-        None, "--blur-threshold", help="Adaptive sampler: drop frames below this sharpness. "
-        "Off by default; the right value depends on resolution and content."
+        None,
+        "--blur-threshold",
+        help="Adaptive sampler: drop frames below this sharpness. "
+        "Off by default; the right value depends on resolution and content.",
     ),
     model: str = typer.Option(DEFAULT_MODEL.model_id, "--model", help="Model id."),
     force: bool = typer.Option(False, "--force", help="Re-index even if unchanged."),
@@ -146,8 +152,7 @@ def index(
         return
 
     typer.echo(
-        f"Indexed {result.videos} video(s), {result.frames_kept} frames "
-        f"in {result.elapsed_s:.1f}s"
+        f"Indexed {result.videos} video(s), {result.frames_kept} frames in {result.elapsed_s:.1f}s"
     )
     for skipped in result.skipped:
         typer.echo(f"unchanged, skipped: {skipped}", err=True)
@@ -251,9 +256,7 @@ def videos(
         return
 
     for row in rows:
-        typer.echo(
-            f"{_format_timestamp(row.duration_ms)}  {row.frame_count:>6} frames  {row.path}"
-        )
+        typer.echo(f"{_format_timestamp(row.duration_ms)}  {row.frame_count:>6} frames  {row.path}")
 
 
 @app.command()

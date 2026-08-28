@@ -26,8 +26,7 @@ from collections import defaultdict
 from pathlib import Path
 
 ANNOTATIONS_URL = (
-    "https://huggingface.co/datasets/jwnt4/charades-sta-test/resolve/main/"
-    "charades_sta_test.txt"
+    "https://huggingface.co/datasets/jwnt4/charades-sta-test/resolve/main/charades_sta_test.txt"
 )
 ZIP_URL = "https://ai2-public-datasets.s3-us-west-2.amazonaws.com/charades/Charades_v1_480.zip"
 
@@ -35,6 +34,7 @@ ZIP_URL = "https://ai2-public-datasets.s3-us-west-2.amazonaws.com/charades/Chara
 # ---------------------------------------------------------------------------
 # Helper: HTTP range request
 # ---------------------------------------------------------------------------
+
 
 def http_get_range(url: str, start: int, end: int) -> bytes:
     """Download bytes [start, end] (inclusive) via HTTP Range."""
@@ -56,7 +56,10 @@ def get_content_length(url: str) -> int:
 # Parse ZIP central directory from the end of the file
 # ---------------------------------------------------------------------------
 
-def find_zip_entries(url: str, zip_size: int, tail_size: int = 131072) -> dict[str, tuple[int, int]]:
+
+def find_zip_entries(
+    url: str, zip_size: int, tail_size: int = 131072
+) -> dict[str, tuple[int, int]]:
     """
     Returns {filename: (offset_in_zip, compressed_size)} for all entries.
     Handles both standard and ZIP64 archives via HTTP range requests.
@@ -65,8 +68,8 @@ def find_zip_entries(url: str, zip_size: int, tail_size: int = 131072) -> dict[s
     tail = http_get_range(url, tail_start, zip_size - 1)
 
     ZIP64_LOCATOR_SIG = b"\x50\x4b\x06\x07"
-    ZIP64_EOCD_SIG    = b"\x50\x4b\x06\x06"
-    EOCD_SIG          = b"\x50\x4b\x05\x06"
+    ZIP64_EOCD_SIG = b"\x50\x4b\x06\x06"
+    EOCD_SIG = b"\x50\x4b\x05\x06"
 
     cd_offset: int = 0
     cd_size: int = 0
@@ -81,7 +84,7 @@ def find_zip_entries(url: str, zip_size: int, tail_size: int = 131072) -> dict[s
         else:
             eocd64 = http_get_range(url, eocd64_abs_offset, eocd64_abs_offset + 55)
         if eocd64[:4] == ZIP64_EOCD_SIG:
-            cd_size   = struct.unpack_from("<Q", eocd64, 40)[0]
+            cd_size = struct.unpack_from("<Q", eocd64, 40)[0]
             cd_offset = struct.unpack_from("<Q", eocd64, 48)[0]
             print(f"  ZIP64 detected. cd_offset={cd_offset:,} cd_size={cd_size:,}")
 
@@ -90,7 +93,7 @@ def find_zip_entries(url: str, zip_size: int, tail_size: int = 131072) -> dict[s
         if pos < 0:
             raise RuntimeError("Could not find EOCD signature in ZIP tail.")
         eocd = tail[pos:]
-        cd_size   = struct.unpack_from("<I", eocd, 12)[0]
+        cd_size = struct.unpack_from("<I", eocd, 12)[0]
         cd_offset = struct.unpack_from("<I", eocd, 16)[0]
         print(f"  Standard ZIP. cd_offset={cd_offset:,} cd_size={cd_size:,}")
 
@@ -105,29 +108,29 @@ def find_zip_entries(url: str, zip_size: int, tail_size: int = 131072) -> dict[s
     CD_SIG = b"\x50\x4b\x01\x02"
     ZIP64_EXTRA_ID = 0x0001
     while idx < len(cd_data):
-        if cd_data[idx: idx + 4] != CD_SIG:
+        if cd_data[idx : idx + 4] != CD_SIG:
             break
         # Standard 32-bit fields (may be 0xFFFFFFFF for ZIP64)
-        orig_size_32  = struct.unpack_from("<I", cd_data, idx + 24)[0]
-        comp_size_32  = struct.unpack_from("<I", cd_data, idx + 20)[0]
-        local_off_32  = struct.unpack_from("<I", cd_data, idx + 42)[0]
-        fname_len     = struct.unpack_from("<H", cd_data, idx + 28)[0]
-        extra_len     = struct.unpack_from("<H", cd_data, idx + 30)[0]
-        comment_len   = struct.unpack_from("<H", cd_data, idx + 32)[0]
+        orig_size_32 = struct.unpack_from("<I", cd_data, idx + 24)[0]
+        comp_size_32 = struct.unpack_from("<I", cd_data, idx + 20)[0]
+        local_off_32 = struct.unpack_from("<I", cd_data, idx + 42)[0]
+        fname_len = struct.unpack_from("<H", cd_data, idx + 28)[0]
+        extra_len = struct.unpack_from("<H", cd_data, idx + 30)[0]
+        comment_len = struct.unpack_from("<H", cd_data, idx + 32)[0]
 
-        fname = cd_data[idx + 46: idx + 46 + fname_len].decode("utf-8", errors="replace")
+        fname = cd_data[idx + 46 : idx + 46 + fname_len].decode("utf-8", errors="replace")
 
         # Parse extra field for ZIP64 values
-        comp_size   = comp_size_32
+        comp_size = comp_size_32
         local_offset = local_off_32
         if extra_len > 0:
             extra_start = idx + 46 + fname_len
             ex_idx = extra_start
             while ex_idx < extra_start + extra_len - 3:
-                ex_id   = struct.unpack_from("<H", cd_data, ex_idx)[0]
+                ex_id = struct.unpack_from("<H", cd_data, ex_idx)[0]
                 ex_size = struct.unpack_from("<H", cd_data, ex_idx + 2)[0]
                 if ex_id == ZIP64_EXTRA_ID:
-                    ex_data = cd_data[ex_idx + 4: ex_idx + 4 + ex_size]
+                    ex_data = cd_data[ex_idx + 4 : ex_idx + 4 + ex_size]
                     off = 0
                     # Fields present only when standard value == 0xFFFFFFFF
                     if orig_size_32 == 0xFFFFFFFF and off + 8 <= len(ex_data):
@@ -144,12 +147,13 @@ def find_zip_entries(url: str, zip_size: int, tail_size: int = 131072) -> dict[s
         entries[fname] = (local_offset, comp_size)
         idx += 46 + fname_len + extra_len + comment_len
 
-
     print(f"  Found {len(entries)} entries in ZIP central directory.")
     return entries
 
 
-def download_zip_entry(url: str, zip_entries: dict[str, tuple[int, int]], filename: str, out_path: Path) -> bool:
+def download_zip_entry(
+    url: str, zip_entries: dict[str, tuple[int, int]], filename: str, out_path: Path
+) -> bool:
     """
     Download a single file from the remote ZIP using range requests.
     The local file header must be skipped to reach actual data.
@@ -177,6 +181,7 @@ def download_zip_entry(url: str, zip_entries: dict[str, tuple[int, int]], filena
     method = struct.unpack_from("<H", header_data, 8)[0]
     if method == 8:
         import zlib
+
         data = zlib.decompress(data, -15)
     elif method != 0:
         print(f"  ERROR: Unsupported compression method {method} for {filename}")
@@ -192,6 +197,7 @@ def download_zip_entry(url: str, zip_entries: dict[str, tuple[int, int]], filena
 # ---------------------------------------------------------------------------
 # Annotations
 # ---------------------------------------------------------------------------
+
 
 def download_annotations(cache_path: Path) -> str:
     if cache_path.exists():
@@ -225,10 +231,13 @@ def parse_annotations(text: str) -> dict[str, list[tuple[float, float, str]]]:
 def get_video_duration(video_path: Path) -> float:
     import json as _json
     import subprocess
+
     try:
         result = subprocess.run(
             ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", str(video_path)],
-            capture_output=True, text=True, timeout=30,
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
         data = _json.loads(result.stdout)
         dur = data.get("format", {}).get("duration")
@@ -242,6 +251,7 @@ def get_video_duration(video_path: Path) -> float:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -319,11 +329,13 @@ def main() -> None:
             print(f"  SKIP: {vid_id} has no valid annotations (duration={duration_s:.1f}s)")
             continue
 
-        manifest.append({
-            "video_path": f"videos/{vid_id}.mp4",
-            "duration_s": duration_s,
-            "annotations": annotations,
-        })
+        manifest.append(
+            {
+                "video_path": f"videos/{vid_id}.mp4",
+                "duration_s": duration_s,
+                "annotations": annotations,
+            }
+        )
         print(f"  OK: {vid_id} ({duration_s:.1f}s, {len(annotations)} annotations)")
 
     # 5. Write annotations.json
