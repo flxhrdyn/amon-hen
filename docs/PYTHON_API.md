@@ -1,4 +1,4 @@
-﻿# Amon Hen Python API Guide
+# Amon Hen Python API Guide
 
 Amon Hen can be embedded directly as a Python library into computer vision pipelines, video editing tools, and search services.
 
@@ -7,8 +7,9 @@ Amon Hen can be embedded directly as a Python library into computer vision pipel
 ## 1. Installation
 
 ```bash
-pip install amonhen
+pip install amon-hen
 ```
+
 
 ---
 

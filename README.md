@@ -3,7 +3,7 @@
 > *"From the Seat of Seeing, no moment remains hidden."*
 
 [![CI](https://github.com/flxhrdyn/amon-hen/actions/workflows/ci.yml/badge.svg)](https://github.com/flxhrdyn/amon-hen/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/amonhen.svg)](https://pypi.org/project/amonhen/)
+[![PyPI](https://img.shields.io/pypi/v/amon-hen.svg)](https://pypi.org/project/amon-hen/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-Models-orange.svg)](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)
@@ -34,9 +34,9 @@ Amon Hen bridges this gap by combining:
 Install using `uv` (recommended) or `pipx`:
 
 ```bash
-uv tool install amonhen
+uv tool install amon-hen
 # or
-pipx install amonhen
+pipx install amon-hen
 ```
 
 On first invocation of `index` or `search`, the official CPU-optimized model artifacts (~105 MB total) are downloaded automatically from [`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx) to `~/.amonhen/models/`. You can pre-fetch them manually:
