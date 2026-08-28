@@ -5,6 +5,36 @@ description = "Local, CPU-only video moment retrieval from the command line"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
+authors = [
+    { name = "Felix Herdiyan", email = "felix@felixhrdyn.com" },
+]
+keywords = [
+    "video-retrieval",
+    "video-search",
+    "computer-vision",
+    "clip",
+    "mobileclip",
+    "onnx",
+    "onnxruntime",
+    "sqlite-vec",
+    "multimodal",
+    "semantic-search",
+    "cli",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Topic :: Multimedia :: Video",
+]
 dependencies = [
     "numpy>=1.26",
     "onnxruntime>=1.18",
@@ -18,8 +48,16 @@ dependencies = [
     "rich>=15.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/flxhrdyn/amon-hen"
+Repository = "https://github.com/flxhrdyn/amon-hen"
+Issues = "https://github.com/flxhrdyn/amon-hen/issues"
+Changelog = "https://github.com/flxhrdyn/amon-hen/blob/main/CHANGELOG.md"
+"Model Hub" = "https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx"
+
 [project.scripts]
 amon-hen = "amonhen.cli:app"
+
 
 [dependency-groups]
 dev = [

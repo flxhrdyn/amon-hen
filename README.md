@@ -2,9 +2,16 @@
 
 > *"From the Seat of Seeing, no moment remains hidden."*
 
+[![CI](https://github.com/flxhrdyn/amon-hen/actions/workflows/ci.yml/badge.svg)](https://github.com/flxhrdyn/amon-hen/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/amonhen.svg)](https://pypi.org/project/amonhen/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Hugging Face Models](https://img.shields.io/badge/🤗%20Hugging%20Face-Models-orange.svg)](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)
+
 A fast, lightweight command-line tool and Python library for natural language moment retrieval across local video files. Runs entirely on CPU without discrete GPUs, background daemons, or cloud dependencies.
 
 ![Amon Hen Demo](demo/demo.gif)
+
 
 ---
 
@@ -211,11 +218,27 @@ Measured on CPU (4 threads) using ONNX Runtime with official [`felixhrdyn/mobile
 
 ## Supported Platforms
 
-- **Linux x86_64:** Supported (CPU execution via ONNX Runtime).
-- **Windows x86_64:** Supported (CPU execution via ONNX Runtime).
+- **Linux (x86_64 / ARM64):** Supported (CPU execution via ONNX Runtime).
+- **macOS (Apple Silicon M-series / Intel):** Supported (CPU execution via ONNX Runtime).
+- **Windows (x86_64):** Supported (CPU execution via ONNX Runtime).
+
+---
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, code style guidelines, and pull request workflows.
+
+Please also read and adhere to our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+---
+
+## Security
+
+To report security issues or vulnerabilities, please review our [Security Policy](SECURITY.md).
 
 ---
 
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
+
