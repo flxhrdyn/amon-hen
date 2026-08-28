@@ -1,3 +1,4 @@
+import re
 from unittest.mock import patch
 
 import numpy as np
@@ -36,11 +37,12 @@ def test_run_benchmark_sweep_executes_and_generates_reports(tmp_path):
 
 
 def test_cli_help():
-    result = runner.invoke(app, ["--help"])
+    result = runner.invoke(app, ["--help"], color=False)
+    clean_output = re.sub(r"\x1b\[[0-9;]*[a-zA-Z]", "", result.output)
     assert result.exit_code == 0
-    assert "Run benchmark comparison suite." in result.output
-    assert "--data-dir" in result.output
-    assert "--synthetic" in result.output
+    assert "Run benchmark comparison suite." in clean_output
+    assert "--data-dir" in clean_output
+    assert "--synthetic" in clean_output
 
 
 def test_cli_synthetic_run_with_output(tmp_path):
