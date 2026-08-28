@@ -7,7 +7,7 @@ build/
 .pytest_cache/
 .ruff_cache/
 *.db
-docs/
+docs/superpowers/
 .env
 .env.*
 !.env.example
