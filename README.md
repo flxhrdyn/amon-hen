@@ -6,7 +6,8 @@
 [![PyPI](https://img.shields.io/pypi/v/amonhen.svg)](https://pypi.org/project/amonhen/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Hugging Face Models](https://img.shields.io/badge/🤗%20Hugging%20Face-Models-orange.svg)](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)
+[![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-Models-orange.svg)](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)
+
 
 A fast, lightweight command-line tool and Python library for natural language moment retrieval across local video files. Runs entirely on CPU without discrete GPUs, background daemons, or cloud dependencies.
 
@@ -173,7 +174,7 @@ Amon Hen is designed as a lightweight, zero-GPU semantic frame search engine wit
 - **Search Usability (Recall@5):** For practical desktop search, **Recall@5 = 0.696** indicates that the relevant video moment is surfaced in the top-5 candidates ~70% of the time in pure zero-shot mode on CPU.
 - **Zero-Shot vs Supervised Context:** Unlike heavy supervised temporal grounding architectures (e.g. VSLNet, 2D-TAN, Moment-DETR) that require GPU clusters and dataset-specific training, Amon Hen operates zero-shot with a ~12M parameter vision backbone, consuming < 200 MB RAM and 0% GPU.
 - **Sampler Trade-offs:**
-  - **Fixed 1.0 fps:** Highest retrieval fidelity (R@1@0.3 = 0.393, R@5 = 0.696) — recommended when search precision is the top priority.
+  - **Fixed 1.0 fps:** Highest retrieval fidelity (R@1@0.3 = 0.393, R@5 = 0.696), recommended when search precision is the top priority.
   - **Adaptive Sampler:** Yields 2.8x faster indexing throughput (up to 4.8x Realtime) via perceptual aHash and Laplacian sharpness gating, ideal for long-form video archives.
 
 *Metrics:*

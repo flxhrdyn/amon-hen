@@ -1,4 +1,4 @@
-﻿# Amon Hen CLI Guide
+# Amon Hen CLI Guide
 
 Complete reference manual for using the **Amon Hen** command-line interface.
 
@@ -85,9 +85,10 @@ amon-hen
 * **Natural Language Queries:** Type any query directly to see instant matching segments and visual score bars.
 * **Command History:** Persistent arrow-key history across sessions saved in `~/.amonhen/history`.
 * **Slash Commands:**
-  * `/open <N>` — Launch the video at the exact start timestamp of result `#N` using your default system player (`mpv`, `vlc`, or `ffplay`).
-  * `/help` — Display list of interactive commands and tips.
-  * `/exit` or `exit` / `quit` — Exit the interactive session.
+  * `/open <N>`: Launch the video at the exact start timestamp of result `#N` using your default system player (`mpv`, `vlc`, or `ffplay`).
+  * `/help`: Display list of interactive commands and tips.
+  * `/exit` or `exit` / `quit`: Exit the interactive session.
+
 
 ---
 

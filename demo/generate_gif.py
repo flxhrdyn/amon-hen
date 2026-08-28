@@ -210,7 +210,8 @@ def main() -> None:
         ]))
         durations.append(40)
 
-    # === SCENE 2: Inside TUI — Live Indexing with Genuine Progress ===
+    # === SCENE 2: Inside TUI: Live Indexing with Genuine Progress ===
+
     frames.append(render_tui_screen(indexed_count=0, input_text="", show_cursor=True))
     durations.append(800)
 

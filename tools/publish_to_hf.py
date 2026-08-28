@@ -63,7 +63,7 @@ Choose the configuration that best matches your target hardware constraints:
 | **Full INT8** | `vision_model_quantized.onnx` (INT8) | `text_model_quantized.onnx` (INT8) | **72.7 MB** | 1,393 ms | **10 ms** | Extreme memory/storage constraints, IoT, and WASM |
 | **Full FP32** | `vision_model.onnx` (FP32) | `text_model.onnx` (FP32) | **285.7 MB** | **112 ms** | 22 ms | Full precision baseline & exact PyTorch parity verification |
 
-* **Text Transformer:** Quantizes with dynamic INT8 — cutting model size by 75% while accelerating CPU text encoding by **2.09x** with high fidelity (0.9556 cosine similarity).
+* **Text Transformer:** Quantizes with dynamic INT8, cutting model size by 75% while accelerating CPU text encoding by **2.09x** with high fidelity (0.9556 cosine similarity).
 * **FastViT Vision:** Dynamic INT8 on CPU introduces conversion overhead on depthwise convolutions. Thus, **FP32 vision + INT8 text (Hybrid: 105 MB)** delivers the best balance of speed (122 ms total latency), accuracy, and memory footprint.
 * **Numerical Parity:** FP32 ONNX outputs maintain cosine similarity >= {min_cosine:.4f} against original PyTorch weights.
 * **Frame Embedding Latency:** {latency_ms:.1f} ms per frame on CPU.

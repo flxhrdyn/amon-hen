@@ -10,9 +10,10 @@ depthwise/grouped, the bulk of the model's weights) broke the output almost
 completely (cosine similarity to FP32 near zero), while quantizing only the
 8 MatMul layers left accuracy intact but barely shrank the model. Getting
 Conv layers to quantize safely needs static, calibrated quantization with a
-real image sample set, which is real measurement work — that belongs in the
+real image sample set, which is real measurement work - that belongs in the
 Stage 4 benchmark, where the accuracy trade-off can be measured rather than
 assumed.
+
 """
 
 from dataclasses import dataclass
