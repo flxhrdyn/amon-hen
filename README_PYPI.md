@@ -76,7 +76,9 @@ text_encoder = TextEncoder(model.text_model_path, model.tokenizer_path)
 # 3. Retrieve matching video segments
 results = search("red sports car turning", store=store, text_encoder=text_encoder)
 for seg in results:
-    print(f"{seg.video_path}: {seg.start_ms / 1000.0:.1f}s - {seg.end_ms / 1000.0:.1f}s (score: {seg.score:.3f})")
+    print(
+        f"{seg.video_path}: {seg.start_ms / 1000.0:.1f}s - {seg.end_ms / 1000.0:.1f}s (score: {seg.score:.3f})"
+    )
 ```
 
 ---
