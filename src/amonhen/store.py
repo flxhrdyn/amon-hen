@@ -58,6 +58,13 @@ class Store:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(str(self.path))
         self._conn.row_factory = sqlite3.Row
+        if not hasattr(self._conn, "enable_load_extension"):
+            raise RuntimeError(
+                "Your Python sqlite3 build does not support extension loading "
+                "(common in macOS system Python). Please use Homebrew Python "
+                "('brew install python') or uv ('uv tool install amon-hen')."
+            )
+
         self._conn.enable_load_extension(True)
         sqlite_vec.load(self._conn)
         self._conn.enable_load_extension(False)
