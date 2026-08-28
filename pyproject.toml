@@ -1,10 +1,10 @@
 [project]
 name = "amon-hen"
 version = "0.1.0"
-
 description = "Local, CPU-only video moment retrieval from the command line"
-readme = "README.md"
+readme = "README_PYPI.md"
 requires-python = ">=3.11"
+
 license = { text = "MIT" }
 authors = [
     { name = "Felix Hardyan", email = "felix@felixhrdyn.com" },
