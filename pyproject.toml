@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
-    { name = "Felix Herdiyan", email = "felix@felixhrdyn.com" },
+    { name = "Felix Hardyan", email = "felix@felixhrdyn.com" },
 ]
 keywords = [
     "video-retrieval",
