@@ -3,16 +3,14 @@
 > *"From the Seat of Seeing, no moment remains hidden."*
 
 [![CI](https://github.com/flxhrdyn/amon-hen/actions/workflows/ci.yml/badge.svg)](https://github.com/flxhrdyn/amon-hen/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/amon-hen.svg)](https://pypi.org/project/amon-hen/)
+[![PyPI](https://img.shields.io/pypi/v/amon-hen?color=blue)](https://pypi.org/project/amon-hen/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-Models-orange.svg)](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)
 
-
 A fast, lightweight command-line tool and Python library for natural language moment retrieval across local video files. Runs entirely on CPU without discrete GPUs, background daemons, or cloud dependencies.
 
-![Amon Hen Demo](demo/demo.gif)
-
+![Amon Hen Demo](https://raw.githubusercontent.com/flxhrdyn/amon-hen/main/demo/demo.gif)
 
 ---
 
@@ -21,7 +19,7 @@ A fast, lightweight command-line tool and Python library for natural language mo
 Finding specific moments across long video archives typically requires either high-end GPUs to run large multimodal models or naive per-second extraction that produces thousands of redundant frames and bloated vector stores.
 
 Amon Hen bridges this gap by combining:
-- **MobileCLIP2 ([`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)):** CPU-optimized visual-semantic embeddings (512 dimensions) running on a hybrid FP32-vision + INT8-quantized text pipeline (~105 MB total RAM footprint).
+- **MobileCLIP2 ([`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)):** CPU-optimized visual-semantic embeddings (512 dimensions) running on a hybrid FP32-vision + INT8-quantized text pipeline (approx. 105 MB total RAM footprint).
 - **Three-Gate Adaptive Sampler:** Filters near-duplicate frames via perceptual hashing, drops blurry frames via Laplacian variance, and eliminates semantic duplicates before storage.
 - **Temporal Segment Merging:** Aggregates contiguous high-similarity frames into coherent time intervals (`start - end`) with peak representative timestamps.
 - **Statistical Score Calibration:** Computes empirical text-to-image noise baselines per video to eliminate false positive results on unmatched queries.
@@ -39,7 +37,8 @@ uv tool install amon-hen
 pipx install amon-hen
 ```
 
-On first invocation of `index` or `search`, the official CPU-optimized model artifacts (~105 MB total) are downloaded automatically from [`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx) to `~/.amonhen/models/`. You can pre-fetch them manually:
+On first invocation of `index` or `search`, the official CPU-optimized model artifacts (approx. 105 MB total) are downloaded automatically from [`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx) to `~/.amonhen/models/`. You can pre-fetch them manually:
+
 
 ```bash
 amon-hen setup
@@ -171,8 +170,8 @@ Amon Hen is designed as a lightweight, zero-GPU semantic frame search engine wit
 | **Adaptive + Embed-Dedup** | 0.250 | 0.107 | 0.607 | 0.166 | 4.7x Realtime | 385 ms | 12.9 MB |
 
 ### Evaluation & Design Insights:
-- **Search Usability (Recall@5):** For practical desktop search, **Recall@5 = 0.696** indicates that the relevant video moment is surfaced in the top-5 candidates ~70% of the time in pure zero-shot mode on CPU.
-- **Zero-Shot vs Supervised Context:** Unlike heavy supervised temporal grounding architectures (e.g. VSLNet, 2D-TAN, Moment-DETR) that require GPU clusters and dataset-specific training, Amon Hen operates zero-shot with a ~12M parameter vision backbone, consuming < 200 MB RAM and 0% GPU.
+- **Search Usability (Recall@5):** For practical desktop search, **Recall@5 = 0.696** indicates that the relevant video moment is surfaced in the top-5 candidates approx. 70% of the time in pure zero-shot mode on CPU.
+- **Zero-Shot vs Supervised Context:** Unlike heavy supervised temporal grounding architectures (e.g. VSLNet, 2D-TAN, Moment-DETR) that require GPU clusters and dataset-specific training, Amon Hen operates zero-shot with an approx. 12M parameter vision backbone, consuming < 200 MB RAM and 0% GPU.
 - **Sampler Trade-offs:**
   - **Fixed 1.0 fps:** Highest retrieval fidelity (R@1@0.3 = 0.393, R@5 = 0.696), recommended when search precision is the top priority.
   - **Adaptive Sampler:** Yields 2.8x faster indexing throughput (up to 4.8x Realtime) via perceptual aHash and Laplacian sharpness gating, ideal for long-form video archives.
@@ -185,7 +184,7 @@ Amon Hen is designed as a lightweight, zero-GPU semantic frame search engine wit
 To reproduce:
 
 ```bash
-# 1. Download and extract Charades-STA test subset (20 videos, ~25 MB via ZIP range requests)
+# 1. Download and extract Charades-STA test subset (20 videos, approx. 25 MB via ZIP range requests)
 uv run python tools/prepare_charades_sta.py --videos 20 --out benchmarks/charades_sta_subset
 
 # 2. Run benchmark sweep
@@ -200,7 +199,8 @@ Measured on CPU (4 threads) using ONNX Runtime with official [`felixhrdyn/mobile
 |---|:---:|:---:|:---:|:---:|---|
 | **Text Encoder** | 242.3 MB | 61.3 MB | -74.7% | 21.6 ms -> **10.3 ms** (2.09x faster) | **INT8** (optimal speed & low RAM) |
 | **Vision Backbone** | 43.4 MB | 11.3 MB | -74.0% | **111.8 ms** -> 1,393.1 ms | **FP32** (optimal for FastViT CPU kernels) |
-| **Full Pipeline** | **285.7 MB** | **72.7 MB** | **-74.6%** | Hybrid: **18.5x Realtime** | **Hybrid** (FP32 Vision + INT8 Text: ~105 MB total) |
+| **Full Pipeline** | **285.7 MB** | **72.7 MB** | **-74.6%** | Hybrid: **18.5x Realtime** | **Hybrid** (FP32 Vision + INT8 Text: approx. 105 MB total) |
+
 
 ---
 
