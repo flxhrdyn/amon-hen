@@ -296,6 +296,74 @@ def setup(
 
 
 @app.command()
+def cut(
+    video: Path = typer.Argument(..., help="Path to source video file."),
+    start: str = typer.Option(
+        ..., "--start", "-s", help="Start timestamp (e.g. 75.5, 01:15.5, 00:01:15)."
+    ),
+    end: str = typer.Option(..., "--end", "-e", help="End timestamp (e.g. 90, 01:30, 00:01:30)."),
+    output: Path | None = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Output file path (default: auto-generated in current directory).",
+    ),
+    reencode: bool = typer.Option(
+        False, "--reencode", help="Force re-encoding for frame-accurate cut."
+    ),
+    json: bool = typer.Option(False, "--json", help="Emit JSON response to stdout."),
+) -> None:
+    """Cut and export a video segment."""
+    from amonhen.cutter import cut_video_segment, parse_timestamp
+
+    if not video.exists():
+        typer.echo(f"Error: video not found: {video}", err=True)
+        raise typer.Exit(code=2)
+
+    try:
+        start_ms = parse_timestamp(start)
+        end_ms = parse_timestamp(end)
+    except ValueError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=2) from e
+
+    if start_ms > end_ms:
+        typer.echo(f"Error: start ({start}) cannot be after end ({end})", err=True)
+        raise typer.Exit(code=2)
+
+    try:
+        clip_path = cut_video_segment(
+            video_path=video,
+            start_ms=start_ms,
+            end_ms=end_ms,
+            out_path=output,
+            reencode=reencode,
+        )
+    except Exception as e:
+        typer.echo(f"Error cutting video: {e}", err=True)
+        raise typer.Exit(code=1) from e
+
+    if json:
+        typer.echo(
+            jsonlib.dumps(
+                {
+                    "status": "ok",
+                    "video_path": str(video),
+                    "clip_path": str(clip_path),
+                    "start_ms": start_ms,
+                    "end_ms": end_ms,
+                    "reencoded": reencode,
+                }
+            )
+        )
+        return
+
+    mode_str = "re-encoded" if reencode else "lossless stream-copy"
+    time_range = f"{_format_timestamp(start_ms)} - {_format_timestamp(end_ms)}"
+    typer.echo(f"Exported clip ({time_range}, {mode_str}) to:\n  {clip_path}")
+
+
+@app.command()
 def version() -> None:
     """Print the version."""
     typer.echo(__version__)

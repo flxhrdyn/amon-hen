@@ -234,3 +234,81 @@ def test_cli_no_args_launches_interactive_session(tmp_path):
         result = runner.invoke(app, ["--db", str(db)])
         assert result.exit_code == 0
         assert mock_run_session.called
+
+
+def test_cli_cut_command_text_output(tmp_path, sample_video):
+    out_clip = tmp_path / "custom_out.mp4"
+    result = runner.invoke(
+        app,
+        [
+            "cut",
+            sample_video,
+            "--start",
+            "00:01",
+            "--end",
+            "00:03",
+            "-o",
+            str(out_clip),
+        ],
+    )
+    assert result.exit_code == 0
+    assert "Exported clip" in result.stdout
+    assert str(out_clip) in result.stdout
+    assert out_clip.exists()
+
+
+def test_cli_cut_command_json_output(tmp_path, sample_video):
+    out_clip = tmp_path / "json_out.mp4"
+    result = runner.invoke(
+        app,
+        [
+            "cut",
+            sample_video,
+            "-s",
+            "1.0",
+            "-e",
+            "2.5",
+            "-o",
+            str(out_clip),
+            "--json",
+        ],
+    )
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "ok"
+    assert payload["start_ms"] == 1000
+    assert payload["end_ms"] == 2500
+    assert payload["clip_path"] == str(out_clip)
+    assert payload["reencoded"] is False
+    assert out_clip.exists()
+
+
+def test_cli_cut_command_reencode_flag(tmp_path, sample_video):
+    out_clip = tmp_path / "reencoded.mp4"
+    result = runner.invoke(
+        app,
+        [
+            "cut",
+            sample_video,
+            "--start",
+            "0",
+            "--end",
+            "2",
+            "-o",
+            str(out_clip),
+            "--reencode",
+            "--json",
+        ],
+    )
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["reencoded"] is True
+    assert out_clip.exists()
+
+
+def test_cli_cut_command_invalid_timestamps_fails(sample_video):
+    result = runner.invoke(
+        app,
+        ["cut", sample_video, "--start", "10", "--end", "5"],
+    )
+    assert result.exit_code != 0
