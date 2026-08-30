@@ -62,6 +62,7 @@ amon-hen
 Within the interactive session:
 - `<query>`: Search moments across indexed videos.
 - `/open <n>`: Jump to and play result `#n` in your default media player.
+- `/cut <n> [out]`: Export result `#n` into a standalone video clip.
 - `/videos`: List all indexed videos.
 - `/stats`: Display index breakdown and frame statistics.
 - `/exit`: Quit the session.
@@ -101,12 +102,16 @@ Options:
 - `--json`: Output raw structured JSON to `stdout` (human logs go to `stderr`).
 
 ### 4. Extract Video Segment
-Extract matching moments into standalone clips without re-encoding delays:
+Extract matching moments or specific time ranges into standalone clips:
 
 ```bash
-# Lossless stream copy (< 0.2s)
+# Lossless stream copy (< 0.2s, no re-encoding)
 amon-hen cut video.mp4 --start 00:00:37 --end 00:01:06 -o match.mp4
+
+# Frame-accurate re-encoded export
+amon-hen cut video.mp4 -s 75.5 -e 90.0 --reencode -o clip.mp4
 ```
+
 
 ### 5. Inspect Index and Statistics
 

@@ -44,6 +44,9 @@ Run `amon-hen` without arguments to launch the interactive prompt:
 amon-hen
 ```
 
+Supports instant search queries, history navigation (`↑`/`↓`), `/open <n>` to play matches in your default player, and `/cut <n> [output]` to export clips.
+
+
 ### 2. Index Videos
 ```bash
 # Index a video or entire folder with adaptive motion sampling
