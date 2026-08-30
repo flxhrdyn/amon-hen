@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
+from amonhen.cutter import cut_video_segment
 from amonhen.player import open_video_at
 from amonhen.segment import Segment
 from amonhen.theme import format_score_bar, render_banner
@@ -54,12 +55,13 @@ def handle_slash_command(
     if cmd == "/help":
         help_text = (
             "Available commands:\n"
-            "  <query text>      Search video moments by description\n"
-            "  /open <number>    Open result in media player (e.g. /open 1 or /1)\n"
-            "  /videos           List indexed videos\n"
-            "  /stats            Show index statistics\n"
-            "  /help             Show this help message\n"
-            "  /exit             Exit interactive session"
+            "  <query text>            Search video moments by description\n"
+            "  /open <number>          Open result in media player (e.g. /open 1 or /1)\n"
+            "  /cut <number> [output]  Export clip to video file (e.g. /cut 1)\n"
+            "  /videos                 List indexed videos\n"
+            "  /stats                  Show index statistics\n"
+            "  /help                   Show this help message\n"
+            "  /exit                   Exit interactive session"
         )
         return help_text, False
 
@@ -70,6 +72,13 @@ def handle_slash_command(
     if cmd == "/open" and len(parts) > 1 and parts[1].isdigit():
         idx = int(parts[1])
         return _open_index(idx, last_results)
+
+    if cmd == "/cut":
+        if len(parts) < 2 or not parts[1].isdigit():
+            return "Usage: /cut <result_number> [output_filename]", False
+        idx = int(parts[1])
+        out_name = parts[2] if len(parts) > 2 else None
+        return _cut_index(idx, out_name, last_results)
 
     if cmd == "/videos" and store:
         vids = store.list_videos()
@@ -94,6 +103,30 @@ def _open_index(idx: int, last_results: list[Segment]) -> tuple[str, bool]:
         if success:
             return f"Opening {Path(seg.video_path).name} at {time_str}...", False
         return f"Could not launch media player for {seg.video_path}", False
+    return f"Result #{idx} not found. Last search returned {len(last_results)} result(s).", False
+
+
+def _cut_index(idx: int, out_name: str | None, last_results: list[Segment]) -> tuple[str, bool]:
+    if 1 <= idx <= len(last_results):
+        seg = last_results[idx - 1]
+        start_ms = seg.start_ms
+        end_ms = seg.end_ms
+        if start_ms == end_ms:
+            start_ms = max(0, start_ms - 2000)
+            end_ms = end_ms + 2000
+
+        try:
+            clip_path = cut_video_segment(
+                video_path=seg.video_path,
+                start_ms=start_ms,
+                end_ms=end_ms,
+                out_path=out_name,
+            )
+            t0 = f"{int((start_ms / 1000) // 60):02d}:{(start_ms / 1000) % 60:04.1f}"
+            t1 = f"{int((end_ms / 1000) // 60):02d}:{(end_ms / 1000) % 60:04.1f}"
+            return f"Exported clip #{idx} ({t0} - {t1}) to:\n  {clip_path}", False
+        except Exception as e:
+            return f"Could not export clip: {e}", False
     return f"Result #{idx} not found. Last search returned {len(last_results)} result(s).", False
 
 

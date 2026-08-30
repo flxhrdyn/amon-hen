@@ -113,6 +113,106 @@ def test_handle_slash_command_stats():
     assert should_exit is False
 
 
+def test_handle_slash_command_cut_valid_index():
+    seg = Segment(
+        video_id=1,
+        video_path="v.mp4",
+        start_ms=1000,
+        end_ms=4000,
+        best_ts_ms=2500,
+        score=0.8,
+        frame_count=3,
+    )
+    with patch(
+        "amonhen.interactive.cut_video_segment", return_value="v_clip_00m01s_00m04s.mp4"
+    ) as mock_cut:
+        out, should_exit = handle_slash_command("/cut 1", last_results=[seg], store=None)
+        assert "Exported clip #1" in out
+        assert "v_clip_00m01s_00m04s.mp4" in out
+        assert should_exit is False
+        mock_cut.assert_called_once_with(
+            video_path="v.mp4",
+            start_ms=1000,
+            end_ms=4000,
+            out_path=None,
+        )
+
+
+def test_handle_slash_command_cut_single_frame_applies_padding():
+    seg = Segment(
+        video_id=1,
+        video_path="v.mp4",
+        start_ms=5000,
+        end_ms=5000,
+        best_ts_ms=5000,
+        score=0.8,
+        frame_count=1,
+    )
+    with patch(
+        "amonhen.interactive.cut_video_segment", return_value="v_clip_padded.mp4"
+    ) as mock_cut:
+        out, should_exit = handle_slash_command("/cut 1", last_results=[seg], store=None)
+        assert "Exported clip #1" in out
+        assert should_exit is False
+        # start 5000 - 2000 = 3000, end 5000 + 2000 = 7000
+        mock_cut.assert_called_once_with(
+            video_path="v.mp4",
+            start_ms=3000,
+            end_ms=7000,
+            out_path=None,
+        )
+
+
+def test_handle_slash_command_cut_custom_name():
+    seg = Segment(
+        video_id=1,
+        video_path="v.mp4",
+        start_ms=1000,
+        end_ms=4000,
+        best_ts_ms=2500,
+        score=0.8,
+        frame_count=3,
+    )
+    with patch("amonhen.interactive.cut_video_segment", return_value="custom_clip.mp4") as mock_cut:
+        out, should_exit = handle_slash_command(
+            "/cut 1 custom_clip.mp4", last_results=[seg], store=None
+        )
+        assert "Exported clip #1" in out
+        assert "custom_clip.mp4" in out
+        assert should_exit is False
+        mock_cut.assert_called_once_with(
+            video_path="v.mp4",
+            start_ms=1000,
+            end_ms=4000,
+            out_path="custom_clip.mp4",
+        )
+
+
+def test_handle_slash_command_cut_out_of_bounds():
+    out, should_exit = handle_slash_command("/cut 5", last_results=[], store=None)
+    assert "not found" in out
+    assert should_exit is False
+
+
+def test_handle_slash_command_cut_failure():
+    seg = Segment(
+        video_id=1,
+        video_path="v.mp4",
+        start_ms=1000,
+        end_ms=4000,
+        best_ts_ms=2500,
+        score=0.8,
+        frame_count=3,
+    )
+    with patch(
+        "amonhen.interactive.cut_video_segment",
+        side_effect=RuntimeError("FFmpeg error"),
+    ):
+        out, should_exit = handle_slash_command("/cut 1", last_results=[seg], store=None)
+        assert "Could not export clip" in out
+        assert should_exit is False
+
+
 def test_handle_slash_command_unknown():
     out, should_exit = handle_slash_command("/foo", last_results=[], store=None)
     assert "Unknown command" in out
