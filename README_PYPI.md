@@ -1,4 +1,4 @@
-﻿# Amon Hen
+# Amon Hen
 
 > *"From the Seat of Seeing, no moment remains hidden."*
 
@@ -56,7 +56,14 @@ amon-hen index /path/to/videos/ --sampler adaptive
 amon-hen search "a person holding an umbrella"
 ```
 
+### 4. Extract Video Clip
+```bash
+# Extract matching segment into a standalone video clip
+amon-hen cut video.mp4 --start 00:00:37 --end 00:01:06 -o match.mp4
+```
+
 ---
+
 
 ## Python API
 

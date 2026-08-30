@@ -16,10 +16,12 @@ If run with no arguments, `amon-hen` automatically launches the **Interactive RE
 | :--- | :--- |
 | `index <paths...>` | Extract, filter, and embed video frames into the local database |
 | `search <query>` | Query video moments using natural language descriptions |
-| `list` | List all indexed videos and their stored frame counts |
-| `info <video_id>` | Display detailed metadata and baseline score calibration for a video |
-| `delete <video_id>`| Remove a video and its stored frame embeddings from the database |
-| `setup` | Download and cache official ONNX model weights (~105 MB) |
+| `cut <video> -s <start> -e <end>` | Extract a video segment into a standalone video clip |
+| `videos` | List all indexed videos and their stored frame counts |
+| `stats` | Display database totals and gate filtering statistics |
+| `setup` | Download and cache official ONNX model weights (approx. 105 MB) |
+| `version` | Print current package version |
+
 
 ---
 
@@ -73,7 +75,34 @@ amon-hen search "forklift lifting crate" --json
 
 ---
 
-## 3. Interactive REPL Session
+## 3. Cutting Video Segments (`amon-hen cut`)
+
+Extract matching moments or arbitrary timestamp ranges into standalone video clips:
+
+```bash
+# Lossless stream-copy extraction (instantaneous, < 0.2s)
+amon-hen cut video.mp4 --start 00:01:15 --end 00:01:40
+
+# Custom output destination
+amon-hen cut footage.mp4 -s 75.5 -e 90.0 -o highlight.mp4
+
+# Frame-accurate re-encoded export (libx264/aac)
+amon-hen cut clip.mkv --start 00:00:10.5 --end 00:00:25.0 --reencode
+
+# Machine-readable JSON output
+amon-hen cut video.mp4 -s 00:10 -e 00:20 --json
+```
+
+### Options:
+* `-s, --start <time>`: Start timestamp in seconds (`75.5`) or formatted time (`01:15.5`, `00:01:15`).
+* `-e, --end <time>`: End timestamp in seconds or formatted time.
+* `-o, --output <path>`: Destination path (default: `<video_stem>_clip_<start>_<end>.mp4`).
+* `--reencode`: Re-encode video and audio streams for exact non-keyframe cuts.
+* `--json`: Output structured JSON metadata to `stdout`.
+
+---
+
+## 4. Interactive REPL Session
 
 Launch the interactive prompt by running `amon-hen` without arguments:
 
@@ -85,9 +114,13 @@ amon-hen
 * **Natural Language Queries:** Type any query directly to see instant matching segments and visual score bars.
 * **Command History:** Persistent arrow-key history across sessions saved in `~/.amonhen/history`.
 * **Slash Commands:**
-  * `/open <N>`: Launch the video at the exact start timestamp of result `#N` using your default system player (`mpv`, `vlc`, or `ffplay`).
+  * `/open <N>` (or `/<N>`): Launch the video at the exact start timestamp of result `#N` using your default system player (`mpv`, `vlc`, or `ffplay`).
+  * `/cut <N> [output.mp4]`: Export result `#N` directly to a video clip. Single-frame detections automatically receive +/- 2.0s padding.
+  * `/videos`: List all indexed videos and frame counts.
+  * `/stats`: Display indexing totals and sampler gate statistics.
   * `/help`: Display list of interactive commands and tips.
-  * `/exit` or `exit` / `quit`: Exit the interactive session.
+  * `/exit` or `/quit`: Exit the interactive session.
+
 
 
 ---

@@ -1,4 +1,4 @@
-﻿# Amon Hen Project Roadmap
+# Amon Hen Project Roadmap
 
 This document outlines the development status, architectural roadmap, and future milestones for **Amon Hen**. Community contributions and proposals are welcome for all open roadmap items.
 
@@ -23,10 +23,12 @@ We welcome community pull requests and design proposals for the following milest
 ### 1. Instant Video Segment Exporter (`amon-hen cut`)
 * **Goal:** Extract matching video moments directly into standalone video clips without re-encoding.
 * **Scope:**
-  * Add CLI command: `amon-hen cut <video_id_or_path> --start <timestamp> --end <timestamp> -o output.mp4`.
-  * Add slash command in interactive mode: `/cut <result_number> [output_path]`.
-  * Use FFmpeg stream copying (`-c copy -ss <start> -to <end>`) for sub-second lossless extraction.
-* **Status:** Open for Contribution.
+  * [x] Add CLI command: `amon-hen cut <video_path> --start <timestamp> --end <timestamp> -o output.mp4`.
+  * [x] Add slash command in interactive mode: `/cut <result_number> [output_path]`.
+  * [x] Use FFmpeg stream copying (`-c copy -ss <start> -to <end>`) for sub-second lossless extraction.
+  * [x] Optional frame-accurate re-encoding mode (`--reencode`).
+* **Status:** Completed (Released in `v0.1.2`).
+
 
 ---
 

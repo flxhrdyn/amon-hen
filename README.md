@@ -100,7 +100,15 @@ Options:
 - `--no-calibrate`: Disable automatic statistical baseline filtering.
 - `--json`: Output raw structured JSON to `stdout` (human logs go to `stderr`).
 
-### 4. Inspect Index and Statistics
+### 4. Extract Video Segment
+Extract matching moments into standalone clips without re-encoding delays:
+
+```bash
+# Lossless stream copy (< 0.2s)
+amon-hen cut video.mp4 --start 00:00:37 --end 00:01:06 -o match.mp4
+```
+
+### 5. Inspect Index and Statistics
 
 ```bash
 # List indexed videos and frame counts
@@ -121,10 +129,12 @@ All commands support `--json` for scripting and pipeline composition:
 | `amon-hen` | Launch the interactive REPL session with history navigation and media player integration. |
 | `amon-hen index <paths>...` | Extract, filter, embed, and index video frames into SQLite. |
 | `amon-hen search "<query>"` | Retrieve matching video segments by natural language query. |
+| `amon-hen cut <video> -s <start> -e <end>` | Extract matching video segment into a standalone video clip. |
 | `amon-hen videos` | List all indexed videos, durations, and stored frame counts. |
 | `amon-hen stats` | Display total video counts, frame totals, and gate filtering breakdown. |
 | `amon-hen setup` | Download and verify model artifacts ahead of time. |
 | `amon-hen version` | Print current package version. |
+
 
 ---
 

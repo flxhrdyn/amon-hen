@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.2] - 2026-08-30
+
+### Added
+* **Instant Video Segment Exporter (`amon-hen cut`):** Lossless stream-copy extraction and frame-accurate re-encoded export for arbitrary start/end timestamps.
+* **Interactive `/cut` Slash Command:** Instant clip exporting directly from the REPL session (`/cut <n> [output.mp4]`) with automatic +/- 2.0s padding for single-frame detections.
+* **Core Cutter Module (`amonhen.cutter`):** Timestamp parsing supporting seconds, MM:SS, and HH:MM:SS formats with safe output path generation.
+
 ## [0.1.1] - 2026-08-28
+
 
 ### Fixed
 * **macOS SQLite Extension Loading:** Added standalone Python provisioning and runtime check for macOS Python builds lacking dynamic extension support.
