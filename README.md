@@ -243,12 +243,13 @@ Measured on CPU (4 threads) using ONNX Runtime with official [`felixhrdyn/mobile
 ## Roadmap & Future Milestones
 
 - [x] **v0.1.0 (Core Release):** CPU-native MobileCLIP2 ONNX inference, SQLite vector store, 3-gate adaptive sampler, segment merging, and interactive TUI.
-- [ ] **Lossless Video Moment Exporter (`amon-hen cut`):** Instant sub-second video clip extraction using FFmpeg stream copying without re-encoding.
+- [x] **Instant Video Moment Exporter (`amon-hen cut` & `/cut`):** Sub-second lossless clip extraction using FFmpeg stream copying and optional frame-accurate re-encoding (released in v0.1.2).
 - [ ] **Multi-Model Support:** Distribution and CLI support for larger `MobileCLIP2-S2` models and custom ONNX weights.
 - [ ] **Spoken Audio Search:** Whisper ONNX transcription with SQLite FTS5 for hybrid dialogue and visual search.
 - [ ] **Local Web UI (`amon-hen serve`):** Browser-based visual video scrubber and timeline heatmap.
 
 See [ROADMAP.md](docs/ROADMAP.md) for full milestone details and contribution guides.
+
 
 ---
 
