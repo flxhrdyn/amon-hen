@@ -84,8 +84,9 @@ def render_banner(
     plain: bool = False,
     width: int = 78,
     use_unicode: bool | None = None,
+    force_color: bool = False,
 ) -> str:
-    use_plain = plain or is_color_disabled()
+    use_plain = (plain or is_color_disabled()) if not force_color else False
 
     if use_unicode is None:
         encoding = getattr(sys.stdout, "encoding", None) or "utf-8"

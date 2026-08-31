@@ -20,16 +20,15 @@ from amonhen.theme import (
 FONT_PATH = "C:/Windows/Fonts/cascadiamono.ttf"
 FONT_SIZE = 14
 
-# Exact Amon Hen Design System Palette (from src/amonhen/theme.py)
-BG_COLOR = "#13141f"
-HEADER_BAR_COLOR = "#0d0e16"
-BLUE_COLOR = "#82aaff"  # rgb(130, 170, 255) - Starlight Blue Accent
-WHITE_COLOR = "#f0f3f8"  # rgb(240, 243, 248) - Foreground Frost White
-MUTED_COLOR = "#6e7382"  # rgb(110, 115, 130) - Muted Slate
-DIVIDER_COLOR = "#4b505f"  # rgb(75, 80, 95)    - Dim Border Slate
-DOT_RED = "#f7768e"
-DOT_YELLOW = "#e0af68"
-DOT_GREEN = "#9ece6a"
+# Exact True Dark + Starlight Blue palette from authentic Windows Terminal / TUI session
+BG_COLOR = "#0c0c0e"
+HEADER_BAR_COLOR = "#18181c"
+TAB_ACTIVE_COLOR = "#0c0c0e"
+BLUE_COLOR = "#82aaff"  # Starlight Blue
+WHITE_COLOR = "#ffffff"  # Pure White
+MUTED_COLOR = "#8a90a0"  # Readable Muted Slate
+DIVIDER_COLOR = "#2a2e3d"  # Subtle Horizontal Divider Line
+DOT_CLOSE = "#e81123"
 
 OUT_PATH = Path("demo/demo.gif")
 
@@ -56,10 +55,6 @@ def parse_ansi_line(line: str) -> list[tuple[str, str]]:
             current_color = MUTED_COLOR
         elif "75;80;95" in code_str:
             current_color = DIVIDER_COLOR
-        elif "32" in code_str:
-            current_color = DOT_GREEN
-        elif "33" in code_str:
-            current_color = DOT_YELLOW
         last_idx = match.end()
 
     tail = line[last_idx:]
@@ -86,21 +81,25 @@ def render_tui_frame(
     except Exception:
         font = ImageFont.load_default()
 
-    # Draw Terminal Window Title Bar
-    title_bar_height = 34
+    # Draw Windows Terminal Title Bar
+    title_bar_height = 36
     draw.rectangle([0, 0, width_px, title_bar_height], fill=HEADER_BAR_COLOR)
-    # macOS/Modern window dots
-    draw.ellipse([14, 11, 24, 21], fill=DOT_RED)
-    draw.ellipse([34, 11, 44, 21], fill=DOT_YELLOW)
-    draw.ellipse([54, 11, 64, 21], fill=DOT_GREEN)
 
-    # Title centered
-    title = f"amon-hen v{__version__}  ·  TUI Session"
-    draw.text((width_px // 2 - 100, 9), title, font=font, fill=MUTED_COLOR)
+    # Active Tab
+    tab_w = 180
+    draw.rectangle([10, 6, 10 + tab_w, title_bar_height], fill=TAB_ACTIVE_COLOR)
+    # Terminal tab title
+    tab_title = f">_ amon-hen v{__version__}"
+    draw.text((22, 11), tab_title, font=font, fill="#c0caf5")
+
+    # Windows-style window buttons on top right
+    draw.text((width_px - 85, 10), "─", font=font, fill="#999999")
+    draw.rectangle([width_px - 55, 13, width_px - 45, 23], outline="#999999", width=1)
+    draw.text((width_px - 25, 9), "✕", font=font, fill="#999999")
 
     # Content layout
     pad_x = 18
-    current_y = title_bar_height + 10
+    current_y = title_bar_height + 12
     line_h = 20
 
     # 1. Render Header Banner (Themed Box with Eagle Silhouette)
@@ -171,6 +170,7 @@ def build_demo_gif() -> None:
         dir_path="~/videos/demo",
         width=cols,
         use_unicode=True,
+        force_color=True,
     )
     banner_1 = render_banner(
         model_id="mobileclip2-s0",
@@ -179,6 +179,7 @@ def build_demo_gif() -> None:
         dir_path="~/videos/demo",
         width=cols,
         use_unicode=True,
+        force_color=True,
     )
 
     left = "[Enter] Submit  ·  /index <dir>  ·  /open <id>  ·  /cut <id>  ·  /exit"
@@ -310,7 +311,7 @@ def build_demo_gif() -> None:
     )
     durations.append(400)
 
-    # Scene 5: Display search results (Consistent palette)
+    # Scene 5: Display search results
     r_left = f"> {query_1}"
     r_right = "Saw in 18ms"
     r_pad = " " * max(1, cols - len(r_left) - len(r_right))

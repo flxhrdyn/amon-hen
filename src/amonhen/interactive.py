@@ -257,6 +257,7 @@ def run_interactive_session(
                 total_frames=state["total_frames"],
                 dir_path=str(store.path.parent),
                 width=width,
+                force_color=True,
             )
         )
 
