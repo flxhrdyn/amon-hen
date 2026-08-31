@@ -18,7 +18,7 @@ from amonhen.theme import (
     BLUE_BOLD,
     MUTED,
     RESET,
-    WHITE_BOLD,
+    WHITE,
     format_score_bar,
     format_timestamp,
     get_turning_verb,
@@ -83,17 +83,16 @@ def format_segment_results(segments: list[Segment], width: int | None = None) ->
         highlight = i == 1
 
         if highlight:
-            header = f"{BLUE_BOLD}#{i}   {time_str:<23}{RESET}              {BLUE}{bar_str}{RESET}"
+            header = (
+                f"{BLUE_BOLD}#{i}   {time_str:<23}{RESET}              {BLUE_BOLD}{bar_str}{RESET}"
+            )
             meta = f"{MUTED}File: {name}   Peak: {peak_str}{RESET}"
             action = (
                 f"{BLUE}=> Action: Type /open {i} to play moment (or /cut {i} to export){RESET}"
             )
             blocks.append(f"{header}\n{meta}\n{action}")
         else:
-            header = (
-                f"{WHITE_BOLD}#{i}   {time_str:<23}{RESET}"
-                f"              {WHITE_BOLD}{bar_str}{RESET}"
-            )
+            header = f"{WHITE}#{i}   {time_str:<23}{RESET}              {BLUE}{bar_str}{RESET}"
             meta = f"{MUTED}File: {name}   Peak: {peak_str}{RESET}"
             blocks.append(f"{header}\n{meta}")
 
