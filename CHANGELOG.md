@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.12] - 2026-08-31
+
+### Enhanced
+* **Ultra-Compact 3-Row Silhouette:** Streamlined the Eagle Throne silhouette to an ultra-compact 3-row halfblock layout (`▄`, `█`, `▀`, `▒`) that fits the 3 metadata lines with zero vertical padding.
+
 ## [0.1.11] - 2026-08-31
+
 
 ### Enhanced
 * **Reverted Textbox Header:** Clean border frame for the prompt input without title label.

@@ -64,19 +64,15 @@ def format_score_bar(score: float, width: int = 10) -> str:
 
 
 THRONE_BANNER = [
-    "  ▄    █    ▄  ",
-    " ▄█▀  ▄█▄  ▀█▄ ",
-    " ▀██▄▄███▄▄██▀ ",
-    "  ▒█████████▒  ",
-    "  ▀█████████▀  ",
+    "  ▄  █  ▄  ",
+    " ▄█▀▄█▄▀█▄ ",
+    " ▒███████▒ ",
 ]
 
 THRONE_BANNER_PLAIN = [
-    "  .    |    .  ",
-    " / \\  /|\\  / \\ ",
-    "( o ) (o) ( o )",
-    " |(o)| | |(o)| ",
-    " [===========] ",
+    "  .  |  .  ",
+    " / \\/|\\/ \\ ",
+    " [=======] ",
 ]
 
 
@@ -132,20 +128,17 @@ def render_banner(
         '"From the Seat of Seeing, no moment remains hidden."',
         f"Model: {model_id.upper()} (CPU)   Storage: sqlite-vec   {idx_str}",
         path_display,
-        "",
-        "",
     ]
     styled_lines = (
         [
             f"{WHITE}{plain_lines[0]}{RESET}",
             f"{MUTED}{plain_lines[1]}{RESET}",
             f"{MUTED}{plain_lines[2]}{RESET}",
-            "",
-            "",
         ]
         if not use_plain
         else plain_lines
     )
+
 
 
     art_width = len(art_plain[0])
