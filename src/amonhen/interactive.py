@@ -430,7 +430,8 @@ def run_interactive_session(
         height=1,
     )
 
-    prompt_frame = Frame(prompt_row, title=" Search or /command ", style="fg:#82aaff")
+    prompt_frame = Frame(prompt_row, style="fg:#82aaff")
+
 
     root = HSplit(
         [

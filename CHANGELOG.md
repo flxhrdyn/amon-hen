@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.11] - 2026-08-31
+
+### Enhanced
+* **Reverted Textbox Header:** Clean border frame for the prompt input without title label.
+
 ## [0.1.10] - 2026-08-31
+
 
 ### Enhanced
 * **Compact Halfblock & Dither Silhouette:** Replaced oversized ASCII art with a compact 5-row halfblock and dithered silhouette (`▄`, `█`, `▀`, `▒`) of the Seat of Seeing Eagle Throne.
