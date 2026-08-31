@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
 
 from amonhen import __version__
 
@@ -66,6 +67,8 @@ THRONE_BANNER_PLAIN = [
 def render_banner(
     model_id: str = "mobileclip2-s0",
     videos_count: int = 0,
+    total_frames: int = 0,
+    dir_path: str = "",
     plain: bool = False,
 ) -> str:
     use_plain = plain or is_color_disabled()
@@ -78,40 +81,51 @@ def render_banner(
         use_unicode = False
 
     art = THRONE_BANNER if use_unicode else THRONE_BANNER_PLAIN
-    divider = "─" * 68 if use_unicode else "-" * 68
+    divider = "─" * 80 if use_unicode else "-" * 80
 
     tagline = '"From the Seat of Seeing, no moment remains hidden."'
+    if videos_count > 0:
+        idx_str = f"Index: {videos_count} video ({total_frames} frames)"
+    else:
+        idx_str = "Index: Ready (0 videos)"
+
+    path_display = dir_path or os.getcwd()
+    try:
+        home = str(Path.home())
+        if path_display.startswith(home):
+            path_display = "~" + path_display[len(home) :]
+    except Exception:
+        pass
+    path_display = path_display.replace("\\", "/")
+
     if use_plain:
         info_lines = [
-            f"Amon Hen v{__version__} · {tagline}",
-            f"Model: {model_id} (CPU)   Storage: sqlite-vec   Index: {videos_count} video(s)",
-            "",
-            "Type your search query, /open <num> to launch video, /cut <num> to export, or /help.",
+            f"Amon Hen v{__version__}  ·  {tagline}",
+            f"Model: {model_id.upper()} (CPU)   Storage: sqlite-vec   {idx_str}",
+            f"{path_display}",
             "",
             divider,
+            "",
         ]
         combined = [f"{a} {b}".rstrip() for a, b in zip(art, info_lines, strict=True)]
         return "\n" + "\n".join(combined) + "\n"
 
     line1 = (
-        f"\033[1;36mAmon Hen v{__version__}\033[0m  \033[90m·\033[0m  \033[3;90m{tagline}\033[0m"
+        f"\033[1;36mAmon Hen v{__version__}\033[0m  \033[90m·\033[0m  \033[3;37m{tagline}\033[0m"
     )
     line2 = (
-        f"\033[90mModel:\033[0m \033[37m{model_id} (CPU)\033[0m   "
+        f"\033[90mModel:\033[0m \033[37m{model_id.upper()} (CPU)\033[0m   "
         f"\033[90mStorage:\033[0m \033[37msqlite-vec\033[0m   "
-        f"\033[90mIndex:\033[0m \033[36m{videos_count} video(s)\033[0m"
+        f"\033[90mIndex:\033[0m \033[36m{idx_str.replace('Index: ', '')}\033[0m"
     )
-    line4 = (
-        "\033[90mType your search query, \033[36m/open <num>\033[90m to play, "
-        "\033[36m/cut <num>\033[90m to export, or \033[36m/help\033[90m.\033[0m"
-    )
+    line3 = f"\033[90m{path_display}\033[0m"
     info_lines = [
         line1,
         line2,
-        "",
-        line4,
+        line3,
         "",
         f"\033[90m{divider}\033[0m",
+        "",
     ]
     combined = [f"\033[36m{a}\033[0m {b}".rstrip() for a, b in zip(art, info_lines, strict=True)]
     return "\n" + "\n".join(combined) + "\n"

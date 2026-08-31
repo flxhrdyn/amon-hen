@@ -25,26 +25,41 @@ def format_segment_results(segments: list[Segment]) -> str:
     if not segments:
         return "No matching moments found."
 
-    lines = []
+    blocks = []
     for i, seg in enumerate(segments, start=1):
         name = Path(seg.video_path).name
         start_s = seg.start_ms / 1000.0
         end_s = seg.end_ms / 1000.0
-        if seg.start_ms < seg.end_ms:
-            t0 = f"{int(start_s // 60):02d}:{start_s % 60:04.1f}"
-            t1 = f"{int(end_s // 60):02d}:{end_s % 60:04.1f}"
-            time_str = f"{t0} -> {t1}"
+        peak_s = seg.best_ts_ms / 1000.0
+
+        t0 = f"{int(start_s // 60):02d}:{start_s % 60:04.1f}"
+        t1 = f"{int(end_s // 60):02d}:{end_s % 60:04.1f}"
+        time_str = f"{t0} -> {t1}" if seg.start_ms < seg.end_ms else f"{t0}              "
+        peak_str = f"{int(peak_s // 60):02d}:{peak_s % 60:04.1f}"
+
+        bar = format_score_bar(seg.score, width=10)
+        bar_str = f"[{bar}] {seg.score:.3f}"
+
+        if i == 1:
+            header = f"\033[1;36m#{i}   {time_str:<23}\033[0m              \033[36m{bar_str}\033[0m"
+            meta = f"\033[90mFile: {name}   Peak: {peak_str}\033[0m"
+            action = (
+                f"\033[36m=> Action: Type /open {i} to play moment (or /cut {i} to export)\033[0m"
+            )
+            blocks.append(f"{header}\n{meta}\n{action}")
         else:
-            time_str = f"{int(start_s // 60):02d}:{start_s % 60:04.1f}              "
-        bar = format_score_bar(seg.score, width=8)
-        lines.append(f"  #{i}   {time_str:<23}  {bar}  {seg.score:.3f}   {name}")
-    return "\n".join(lines)
+            header = f"\033[1;37m#{i}   {time_str:<23}\033[0m              \033[37m{bar_str}\033[0m"
+            meta = f"\033[90mFile: {name}   Peak: {peak_str}\033[0m"
+            blocks.append(f"{header}\n{meta}")
+
+    return "\n\n".join(blocks)
 
 
 def handle_slash_command(
     cmd_line: str,
     last_results: list[Segment],
     store: Store | None,
+    model_id: str = "mobileclip2-s0",
 ) -> tuple[str, bool]:
     parts = cmd_line.strip().split()
     if not parts:
@@ -52,12 +67,13 @@ def handle_slash_command(
     cmd = parts[0].lower()
 
     if cmd in ("/exit", "/quit"):
-        return "Farewell.", True
+        return "Farewell. The seeing closes.", True
 
     if cmd == "/help":
         help_text = (
             "Available commands:\n"
             "  <query text>            Search video moments by description\n"
+            "  /index <dir_or_file>    Extract and index videos into database\n"
             "  /open <number>          Open result in media player (e.g. /open 1 or /1)\n"
             "  /cut <number> [output]  Export clip to video file (e.g. /cut 1)\n"
             "  /videos                 List indexed videos\n"
@@ -66,6 +82,35 @@ def handle_slash_command(
             "  /exit                   Exit interactive session"
         )
         return help_text, False
+
+    if cmd == "/index" and store:
+        if len(parts) < 2:
+            return "Usage: /index <path_to_video_or_dir>", False
+        target_path = Path(parts[1])
+        if not target_path.exists():
+            return f"Path does not exist: {target_path}", False
+
+        from amonhen.pipeline import index_videos
+        from amonhen.progress import RichReporter
+
+        reporter = RichReporter()
+        try:
+            print(f"\033[1;36m* Gazing across {target_path}...\033[0m")
+            indexed, skipped = index_videos(
+                paths=[target_path],
+                store=store,
+                model_id=model_id,
+                reporter=reporter,
+            )
+            total_vids = len(store.list_videos())
+            total_frames = store.stats().get("frames", 0)
+            msg = (
+                f"\033[1;36m* Unveiled {indexed} video(s) into database "
+                f"(Index: {total_vids} videos, {total_frames} frames).\033[0m"
+            )
+            return msg, False
+        except Exception as e:
+            return f"Indexing failed: {e}", False
 
     if cmd.startswith("/") and cmd[1:].isdigit():
         idx = int(cmd[1:])
@@ -102,8 +147,9 @@ def _open_index(idx: int, last_results: list[Segment]) -> tuple[str, bool]:
         success = open_video_at(seg.video_path, seg.best_ts_ms)
         ts_s = seg.best_ts_ms / 1000.0
         time_str = f"{int(ts_s // 60):02d}:{ts_s % 60:04.1f}"
+        name = Path(seg.video_path).name
         if success:
-            return f"Opening {Path(seg.video_path).name} at {time_str}...", False
+            return f"\033[1;36m=> Launching media player at {time_str} ({name})...\033[0m", False
         return f"Could not launch media player for {seg.video_path}", False
     return f"Result #{idx} not found. Last search returned {len(last_results)} result(s).", False
 
@@ -126,7 +172,10 @@ def _cut_index(idx: int, out_name: str | None, last_results: list[Segment]) -> t
             )
             t0 = f"{int((start_ms / 1000) // 60):02d}:{(start_ms / 1000) % 60:04.1f}"
             t1 = f"{int((end_ms / 1000) // 60):02d}:{(end_ms / 1000) % 60:04.1f}"
-            return f"Exported clip #{idx} ({t0} - {t1}) to:\n  {clip_path}", False
+            return (
+                f"\033[1;36m=> Exported clip #{idx} ({t0} - {t1}) to:\n  {clip_path}\033[0m",
+                False,
+            )
         except Exception as e:
             return f"Could not export clip: {e}", False
     return f"Result #{idx} not found. Last search returned {len(last_results)} result(s).", False
@@ -137,23 +186,42 @@ def run_interactive_session(
     text_encoder,
     model_id: str = "mobileclip2-s0",
 ) -> None:
-    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    from prompt_toolkit.formatted_text import HTML
 
+    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
     session = PromptSession(history=FileHistory(str(HISTORY_FILE)))
 
     videos_count = len(store.list_videos())
-    print(render_banner(model_id=model_id, videos_count=videos_count))
+    total_frames = store.stats().get("frames", 0)
+    print(
+        render_banner(
+            model_id=model_id,
+            videos_count=videos_count,
+            total_frames=total_frames,
+        )
+    )
+
+    def bottom_toolbar():
+        left = (
+            "<style color='#6e7382'>[Enter] Submit  ·  /index &lt;dir&gt;  ·  "
+            "/open &lt;id&gt;  ·  /cut &lt;id&gt;  ·  /exit</style>"
+        )
+        right = f"<style color='#4b505f'>{model_id.upper()} · CPU</style>"
+        spaces = "&nbsp;" * 16
+        return HTML(f"{left}{spaces}{right}")
 
     last_results: list[Segment] = []
 
     while True:
         try:
-            line = session.prompt("> ").strip()
+            line = session.prompt("> ", bottom_toolbar=bottom_toolbar).strip()
             if not line:
                 continue
 
             if line.startswith("/"):
-                msg, should_exit = handle_slash_command(line, last_results, store)
+                msg, should_exit = handle_slash_command(
+                    line, last_results, store, model_id=model_id
+                )
                 print(msg)
                 if should_exit:
                     break
@@ -171,5 +239,5 @@ def run_interactive_session(
             print()
 
         except (KeyboardInterrupt, EOFError):
-            print("\nFarewell.")
+            print("\nFarewell. The seeing closes.")
             break

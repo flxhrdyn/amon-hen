@@ -11,7 +11,7 @@ def test_render_banner_contains_title_and_tagline():
     banner = render_banner(model_id="mobileclip2-s2", videos_count=5, plain=False)
     assert "Amon Hen" in banner
     assert "Seat of Seeing" in banner
-    assert "mobileclip2-s2" in banner
+    assert "MOBILECLIP2-S2" in banner
 
 
 def test_render_banner_plain_mode():
@@ -25,7 +25,7 @@ def test_render_banner_color_mode(monkeypatch):
     monkeypatch.setattr("sys.stdout.isatty", lambda: True)
     banner = render_banner(model_id="mobileclip2-s2", videos_count=3, plain=False)
     assert "\033[1;36m" in banner
-    assert "\033[3;90m" in banner
+    assert "\033[3;37m" in banner
     assert "\033[36m" in banner
     assert "Amon Hen" in banner
 

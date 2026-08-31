@@ -36,7 +36,7 @@ def test_handle_slash_command_open():
     )
     with patch("amonhen.interactive.open_video_at", return_value=True) as mock_open:
         out, should_exit = handle_slash_command("/open 1", last_results=[seg], store=None)
-        assert "Opening" in out
+        assert "Launching media player" in out
         assert should_exit is False
         mock_open.assert_called_once_with("v.mp4", 1500)
 
@@ -53,7 +53,7 @@ def test_handle_slash_command_shorthand_open():
     )
     with patch("amonhen.interactive.open_video_at", return_value=True) as mock_open:
         out, should_exit = handle_slash_command("/1", last_results=[seg], store=None)
-        assert "Opening" in out
+        assert "Launching media player" in out
         assert should_exit is False
         mock_open.assert_called_once_with("v.mp4", 1500)
 
