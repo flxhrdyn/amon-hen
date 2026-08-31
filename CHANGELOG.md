@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.4] - 2026-08-31
+
+### Enhanced
+* **Exact Demo TUI Parity:** Refined 5-row Seat of Seeing Throne art and clean 3-line metadata header matching `demo.gif` exactly.
+* **Persistent Bottom Toolbar:** Fixed bottom status line (`[Enter] Submit · /index <dir> · /open <id> · /cut <id> · /exit`) styled via `prompt_toolkit`.
+* **Integrated `/index <dir>` Command:** Direct indexing from the REPL prompt with turning verb progress output and instant status update.
+* **Enhanced Result Cards:** Two-line result cards with peak timestamp, focused rank #1 action hint, and visual score bars.
+
 ## [0.1.3] - 2026-08-31
+
 
 ### Enhanced
 * **Seat of Seeing ASCII Throne Banner:** Integrated the iconic 3-tower ASCII art header and real-time metadata header into the interactive session matching the demo interface.

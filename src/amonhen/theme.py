@@ -51,7 +51,6 @@ THRONE_BANNER = [
     " ███ ███ ███ ",
     " ███████████ ",
     "  █████████  ",
-    " ███████████ ",
 ]
 
 THRONE_BANNER_PLAIN = [
@@ -60,7 +59,6 @@ THRONE_BANNER_PLAIN = [
     " ### ### ### ",
     " ########### ",
     "  #########  ",
-    " ########### ",
 ]
 
 
@@ -104,18 +102,15 @@ def render_banner(
             f"Model: {model_id.upper()} (CPU)   Storage: sqlite-vec   {idx_str}",
             f"{path_display}",
             "",
-            divider,
             "",
         ]
         combined = [f"{a} {b}".rstrip() for a, b in zip(art, info_lines, strict=True)]
-        return "\n" + "\n".join(combined) + "\n"
+        return "\n" + "\n".join(combined) + "\n" + divider + "\n"
 
-    line1 = (
-        f"\033[1;36mAmon Hen v{__version__}\033[0m  \033[90m·\033[0m  \033[3;37m{tagline}\033[0m"
-    )
+    line1 = f"\033[1;36mAmon Hen v{__version__}\033[0m  \033[90m·\033[0m  \033[97m{tagline}\033[0m"
     line2 = (
-        f"\033[90mModel:\033[0m \033[37m{model_id.upper()} (CPU)\033[0m   "
-        f"\033[90mStorage:\033[0m \033[37msqlite-vec\033[0m   "
+        f"\033[90mModel:\033[0m \033[97m{model_id.upper()} (CPU)\033[0m   "
+        f"\033[90mStorage:\033[0m \033[97msqlite-vec\033[0m   "
         f"\033[90mIndex:\033[0m \033[36m{idx_str.replace('Index: ', '')}\033[0m"
     )
     line3 = f"\033[90m{path_display}\033[0m"
@@ -124,8 +119,7 @@ def render_banner(
         line2,
         line3,
         "",
-        f"\033[90m{divider}\033[0m",
         "",
     ]
     combined = [f"\033[36m{a}\033[0m {b}".rstrip() for a, b in zip(art, info_lines, strict=True)]
-    return "\n" + "\n".join(combined) + "\n"
+    return "\n" + "\n".join(combined) + "\n\033[90m" + divider + "\033[0m\n"
