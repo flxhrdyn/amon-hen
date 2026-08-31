@@ -64,27 +64,19 @@ def format_score_bar(score: float, width: int = 10) -> str:
 
 
 THRONE_BANNER = [
-    r"   /\     /\     /\   ",
-    r"  / |    /||\    | \  ",
-    r" /  |   / || \   |  \ ",
-    r"( <o \ (  ||  ) / o> )",
-    r" \ \  \( (vv) )/  / / ",
-    r"  \ \_ \  ||  / _/ /  ",
-    r"  |(o)| | || | |(o)|  ",
-    r"  |___|_|_||_|_|___|  ",
-    r"  \================/  ",
+    "  ▄    █    ▄  ",
+    " ▄█▀  ▄█▄  ▀█▄ ",
+    " ▀██▄▄███▄▄██▀ ",
+    "  ▒█████████▒  ",
+    "  ▀█████████▀  ",
 ]
 
 THRONE_BANNER_PLAIN = [
-    r"   /\     /\     /\   ",
-    r"  / |    /||\    | \  ",
-    r" /  |   / || \   |  \ ",
-    r"( <o \ (  ||  ) / o> )",
-    r" \ \  \( (vv) )/  / / ",
-    r"  \ \_ \  ||  / _/ /  ",
-    r"  |(o)| | || | |(o)|  ",
-    r"  |___|_|_||_|_|___|  ",
-    r"  \================/  ",
+    "  .    |    .  ",
+    " / \\  /|\\  / \\ ",
+    "( o ) (o) ( o )",
+    " |(o)| | |(o)| ",
+    " [===========] ",
 ]
 
 
@@ -142,10 +134,6 @@ def render_banner(
         path_display,
         "",
         "",
-        "",
-        "",
-        "",
-        "",
     ]
     styled_lines = (
         [
@@ -154,14 +142,11 @@ def render_banner(
             f"{MUTED}{plain_lines[2]}{RESET}",
             "",
             "",
-            "",
-            "",
-            "",
-            "",
         ]
         if not use_plain
         else plain_lines
     )
+
 
     art_width = len(art_plain[0])
     inner_width = max(width - 4, art_width + 3 + max(len(line) for line in plain_lines))

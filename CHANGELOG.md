@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.10] - 2026-08-31
+
+### Enhanced
+* **Compact Halfblock & Dither Silhouette:** Replaced oversized ASCII art with a compact 5-row halfblock and dithered silhouette (`▄`, `█`, `▀`, `▒`) of the Seat of Seeing Eagle Throne.
+
 ## [0.1.9] - 2026-08-31
+
 
 ### Enhanced
 * **Themed Input Frame Box:** Styled the bottom input prompt frame with titled borders (`Search or /command`) matching the header banner theme.
