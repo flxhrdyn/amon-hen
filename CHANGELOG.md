@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.9] - 2026-08-31
+
+### Enhanced
+* **Themed Input Frame Box:** Styled the bottom input prompt frame with titled borders (`Search or /command`) matching the header banner theme.
+
 ## [0.1.8] - 2026-08-31
+
 
 ### Enhanced
 * **Authentic Seat of Seeing (Amon Hen) Eagle Throne ASCII Art:** Replaced simplistic block crown with detailed 9-line ASCII artwork depicting the soaring eagle wings, 4-direction eagle heads, and Seeing Eye carved pillars from the Lord of the Rings lore.
