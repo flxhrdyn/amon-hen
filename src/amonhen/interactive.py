@@ -187,7 +187,7 @@ def run_interactive_session(
     text_encoder,
     model_id: str = "mobileclip2-s0",
 ) -> None:
-    from prompt_toolkit.formatted_text import HTML
+    from prompt_toolkit.formatted_text import ANSI
 
     if sys.stdout.isatty():
         sys.stdout.write("\033[2J\033[H")
@@ -206,20 +206,19 @@ def run_interactive_session(
         )
     )
 
-    def bottom_toolbar():
-        left = (
-            "<style color='#6e7382'>[Enter] Submit  ·  /index &lt;dir&gt;  ·  "
-            "/open &lt;id&gt;  ·  /cut &lt;id&gt;  ·  /exit</style>"
-        )
-        right = f"<style color='#4b505f'>{model_id.upper()} · CPU</style>"
-        spaces = " " * 16
-        return HTML(f"{left}{spaces}{right}")
+    hint_line = (
+        "\033[90m[Enter] Submit  ·  /index <dir>  ·  "
+        "/open <id>  ·  /cut <id>  ·  /exit                      "
+        f"{model_id.upper()} · CPU\033[0m\n"
+    )
+    print(hint_line)
 
     last_results: list[Segment] = []
+    prompt_str = ANSI("\033[1;36m>\033[0m ")
 
     while True:
         try:
-            line = session.prompt("> ", bottom_toolbar=bottom_toolbar).strip()
+            line = session.prompt(prompt_str).strip()
             if not line:
                 continue
 

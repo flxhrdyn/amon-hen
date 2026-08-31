@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.7] - 2026-08-31
+
+### Enhanced
+* **Natural Claude Code / Open Code TUI Flow:** Clean inline prompt without gray toolbar background or awkward bottom screen gap.
+* **Unified Shortcut Legend:** Keybinding hints positioned right below the header divider for an authentic terminal UX.
+
 ## [0.1.6] - 2026-08-31
+
 
 ### Enhanced
 * **Dedicated Full-Window TUI Initialization:** Automatic screen initialization (`\033[2J\033[H`) on launch to deliver an authentic, distraction-free full-terminal TUI experience.
