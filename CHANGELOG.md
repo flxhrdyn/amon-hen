@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.5] - 2026-08-31
+
+### Fixed & Enhanced
+* **Full-Height 11-Line Throne Pixel Art:** Implemented the exact 11-row pixel throne from the demo graphic alongside runtime metadata.
+* **Toolbar Entity Parsing Fix:** Fixed XML parsing in `prompt_toolkit.HTML` by replacing HTML `&nbsp;` with standard whitespace.
+* **Complete Demo Parity:** 100% pixel-and-character-level match with the demo interface including live search metrics and fixed bottom toolbar.
+
 ## [0.1.4] - 2026-08-31
+
 
 ### Enhanced
 * **Exact Demo TUI Parity:** Refined 5-row Seat of Seeing Throne art and clean 3-line metadata header matching `demo.gif` exactly.

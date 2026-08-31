@@ -207,7 +207,7 @@ def run_interactive_session(
             "/open &lt;id&gt;  ·  /cut &lt;id&gt;  ·  /exit</style>"
         )
         right = f"<style color='#4b505f'>{model_id.upper()} · CPU</style>"
-        spaces = "&nbsp;" * 16
+        spaces = " " * 16
         return HTML(f"{left}{spaces}{right}")
 
     last_results: list[Segment] = []

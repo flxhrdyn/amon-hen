@@ -46,19 +46,31 @@ def format_score_bar(score: float, width: int = 10) -> str:
 
 
 THRONE_BANNER = [
-    "  █   █   █  ",
-    " ███ ███ ███ ",
-    " ███ ███ ███ ",
-    " ███████████ ",
-    "  █████████  ",
+    " █     █     █ ",
+    "███   ███   ███",
+    "███   ███   ███",
+    "███   ███   ███",
+    "███   ███   ███",
+    "████  ███  ████",
+    "█████ ███ █████",
+    "███████████████",
+    " █████████████ ",
+    "  ███████████  ",
+    "███████████████",
 ]
 
 THRONE_BANNER_PLAIN = [
-    "  #   #   #  ",
-    " ### ### ### ",
-    " ### ### ### ",
-    " ########### ",
-    "  #########  ",
+    " #     #     # ",
+    "###   ###   ###",
+    "###   ###   ###",
+    "###   ###   ###",
+    "###   ###   ###",
+    "####  ###  ####",
+    "##### ### #####",
+    "###############",
+    " ############# ",
+    "  ###########  ",
+    "###############",
 ]
 
 
@@ -103,8 +115,14 @@ def render_banner(
             f"{path_display}",
             "",
             "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
         ]
-        combined = [f"{a} {b}".rstrip() for a, b in zip(art, info_lines, strict=True)]
+        combined = [f"{a}   {b}".rstrip() for a, b in zip(art, info_lines, strict=True)]
         return "\n" + "\n".join(combined) + "\n" + divider + "\n"
 
     line1 = f"\033[1;36mAmon Hen v{__version__}\033[0m  \033[90m·\033[0m  \033[97m{tagline}\033[0m"
@@ -120,6 +138,12 @@ def render_banner(
         line3,
         "",
         "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
     ]
-    combined = [f"\033[36m{a}\033[0m {b}".rstrip() for a, b in zip(art, info_lines, strict=True)]
+    combined = [f"\033[36m{a}\033[0m   {b}".rstrip() for a, b in zip(art, info_lines, strict=True)]
     return "\n" + "\n".join(combined) + "\n\033[90m" + divider + "\033[0m\n"
