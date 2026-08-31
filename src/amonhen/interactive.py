@@ -221,7 +221,6 @@ def run_interactive_session(
     from prompt_toolkit.layout import HSplit, Layout, VSplit, Window
     from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 
-
     # Any bare-stdout progress bar (huggingface_hub downloads, tqdm) would
     # tear straight through this full-screen layout, so silence them.
     try:
@@ -443,7 +442,6 @@ def run_interactive_session(
             Window(FormattedTextControl(footer_text), height=1),
         ]
     )
-
 
     kb = KeyBindings()
 

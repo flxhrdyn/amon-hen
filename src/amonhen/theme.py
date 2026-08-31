@@ -139,8 +139,6 @@ def render_banner(
         else plain_lines
     )
 
-
-
     art_width = len(art_plain[0])
     inner_width = max(width - 4, art_width + 3 + max(len(line) for line in plain_lines))
     box_width = inner_width + 4
