@@ -20,7 +20,7 @@ GREEN_COLOR = "#9ece6a"
 YELLOW_COLOR = "#e0af68"
 MUTED_COLOR = "#565f89"
 WHITE_COLOR = "#ffffff"
-DIVIDER_COLOR = "#414868"
+DIVIDER_COLOR = "#3b4261"
 HEADER_BAR_COLOR = "#16161e"
 DOT_RED = "#f7768e"
 DOT_YELLOW = "#e0af68"
@@ -68,8 +68,9 @@ def render_tui_frame(
     body_lines: list[str],
     prompt_input: str,
     footer_text: str,
+    cols: int,
     cursor: bool = True,
-    width_px: int = 920,
+    width_px: int = 836,
     height_px: int = 540,
 ) -> Image.Image:
     img = Image.new("RGB", (width_px, height_px), color=BG_COLOR)
@@ -93,11 +94,11 @@ def render_tui_frame(
     draw.text((width_px // 2 - 100, 9), title, font=font, fill=MUTED_COLOR)
 
     # Content layout
-    pad_x = 20
+    pad_x = 18
     current_y = title_bar_height + 10
     line_h = 20
 
-    # 1. Render Header Banner (Themed Box with Eagle Silhouette)
+    # 1. Render Header Banner (Themed Box with Eagle Silhouette) - Spans full width
     for banner_line in banner_text.split("\n"):
         spans = parse_ansi_line(banner_line)
         x = pad_x
@@ -120,9 +121,9 @@ def render_tui_frame(
             x += font.getlength(span_text)
         current_y += line_h
 
-    # 3. Render Textbox (Top divider + prompt + Bottom divider)
+    # 3. Render Textbox (Top divider + prompt + Bottom divider) - Full width
     box_y = height_px - 54
-    divider_str = "─" * 94
+    divider_str = "─" * cols
     draw.text((pad_x, box_y - 18), divider_str, font=font, fill=DIVIDER_COLOR)
 
     prompt_prefix = "> "
@@ -138,7 +139,7 @@ def render_tui_frame(
 
     draw.text((pad_x, box_y + 18), divider_str, font=font, fill=DIVIDER_COLOR)
 
-    # 4. Render Footer
+    # 4. Render Footer - Full width
     footer_y = height_px - 16
     spans = parse_ansi_line(footer_text)
     x = pad_x
@@ -153,12 +154,17 @@ def build_demo_gif() -> None:
     frames: list[Image.Image] = []
     durations: list[int] = []
 
+    cols = 100
+    pad_x = 18
+    width_px = int(cols * 8.0 + 2 * pad_x)
+    height_px = 540
+
     banner_0 = render_banner(
         model_id="mobileclip2-s0",
         videos_count=0,
         total_frames=0,
         dir_path="~/videos/demo",
-        width=80,
+        width=cols,
         use_unicode=True,
     )
     banner_1 = render_banner(
@@ -166,11 +172,14 @@ def build_demo_gif() -> None:
         videos_count=1,
         total_frames=142,
         dir_path="~/videos/demo",
-        width=80,
+        width=cols,
         use_unicode=True,
     )
 
-    footer = "\033[90m[Enter] Submit  ·  /index <dir>  ·  /open <id>  ·  /cut <id>  ·  /exit                        MOBILECLIP2-S0 · CPU\033[0m"
+    left = "[Enter] Submit  ·  /index <dir>  ·  /open <id>  ·  /cut <id>  ·  /exit"
+    right = "MOBILECLIP2-S0 · CPU"
+    pad = " " * max(1, cols - len(left) - len(right))
+    footer = f"\033[90m{left}{pad}{right}\033[0m"
 
     initial_body = [
         "\033[90mType a query in plain English to search your indexed videos.\033[0m",
@@ -181,19 +190,48 @@ def build_demo_gif() -> None:
     ]
 
     # Scene 1: Initial Screen (1.2s)
-    f = render_tui_frame(banner_0, initial_body, "", footer, cursor=True)
+    f = render_tui_frame(
+        banner_0,
+        initial_body,
+        "",
+        footer,
+        cols,
+        cursor=True,
+        width_px=width_px,
+        height_px=height_px,
+    )
     frames.append(f)
     durations.append(1200)
 
     # Scene 2: Type `/index demo/cctv-people-demo.webm`
     cmd_index = "/index demo/cctv-people-demo.webm"
     for i in range(1, len(cmd_index) + 1):
-        f = render_tui_frame(banner_0, initial_body, cmd_index[:i], footer, cursor=True)
+        f = render_tui_frame(
+            banner_0,
+            initial_body,
+            cmd_index[:i],
+            footer,
+            cols,
+            cursor=True,
+            width_px=width_px,
+            height_px=height_px,
+        )
         frames.append(f)
         durations.append(40)
 
     # Pause before enter
-    frames.append(render_tui_frame(banner_0, initial_body, cmd_index, footer, cursor=False))
+    frames.append(
+        render_tui_frame(
+            banner_0,
+            initial_body,
+            cmd_index,
+            footer,
+            cols,
+            cursor=False,
+            width_px=width_px,
+            height_px=height_px,
+        )
+    )
     durations.append(400)
 
     # Scene 3: Progress animation
@@ -210,7 +248,10 @@ def build_demo_gif() -> None:
             body_indexing + [prog_line],
             "",
             footer,
+            cols,
             cursor=False,
+            width_px=width_px,
+            height_px=height_px,
         )
         frames.append(f)
         durations.append(350)
@@ -221,23 +262,57 @@ def build_demo_gif() -> None:
         "\033[1;36m* Unveiled 1 video(s) into database (Index: 1 videos, 142 frames).\033[0m",
         "",
     ]
-    f = render_tui_frame(banner_1, body_after_index, "", footer, cursor=True)
+    f = render_tui_frame(
+        banner_1,
+        body_after_index,
+        "",
+        footer,
+        cols,
+        cursor=True,
+        width_px=width_px,
+        height_px=height_px,
+    )
     frames.append(f)
     durations.append(800)
 
     # Scene 4: Type search query `a person holding an umbrella`
     query_1 = "a person holding an umbrella"
     for i in range(1, len(query_1) + 1):
-        f = render_tui_frame(banner_1, body_after_index, query_1[:i], footer, cursor=True)
+        f = render_tui_frame(
+            banner_1,
+            body_after_index,
+            query_1[:i],
+            footer,
+            cols,
+            cursor=True,
+            width_px=width_px,
+            height_px=height_px,
+        )
         frames.append(f)
         durations.append(40)
 
-    frames.append(render_tui_frame(banner_1, body_after_index, query_1, footer, cursor=False))
+    frames.append(
+        render_tui_frame(
+            banner_1,
+            body_after_index,
+            query_1,
+            footer,
+            cols,
+            cursor=False,
+            width_px=width_px,
+            height_px=height_px,
+        )
+    )
     durations.append(400)
 
     # Scene 5: Display search results
+    r_left = f"> {query_1}"
+    r_right = "Saw in 18ms"
+    r_pad = " " * max(1, cols - len(r_left) - len(r_right))
+    query_line = f"\033[1;36m>\033[0m {query_1}{r_pad}\033[90m{r_right}\033[0m"
+
     body_results_1 = body_after_index + [
-        f"\033[1;36m>\033[0m {query_1}                                                   \033[90mSaw in 18ms\033[0m",
+        query_line,
         "",
         "\033[1;36m#1   00:00:37.0 -> 00:01:06.0\033[0m              \033[36m[████████░░] 0.261\033[0m",
         "\033[90mFile: cctv-people-demo.webm   Peak: 00:00:48.0\033[0m",
@@ -247,14 +322,32 @@ def build_demo_gif() -> None:
         "\033[90mFile: cctv-people-demo.webm   Peak: 00:00:07.0\033[0m",
         "",
     ]
-    f = render_tui_frame(banner_1, body_results_1, "", footer, cursor=True)
+    f = render_tui_frame(
+        banner_1,
+        body_results_1,
+        "",
+        footer,
+        cols,
+        cursor=True,
+        width_px=width_px,
+        height_px=height_px,
+    )
     frames.append(f)
     durations.append(2500)
 
     # Scene 6: Type `/open 1`
     cmd_open = "/open 1"
     for i in range(1, len(cmd_open) + 1):
-        f = render_tui_frame(banner_1, body_results_1, cmd_open[:i], footer, cursor=True)
+        f = render_tui_frame(
+            banner_1,
+            body_results_1,
+            cmd_open[:i],
+            footer,
+            cols,
+            cursor=True,
+            width_px=width_px,
+            height_px=height_px,
+        )
         frames.append(f)
         durations.append(50)
 
@@ -264,7 +357,9 @@ def build_demo_gif() -> None:
         "\033[1;36m=> Launching media player at 00:48.0 (cctv-people-demo.webm)...\033[0m",
         "",
     ]
-    f = render_tui_frame(banner_1, body_open, "", footer, cursor=True)
+    f = render_tui_frame(
+        banner_1, body_open, "", footer, cols, cursor=True, width_px=width_px, height_px=height_px
+    )
     frames.append(f)
     durations.append(2000)
 
@@ -278,7 +373,9 @@ def build_demo_gif() -> None:
         loop=0,
         optimize=True,
     )
-    print(f"Generated demo GIF ({len(frames)} frames) -> {OUT_PATH}")
+    print(
+        f"Generated demo GIF ({len(frames)} frames, {cols} cols, width: {width_px}px) -> {OUT_PATH}"
+    )
 
 
 if __name__ == "__main__":

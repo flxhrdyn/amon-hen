@@ -126,11 +126,37 @@ def render_banner(
     path_display = path_display.replace("\\", "/")
 
     title = f" Amon Hen v{__version__} "
-    plain_lines = [
-        '"From the Seat of Seeing, no moment remains hidden."',
-        f"Model: {model_id.upper()} (CPU)   Storage: sqlite-vec   {idx_str}",
-        path_display,
-    ]
+    target_width = max(40, width)
+    inner_width = target_width - 4
+    art_width = len(art_plain[0])
+    max_text_w = max(10, inner_width - art_width - 1)
+
+    if len(path_display) > max_text_w:
+        path_display = "..." + path_display[-(max_text_w - 3) :]
+
+    if target_width >= 86:
+        plain_lines = [
+            '"From the Seat of Seeing, no moment remains hidden."',
+            f"Model: {model_id.upper()} (CPU)   Storage: sqlite-vec   {idx_str}",
+            path_display,
+        ]
+    elif target_width >= 65:
+        plain_lines = [
+            '"From the Seat of Seeing, no moment remains hidden."',
+            f"Model: {model_id.upper()}   {idx_str}",
+            path_display,
+        ]
+    else:
+        plain_lines = [
+            f"{model_id.upper()} (CPU)",
+            idx_str,
+            path_display,
+        ]
+
+    for i in range(len(plain_lines)):
+        if len(plain_lines[i]) > max_text_w:
+            plain_lines[i] = plain_lines[i][: max_text_w - 3] + "..."
+
     styled_lines = (
         [
             f"{WHITE}{plain_lines[0]}{RESET}",
@@ -141,14 +167,14 @@ def render_banner(
         else plain_lines
     )
 
-    art_width = len(art_plain[0])
-    inner_width = max(width - 4, art_width + 3 + max(len(line) for line in plain_lines))
-    box_width = inner_width + 4
+    box_width = target_width
+    if len(title) > box_width - 4:
+        title = " AmonHen "
 
     border_color = BLUE if not use_plain else ""
     reset = RESET if not use_plain else ""
 
-    top_fill = h * (box_width - 2 - len(title))
+    top_fill = h * max(1, box_width - 2 - len(title))
     lines = [f"{border_color}{tl}{title}{top_fill}{tr}{reset}"]
 
     for art_row, plain_row, styled_row in zip(art, plain_lines, styled_lines, strict=True):

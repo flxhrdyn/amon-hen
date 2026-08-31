@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.14] - 2026-08-31
+
+### Enhanced
+* **Full Responsive Terminal Auto-Resize:** Banner header, divider lines, and footer shortcuts now adapt smoothly to any terminal width (from narrow 50-col to ultra-wide displays) with zero gap or wrapping overflow.
+
 ## [0.1.13] - 2026-08-31
+
 
 ### Enhanced
 * **Horizontal Divider Textbox Layout:** Removed vertical borders from the input textbox and framed it with clean top and bottom horizontal divider lines.

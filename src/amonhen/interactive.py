@@ -198,9 +198,17 @@ def _cut_index(idx: int, out_name: str | None, last_results: list[Segment]) -> t
 
 
 def _footer_text(model_id: str, width: int) -> str:
-    left = "[Enter] Submit  ·  /index <dir>  ·  /open <id>  ·  /cut <id>  ·  /exit"
-    right = f"{model_id.upper()} · CPU"
-    pad = " " * max(1, width - len(left) - len(right))
+    if width >= 80:
+        left = "[Enter] Submit  ·  /index <dir>  ·  /open <id>  ·  /cut <id>  ·  /exit"
+        right = f"{model_id.upper()} · CPU"
+    elif width >= 60:
+        left = "[Enter] Search  ·  /index  ·  /open  ·  /cut  ·  /exit"
+        right = f"{model_id.upper()}"
+    else:
+        left = "[Enter] Search  ·  /help  ·  /exit"
+        right = ""
+
+    pad = " " * max(1, width - len(left) - len(right)) if right else ""
     return f"{MUTED}{left}{pad}{right}{RESET}"
 
 
