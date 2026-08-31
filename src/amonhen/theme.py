@@ -83,16 +83,18 @@ def render_banner(
     dir_path: str = "",
     plain: bool = False,
     width: int = 78,
+    use_unicode: bool | None = None,
 ) -> str:
     use_plain = plain or is_color_disabled()
 
-    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
-    use_unicode = True
-    try:
-        "█".encode(encoding)
-        "╭".encode(encoding)
-    except (UnicodeEncodeError, LookupError):
-        use_unicode = False
+    if use_unicode is None:
+        encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+        use_unicode = True
+        try:
+            "█".encode(encoding)
+            "╭".encode(encoding)
+        except (UnicodeEncodeError, LookupError):
+            use_unicode = False
 
     art_plain = THRONE_BANNER if use_unicode else THRONE_BANNER_PLAIN
     art = [f"{BLUE}{row}{RESET}" for row in art_plain] if not use_plain else art_plain

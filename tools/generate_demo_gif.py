@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -27,44 +28,38 @@ DOT_GREEN = "#9ece6a"
 
 OUT_PATH = Path("demo/demo.gif")
 
+ANSI_RE = re.compile(r"\x1b\[([0-9;]+)m")
 
-def parse_ansi_spans(text: str) -> list[tuple[str, str]]:
-    """Simple parser that converts our theme ANSI sequences to colored spans."""
-    color_map = {
-        "\033[1;36m": CYAN_COLOR,
-        "\033[36m": CYAN_COLOR,
-        "\033[1;34m": BLUE_COLOR,
-        "\033[34m": BLUE_COLOR,
-        "\033[97m": WHITE_COLOR,
-        "\033[1;97m": WHITE_COLOR,
-        "\033[90m": MUTED_COLOR,
-        "\033[32m": GREEN_COLOR,
-        "\033[33m": YELLOW_COLOR,
-        "\033[0m": FG_COLOR,
-    }
 
-    current_color = FG_COLOR
+def parse_ansi_line(line: str) -> list[tuple[str, str]]:
     spans = []
-    i = 0
-    buffer = ""
+    current_color = FG_COLOR
+    last_idx = 0
 
-    while i < len(text):
-        if text[i] == "\033" and "[" in text[i : i + 3]:
-            end = text.find("m", i)
-            if end != -1:
-                if buffer:
-                    spans.append((buffer, current_color))
-                    buffer = ""
-                code = text[i : end + 1]
-                current_color = color_map.get(code, FG_COLOR)
-                i = end + 1
-                continue
-        buffer += text[i]
-        i += 1
+    for match in ANSI_RE.finditer(line):
+        text_chunk = line[last_idx : match.start()]
+        if text_chunk:
+            spans.append((text_chunk, current_color))
+        code_str = match.group(1)
+        if "0" == code_str:
+            current_color = FG_COLOR
+        elif "1;36" in code_str or "36" == code_str:
+            current_color = CYAN_COLOR
+        elif "1;34" in code_str or "34" == code_str:
+            current_color = BLUE_COLOR
+        elif "97" in code_str or "1;97" in code_str or "1" == code_str:
+            current_color = WHITE_COLOR
+        elif "90" in code_str:
+            current_color = MUTED_COLOR
+        elif "32" in code_str:
+            current_color = GREEN_COLOR
+        elif "33" in code_str:
+            current_color = YELLOW_COLOR
+        last_idx = match.end()
 
-    if buffer:
-        spans.append((buffer, current_color))
-
+    tail = line[last_idx:]
+    if tail:
+        spans.append((tail, current_color))
     return spans
 
 
@@ -74,10 +69,10 @@ def render_tui_frame(
     prompt_input: str,
     footer_text: str,
     cursor: bool = True,
-    width_px: int = 900,
-    height_px: int = 580,
+    width_px: int = 920,
+    height_px: int = 540,
 ) -> Image.Image:
-    img = Image.new("RGBA", (width_px, height_px), color=BG_COLOR)
+    img = Image.new("RGB", (width_px, height_px), color=BG_COLOR)
     draw = ImageDraw.Draw(img)
 
     try:
@@ -85,60 +80,57 @@ def render_tui_frame(
     except Exception:
         font = ImageFont.load_default()
 
-    # Draw Terminal Title Bar
-    title_bar_height = 36
+    # Draw Terminal Window Title Bar
+    title_bar_height = 34
     draw.rectangle([0, 0, width_px, title_bar_height], fill=HEADER_BAR_COLOR)
-    # macOS style window buttons
-    draw.ellipse([14, 12, 24, 22], fill=DOT_RED)
-    draw.ellipse([34, 12, 44, 22], fill=DOT_YELLOW)
-    draw.ellipse([54, 12, 64, 22], fill=DOT_GREEN)
+    # macOS/Modern window dots
+    draw.ellipse([14, 11, 24, 21], fill=DOT_RED)
+    draw.ellipse([34, 11, 44, 21], fill=DOT_YELLOW)
+    draw.ellipse([54, 11, 64, 21], fill=DOT_GREEN)
 
-    # Title text
-    title = f"amon-hen v{__version__} · Terminal"
-    draw.text((width_px // 2 - 80, 10), title, font=font, fill=MUTED_COLOR)
+    # Title centered
+    title = f"amon-hen v{__version__}  ·  TUI Session"
+    draw.text((width_px // 2 - 100, 9), title, font=font, fill=MUTED_COLOR)
 
-    # Terminal layout content
-    pad_x = 18
-    pad_y = title_bar_height + 12
+    # Content layout
+    pad_x = 20
+    current_y = title_bar_height + 10
     line_h = 20
 
-    # 1. Render Banner
-    current_y = pad_y
+    # 1. Render Header Banner (Themed Box with Eagle Silhouette)
     for banner_line in banner_text.split("\n"):
-        spans = parse_ansi_spans(banner_line)
+        spans = parse_ansi_line(banner_line)
         x = pad_x
         for span_text, span_color in spans:
             draw.text((x, current_y), span_text, font=font, fill=span_color)
-            bbox = font.getbbox(span_text)
-            x += bbox[2] - bbox[0]
+            x += font.getlength(span_text)
         current_y += line_h
 
-    current_y += 6
+    current_y += 10
 
-    # 2. Render Body scrollback (up to bottom)
-    body_max_y = height_px - 75
-    for bline in body_lines[-16:]:
+    # 2. Render Scrollback Body
+    body_max_y = height_px - 70
+    for bline in body_lines[-14:]:
         if current_y > body_max_y:
             break
-        spans = parse_ansi_spans(bline)
+        spans = parse_ansi_line(bline)
         x = pad_x
         for span_text, span_color in spans:
             draw.text((x, current_y), span_text, font=font, fill=span_color)
-            bbox = font.getbbox(span_text)
-            x += bbox[2] - bbox[0]
+            x += font.getlength(span_text)
         current_y += line_h
 
     # 3. Render Textbox (Top divider + prompt + Bottom divider)
-    box_y = height_px - 56
-    divider_str = "─" * 96
+    box_y = height_px - 54
+    divider_str = "─" * 94
     draw.text((pad_x, box_y - 18), divider_str, font=font, fill=DIVIDER_COLOR)
 
     prompt_prefix = "> "
     draw.text((pad_x, box_y), prompt_prefix, font=font, fill=CYAN_COLOR)
-    prefix_w = font.getbbox(prompt_prefix)[2]
+    prefix_w = font.getlength(prompt_prefix)
 
     draw.text((pad_x + prefix_w, box_y), prompt_input, font=font, fill=FG_COLOR)
-    input_w = font.getbbox(prompt_input)[2] if prompt_input else 0
+    input_w = font.getlength(prompt_input) if prompt_input else 0
 
     if cursor:
         cur_x = pad_x + prefix_w + input_w + 2
@@ -147,15 +139,14 @@ def render_tui_frame(
     draw.text((pad_x, box_y + 18), divider_str, font=font, fill=DIVIDER_COLOR)
 
     # 4. Render Footer
-    footer_y = height_px - 18
-    spans = parse_ansi_spans(footer_text)
+    footer_y = height_px - 16
+    spans = parse_ansi_line(footer_text)
     x = pad_x
     for span_text, span_color in spans:
         draw.text((x, footer_y), span_text, font=font, fill=span_color)
-        bbox = font.getbbox(span_text)
-        x += bbox[2] - bbox[0]
+        x += font.getlength(span_text)
 
-    return img.convert("RGB")
+    return img
 
 
 def build_demo_gif() -> None:
@@ -167,14 +158,16 @@ def build_demo_gif() -> None:
         videos_count=0,
         total_frames=0,
         dir_path="~/videos/demo",
-        width=78,
+        width=80,
+        use_unicode=True,
     )
     banner_1 = render_banner(
         model_id="mobileclip2-s0",
         videos_count=1,
         total_frames=142,
         dir_path="~/videos/demo",
-        width=78,
+        width=80,
+        use_unicode=True,
     )
 
     footer = "\033[90m[Enter] Submit  ·  /index <dir>  ·  /open <id>  ·  /cut <id>  ·  /exit                        MOBILECLIP2-S0 · CPU\033[0m"
@@ -197,7 +190,7 @@ def build_demo_gif() -> None:
     for i in range(1, len(cmd_index) + 1):
         f = render_tui_frame(banner_0, initial_body, cmd_index[:i], footer, cursor=True)
         frames.append(f)
-        durations.append(45)
+        durations.append(40)
 
     # Pause before enter
     frames.append(render_tui_frame(banner_0, initial_body, cmd_index, footer, cursor=False))
@@ -220,7 +213,7 @@ def build_demo_gif() -> None:
             cursor=False,
         )
         frames.append(f)
-        durations.append(400)
+        durations.append(350)
 
     # Finish indexing
     body_after_index = [
@@ -237,7 +230,7 @@ def build_demo_gif() -> None:
     for i in range(1, len(query_1) + 1):
         f = render_tui_frame(banner_1, body_after_index, query_1[:i], footer, cursor=True)
         frames.append(f)
-        durations.append(45)
+        durations.append(40)
 
     frames.append(render_tui_frame(banner_1, body_after_index, query_1, footer, cursor=False))
     durations.append(400)
@@ -263,7 +256,7 @@ def build_demo_gif() -> None:
     for i in range(1, len(cmd_open) + 1):
         f = render_tui_frame(banner_1, body_results_1, cmd_open[:i], footer, cursor=True)
         frames.append(f)
-        durations.append(60)
+        durations.append(50)
 
     # Execute /open 1
     body_open = body_results_1 + [
