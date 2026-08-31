@@ -125,24 +125,26 @@ amon-hen
 
 ---
 
-## 4. Managing Indexed Videos
+## 5. Managing Indexed Videos & Statistics
 
 ```bash
-# List all indexed videos in the database
-amon-hen list
+# List all indexed videos, durations, and stored frame counts
+amon-hen videos
 
-# Inspect video metadata and noise baseline score
-amon-hen info 1
+# Inspect indexing breakdown across sampler gates
+amon-hen stats
 
-# Delete a specific video from the index
-amon-hen delete 1
+# Output raw JSON for pipeline automation
+amon-hen videos --json
+amon-hen stats --json
 ```
 
 ---
 
-## 5. Media Player Timestamp Seeking
+## 6. Media Player Timestamp Seeking
 
 Amon Hen automatically detects and supports timestamp seeking with:
 1. **mpv** (Preferred: `--start=SS.MS`)
 2. **VLC** (`--start-time=SS`)
 3. **ffplay** (`-ss SS.MS -autoexit`)
+

@@ -71,17 +71,17 @@ amon-hen cut video.mp4 --start 00:00:37 --end 00:01:06 -o match.mp4
 ## Python API
 
 ```python
-from amonhen.store import Store
-from amonhen.model_registry import get_model
 from amonhen.encode import TextEncoder
+from amonhen.model_registry import get_model
 from amonhen.pipeline import search
+from amonhen.store import Store
 
 # 1. Connect to index
 store = Store("index.db", embed_dim=512)
 
 # 2. Load CPU-optimized text encoder
-model = get_model("mobileclip2-s0").download()
-text_encoder = TextEncoder(model.text_model_path, model.tokenizer_path)
+spec = get_model("mobileclip2-s0")
+text_encoder = TextEncoder(spec)
 
 # 3. Retrieve matching video segments
 results = search("red sports car turning", store=store, text_encoder=text_encoder)
@@ -89,7 +89,10 @@ for seg in results:
     print(
         f"{seg.video_path}: {seg.start_ms / 1000.0:.1f}s - {seg.end_ms / 1000.0:.1f}s (score: {seg.score:.3f})"
     )
+
+store.close()
 ```
+
 
 ---
 
