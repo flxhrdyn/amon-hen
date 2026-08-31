@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -187,6 +188,10 @@ def run_interactive_session(
     model_id: str = "mobileclip2-s0",
 ) -> None:
     from prompt_toolkit.formatted_text import HTML
+
+    if sys.stdout.isatty():
+        sys.stdout.write("\033[2J\033[H")
+        sys.stdout.flush()
 
     HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
     session = PromptSession(history=FileHistory(str(HISTORY_FILE)))

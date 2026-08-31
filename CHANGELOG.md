@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.6] - 2026-08-31
+
+### Enhanced
+* **Dedicated Full-Window TUI Initialization:** Automatic screen initialization (`\033[2J\033[H`) on launch to deliver an authentic, distraction-free full-terminal TUI experience.
+* **Streamlined Toolbar & Result Layout:** Persistent prompt toolbar and rich card presentation matching the demo recording.
+
 ## [0.1.5] - 2026-08-31
+
 
 ### Fixed & Enhanced
 * **Full-Height 11-Line Throne Pixel Art:** Implemented the exact 11-row pixel throne from the demo graphic alongside runtime metadata.
