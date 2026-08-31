@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -11,10 +12,11 @@ from prompt_toolkit.history import FileHistory
 from amonhen.cutter import cut_video_segment
 from amonhen.player import open_video_at
 from amonhen.segment import Segment
-from amonhen.theme import format_score_bar, render_banner
+from amonhen.theme import format_score_bar, get_turning_verb, render_banner
 
 if TYPE_CHECKING:
     from amonhen.store import Store
+
 
 HISTORY_FILE = Path.home() / ".amonhen" / "history"
 
@@ -31,11 +33,11 @@ def format_segment_results(segments: list[Segment]) -> str:
         if seg.start_ms < seg.end_ms:
             t0 = f"{int(start_s // 60):02d}:{start_s % 60:04.1f}"
             t1 = f"{int(end_s // 60):02d}:{end_s % 60:04.1f}"
-            time_str = f"{t0} - {t1}"
+            time_str = f"{t0} -> {t1}"
         else:
             time_str = f"{int(start_s // 60):02d}:{start_s % 60:04.1f}              "
         bar = format_score_bar(seg.score, width=8)
-        lines.append(f" {i:>2}. {time_str}  {bar} {seg.score:.3f}  {name}")
+        lines.append(f"  #{i}   {time_str:<23}  {bar}  {seg.score:.3f}   {name}")
     return "\n".join(lines)
 
 
@@ -133,20 +135,20 @@ def _cut_index(idx: int, out_name: str | None, last_results: list[Segment]) -> t
 def run_interactive_session(
     store: Store,
     text_encoder,
-    model_id: str = "mobileclip2-s2",
+    model_id: str = "mobileclip2-s0",
 ) -> None:
     HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+
     session = PromptSession(history=FileHistory(str(HISTORY_FILE)))
 
     videos_count = len(store.list_videos())
     print(render_banner(model_id=model_id, videos_count=videos_count))
-    print("Type your search query, /open <num> to launch video, or /help.\n")
 
     last_results: list[Segment] = []
 
     while True:
         try:
-            line = session.prompt("amon-hen> ").strip()
+            line = session.prompt("> ").strip()
             if not line:
                 continue
 
@@ -160,7 +162,11 @@ def run_interactive_session(
             # Natural search query
             from amonhen.pipeline import search
 
+            t0 = time.perf_counter()
             last_results = search(line, store, text_encoder, limit=5)
+            elapsed_ms = (time.perf_counter() - t0) * 1000.0
+            verb = get_turning_verb().capitalize()
+            print(f"\033[90m{verb} in {elapsed_ms:.0f}ms\033[0m\n")
             print(format_segment_results(last_results))
             print()
 

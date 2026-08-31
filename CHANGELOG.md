@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.3] - 2026-08-31
+
+### Enhanced
+* **Seat of Seeing ASCII Throne Banner:** Integrated the iconic 3-tower ASCII art header and real-time metadata header into the interactive session matching the demo interface.
+* **Interactive Prompt Aesthetic:** Streamlined input prompt (`> `), live search execution timer with turning verbs, and score bar alignment.
+* **Windows UTF-8 Console Support:** Automatic stdout reconfiguration for crisp block rendering across Command Prompt and PowerShell.
+
 ## [0.1.2] - 2026-08-30
+
 
 ### Added
 * **Instant Video Segment Exporter (`amon-hen cut`):** Lossless stream-copy extraction and frame-accurate re-encoded export for arbitrary start/end timestamps.

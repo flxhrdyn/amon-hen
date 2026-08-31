@@ -24,7 +24,7 @@ def test_render_banner_color_mode(monkeypatch):
     monkeypatch.delenv("NO_COLOR", raising=False)
     monkeypatch.setattr("sys.stdout.isatty", lambda: True)
     banner = render_banner(model_id="mobileclip2-s2", videos_count=3, plain=False)
-    assert "\033[1;33m" in banner
+    assert "\033[1;36m" in banner
     assert "\033[3;90m" in banner
     assert "\033[36m" in banner
     assert "Amon Hen" in banner
