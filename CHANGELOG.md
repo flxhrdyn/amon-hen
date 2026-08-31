@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.13] - 2026-08-31
+
+### Enhanced
+* **Horizontal Divider Textbox Layout:** Removed vertical borders from the input textbox and framed it with clean top and bottom horizontal divider lines.
+
 ## [0.1.12] - 2026-08-31
+
 
 ### Enhanced
 * **Ultra-Compact 3-Row Silhouette:** Streamlined the Eagle Throne silhouette to an ultra-compact 3-row halfblock layout (`▄`, `█`, `▀`, `▒`) that fits the 3 metadata lines with zero vertical padding.

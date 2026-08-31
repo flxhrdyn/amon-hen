@@ -220,7 +220,7 @@ def run_interactive_session(
     from prompt_toolkit.keys import Keys
     from prompt_toolkit.layout import HSplit, Layout, VSplit, Window
     from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
-    from prompt_toolkit.widgets import Frame
+
 
     # Any bare-stdout progress bar (huggingface_hub downloads, tqdm) would
     # tear straight through this full-screen layout, so silence them.
@@ -430,17 +430,20 @@ def run_interactive_session(
         height=1,
     )
 
-    prompt_frame = Frame(prompt_row, style="fg:#82aaff")
-
+    prompt_top_divider = Window(height=1, char="─", style="fg:#4b505f")
+    prompt_bottom_divider = Window(height=1, char="─", style="fg:#4b505f")
 
     root = HSplit(
         [
             Window(FormattedTextControl(header_text), dont_extend_height=True),
             body_window,
-            prompt_frame,
+            prompt_top_divider,
+            prompt_row,
+            prompt_bottom_divider,
             Window(FormattedTextControl(footer_text), height=1),
         ]
     )
+
 
     kb = KeyBindings()
 
