@@ -19,7 +19,7 @@ from pathlib import Path
 
 import typer
 
-from amonhen import __version__
+from amonhen import __version__, theme
 from amonhen.model_registry import DEFAULT_MODEL, get_model
 from amonhen.pipeline import IndexConfig, index_videos
 from amonhen.pipeline import search as run_search
@@ -56,13 +56,6 @@ def _open_store(db: Path, model_id: str) -> Store:
     except IncompatibleIndexError as error:
         typer.echo(str(error), err=True)
         raise typer.Exit(code=2) from error
-
-
-def _format_timestamp(ts_ms: int) -> str:
-    total_seconds, milliseconds = divmod(int(ts_ms), 1000)
-    minutes, seconds = divmod(total_seconds, 60)
-    hours, minutes = divmod(minutes, 60)
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds // 100}"
 
 
 @app.callback(invoke_without_command=True)
@@ -218,9 +211,11 @@ def search(
     for position, seg in enumerate(segments, start=1):
         name = Path(seg.video_path).name
         if seg.start_ms < seg.end_ms:
-            time_str = f"{_format_timestamp(seg.start_ms)} - {_format_timestamp(seg.end_ms)}"
+            t0 = theme.format_timestamp(seg.start_ms)
+            t1 = theme.format_timestamp(seg.end_ms)
+            time_str = f"{t0} - {t1}"
         else:
-            time_str = f"{_format_timestamp(seg.start_ms):23}"
+            time_str = f"{theme.format_timestamp(seg.start_ms):23}"
         typer.echo(f"{position:>2}. {time_str}  {seg.score:.3f}  {name}")
 
 
@@ -256,7 +251,8 @@ def videos(
         return
 
     for row in rows:
-        typer.echo(f"{_format_timestamp(row.duration_ms)}  {row.frame_count:>6} frames  {row.path}")
+        duration = theme.format_timestamp(row.duration_ms)
+        typer.echo(f"{duration}  {row.frame_count:>6} frames  {row.path}")
 
 
 @app.command()
@@ -359,7 +355,7 @@ def cut(
         return
 
     mode_str = "re-encoded" if reencode else "lossless stream-copy"
-    time_range = f"{_format_timestamp(start_ms)} - {_format_timestamp(end_ms)}"
+    time_range = f"{theme.format_timestamp(start_ms)} - {theme.format_timestamp(end_ms)}"
     typer.echo(f"Exported clip ({time_range}, {mode_str}) to:\n  {clip_path}")
 
 

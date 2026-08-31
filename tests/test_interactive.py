@@ -1,5 +1,8 @@
 from unittest.mock import MagicMock, patch
 
+from prompt_toolkit.input import create_pipe_input
+from prompt_toolkit.output import DummyOutput
+
 from amonhen.interactive import (
     format_segment_results,
     handle_slash_command,
@@ -255,17 +258,16 @@ def test_run_interactive_session_lifecycle(capsys):
     mock_store.list_videos.return_value = []
     mock_encoder = MagicMock()
 
-    inputs = ["find cats", "/exit"]
-    mock_session = MagicMock()
-    mock_session.prompt.side_effect = inputs
+    with patch("amonhen.pipeline.search", return_value=[]) as mock_search:
+        with create_pipe_input() as pipe_input:
+            pipe_input.send_text("find cats\n/exit\n")
+            body = run_interactive_session(
+                mock_store, mock_encoder, input=pipe_input, output=DummyOutput()
+            )
+        mock_search.assert_called_once_with("find cats", mock_store, mock_encoder, limit=5)
 
-    with patch("amonhen.interactive.PromptSession", return_value=mock_session):
-        with patch("amonhen.pipeline.search", return_value=[]) as mock_search:
-            run_interactive_session(mock_store, mock_encoder)
-            mock_search.assert_called_once_with("find cats", mock_store, mock_encoder, limit=5)
-
+    assert "find cats" in body
     captured = capsys.readouterr()
-    assert "Amon Hen" in captured.out
     assert "Farewell" in captured.out
 
 
@@ -274,11 +276,9 @@ def test_run_interactive_session_eof(capsys):
     mock_store.list_videos.return_value = []
     mock_encoder = MagicMock()
 
-    mock_session = MagicMock()
-    mock_session.prompt.side_effect = EOFError
-
-    with patch("amonhen.interactive.PromptSession", return_value=mock_session):
-        run_interactive_session(mock_store, mock_encoder)
+    with create_pipe_input() as pipe_input:
+        pipe_input.send_text("\x04")
+        run_interactive_session(mock_store, mock_encoder, input=pipe_input, output=DummyOutput())
 
     captured = capsys.readouterr()
     assert "Farewell" in captured.out

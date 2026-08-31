@@ -8,6 +8,17 @@ from pathlib import Path
 
 from amonhen import __version__
 
+# Fixed truecolor palette so the TUI looks the same regardless of the
+# user's terminal color scheme, instead of the 16-color ANSI codes whose
+# actual hue depends on that scheme.
+BLUE = "\033[38;2;130;170;255m"
+BLUE_BOLD = "\033[1;38;2;130;170;255m"
+WHITE = "\033[38;2;240;243;248m"
+WHITE_BOLD = "\033[1;38;2;240;243;248m"
+MUTED = "\033[38;2;110;115;130m"
+DIM = "\033[38;2;75;80;95m"
+RESET = "\033[0m"
+
 TURNING_VERBS = (
     "gazing",
     "surveying",
@@ -34,6 +45,13 @@ def get_turning_verb(seed: int | None = None) -> str:
     return random.choice(TURNING_VERBS)
 
 
+def format_timestamp(ts_ms: int) -> str:
+    total_seconds, milliseconds = divmod(int(ts_ms), 1000)
+    minutes, seconds = divmod(total_seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds // 100}"
+
+
 def format_score_bar(score: float, width: int = 10) -> str:
     clamped = max(0.0, min(1.0, score))
     filled = int(round(clamped * width))
@@ -46,31 +64,27 @@ def format_score_bar(score: float, width: int = 10) -> str:
 
 
 THRONE_BANNER = [
-    " █     █     █ ",
-    "███   ███   ███",
-    "███   ███   ███",
-    "███   ███   ███",
-    "███   ███   ███",
-    "████  ███  ████",
-    "█████ ███ █████",
-    "███████████████",
-    " █████████████ ",
-    "  ███████████  ",
-    "███████████████",
+    r"   /\     /\     /\   ",
+    r"  / |    /||\    | \  ",
+    r" /  |   / || \   |  \ ",
+    r"( <o \ (  ||  ) / o> )",
+    r" \ \  \( (vv) )/  / / ",
+    r"  \ \_ \  ||  / _/ /  ",
+    r"  |(o)| | || | |(o)|  ",
+    r"  |___|_|_||_|_|___|  ",
+    r"  \================/  ",
 ]
 
 THRONE_BANNER_PLAIN = [
-    " #     #     # ",
-    "###   ###   ###",
-    "###   ###   ###",
-    "###   ###   ###",
-    "###   ###   ###",
-    "####  ###  ####",
-    "##### ### #####",
-    "###############",
-    " ############# ",
-    "  ###########  ",
-    "###############",
+    r"   /\     /\     /\   ",
+    r"  / |    /||\    | \  ",
+    r" /  |   / || \   |  \ ",
+    r"( <o \ (  ||  ) / o> )",
+    r" \ \  \( (vv) )/  / / ",
+    r"  \ \_ \  ||  / _/ /  ",
+    r"  |(o)| | || | |(o)|  ",
+    r"  |___|_|_||_|_|___|  ",
+    r"  \================/  ",
 ]
 
 
@@ -80,6 +94,7 @@ def render_banner(
     total_frames: int = 0,
     dir_path: str = "",
     plain: bool = False,
+    width: int = 78,
 ) -> str:
     use_plain = plain or is_color_disabled()
 
@@ -87,13 +102,25 @@ def render_banner(
     use_unicode = True
     try:
         "█".encode(encoding)
+        "╭".encode(encoding)
     except (UnicodeEncodeError, LookupError):
         use_unicode = False
 
-    art = THRONE_BANNER if use_unicode else THRONE_BANNER_PLAIN
-    divider = "─" * 80 if use_unicode else "-" * 80
+    art_plain = THRONE_BANNER if use_unicode else THRONE_BANNER_PLAIN
+    art = [f"{BLUE}{row}{RESET}" for row in art_plain] if not use_plain else art_plain
+    tl, tr, bl, br, h, v = (
+        ("╭", "╮", "╰", "╯", "─", "│")
+        if use_unicode
+        else (
+            "+",
+            "+",
+            "+",
+            "+",
+            "-",
+            "|",
+        )
+    )
 
-    tagline = '"From the Seat of Seeing, no moment remains hidden."'
     if videos_count > 0:
         idx_str = f"Index: {videos_count} video ({total_frames} frames)"
     else:
@@ -108,36 +135,11 @@ def render_banner(
         pass
     path_display = path_display.replace("\\", "/")
 
-    if use_plain:
-        info_lines = [
-            f"Amon Hen v{__version__}  ·  {tagline}",
-            f"Model: {model_id.upper()} (CPU)   Storage: sqlite-vec   {idx_str}",
-            f"{path_display}",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-        ]
-        combined = [f"{a}   {b}".rstrip() for a, b in zip(art, info_lines, strict=True)]
-        return "\n" + "\n".join(combined) + "\n" + divider + "\n"
-
-    line1 = f"\033[1;36mAmon Hen v{__version__}\033[0m  \033[90m·\033[0m  \033[97m{tagline}\033[0m"
-    line2 = (
-        f"\033[90mModel:\033[0m \033[97m{model_id.upper()} (CPU)\033[0m   "
-        f"\033[90mStorage:\033[0m \033[97msqlite-vec\033[0m   "
-        f"\033[90mIndex:\033[0m \033[36m{idx_str.replace('Index: ', '')}\033[0m"
-    )
-    line3 = f"\033[90m{path_display}\033[0m"
-    info_lines = [
-        line1,
-        line2,
-        line3,
-        "",
-        "",
+    title = f" Amon Hen v{__version__} "
+    plain_lines = [
+        '"From the Seat of Seeing, no moment remains hidden."',
+        f"Model: {model_id.upper()} (CPU)   Storage: sqlite-vec   {idx_str}",
+        path_display,
         "",
         "",
         "",
@@ -145,5 +147,36 @@ def render_banner(
         "",
         "",
     ]
-    combined = [f"\033[36m{a}\033[0m   {b}".rstrip() for a, b in zip(art, info_lines, strict=True)]
-    return "\n" + "\n".join(combined) + "\n\033[90m" + divider + "\033[0m\n"
+    styled_lines = (
+        [
+            f"{WHITE}{plain_lines[0]}{RESET}",
+            f"{MUTED}{plain_lines[1]}{RESET}",
+            f"{MUTED}{plain_lines[2]}{RESET}",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+        ]
+        if not use_plain
+        else plain_lines
+    )
+
+    art_width = len(art_plain[0])
+    inner_width = max(width - 4, art_width + 3 + max(len(line) for line in plain_lines))
+    box_width = inner_width + 4
+
+    border_color = BLUE if not use_plain else ""
+    reset = RESET if not use_plain else ""
+
+    top_fill = h * (box_width - 2 - len(title))
+    lines = [f"{border_color}{tl}{title}{top_fill}{tr}{reset}"]
+
+    for art_row, plain_row, styled_row in zip(art, plain_lines, styled_lines, strict=True):
+        content = f"{art_row} {styled_row}"
+        pad = " " * max(0, inner_width - art_width - 1 - len(plain_row))
+        lines.append(f"{border_color}{v}{reset} {content}{pad} {border_color}{v}{reset}")
+
+    lines.append(f"{border_color}{bl}{h * (box_width - 2)}{br}{reset}")
+    return "\n".join(lines)

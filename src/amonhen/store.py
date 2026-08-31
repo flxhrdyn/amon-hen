@@ -56,7 +56,10 @@ class Store:
         self.path = Path(path)
         self.embed_dim = embed_dim
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._conn = sqlite3.connect(str(self.path))
+        # The interactive TUI runs /index in a background executor thread so
+        # the progress bar can redraw live; access is still serialized (only
+        # one thread touches the store at a time), so this is safe.
+        self._conn = sqlite3.connect(str(self.path), check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
         if not hasattr(self._conn, "enable_load_extension"):
             raise RuntimeError(
