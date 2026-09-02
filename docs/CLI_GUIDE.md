@@ -50,7 +50,12 @@ amon-hen index footage.mp4 --db /path/to/custom_index.db
 * `--threshold <float>`: Motion sensitivity threshold for adaptive sampling (default: `30.0`).
 * `--dedup-threshold <float>`: Cosine similarity threshold for deduplicating adjacent frames (default: `0.90`).
 
+### Audio & Multilingual Speech Options
+* `--language <code>` / `-l <code>`: Spoken language code for Whisper speech transcription (`auto` [default], `id` [Indonesian], `en` [English], `ja` [Japanese], `es` [Spanish], `fr`, `de`, `zh`, `ko`, etc.).
+* `--no-audio`: Disable Whisper speech transcription and index purely visual frames.
+
 ---
+
 
 ## 2. Searching Moments (`amon-hen search`)
 

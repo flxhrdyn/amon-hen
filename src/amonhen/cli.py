@@ -129,6 +129,12 @@ def index(
     with_audio: bool = typer.Option(
         True, "--with-audio/--no-audio", help="Transcribe speech with Whisper ONNX."
     ),
+    language: str = typer.Option(
+        "auto",
+        "--language",
+        "-l",
+        help="Spoken language for speech transcription (e.g. en, id, ja, auto).",
+    ),
     force: bool = typer.Option(False, "--force", help="Re-index even if unchanged."),
     json: bool = typer.Option(False, "--json", help="Emit JSON to stdout."),
 ) -> None:
@@ -156,6 +162,7 @@ def index(
             force=force,
             text_encoder=_build_text_encoder(model),
             transcriber=_build_transcriber(with_audio),
+            language=language,
         )
 
     finally:

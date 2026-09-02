@@ -22,6 +22,41 @@ EOT_TOKEN = 50257  # <|endoftranscript|>
 FIRST_TIMESTAMP_TOKEN = 50364  # <|0.00|>
 
 
+# Language name normalization mapping to ISO 639-1
+LANGUAGE_NAMES: dict[str, str] = {
+    "indonesian": "id",
+    "indonesia": "id",
+    "english": "en",
+    "japanese": "ja",
+    "spanish": "es",
+    "french": "fr",
+    "german": "de",
+    "chinese": "zh",
+    "korean": "ko",
+    "russian": "ru",
+    "arabic": "ar",
+    "portuguese": "pt",
+    "italian": "it",
+    "dutch": "nl",
+    "turkish": "tr",
+    "vietnamese": "vi",
+    "malay": "ms",
+    "sundanese": "su",
+    "hindi": "hi",
+}
+
+
+def get_language_token(language: str, tokenizer: Tokenizer) -> int:
+    """Resolve ISO language code or language name to Whisper token ID."""
+    lang = language.lower().strip()
+    code = LANGUAGE_NAMES.get(lang, lang)
+    token_str = f"<|{code}|>"
+    token_id = tokenizer.token_to_id(token_str)
+    if token_id is not None:
+        return token_id
+    return EN_TOKEN
+
+
 def compute_mel_filterbank(sr: int = 16000, n_fft: int = 400, n_mels: int = 80) -> np.ndarray:
     """Compute Slaney-style triangular Mel filterbank matrix."""
     f_min = 0.0
@@ -129,11 +164,34 @@ class WhisperTranscriber:
 
         return cls(encoder, decoder, tokenizer)
 
+    def detect_language(self, hidden_states: np.ndarray) -> int:
+        """Detect spoken language token from encoder hidden states."""
+        dec_inputs = self.decoder.get_inputs()
+        hidden_input_name = dec_inputs[1].name if len(dec_inputs) > 1 else "encoder_hidden_states"
+        token_input_name = dec_inputs[0].name
+
+        input_ids = np.array([[SOT_TOKEN]], dtype=np.int64)
+        decoder_feed = {
+            token_input_name: input_ids,
+            hidden_input_name: hidden_states,
+        }
+        logits = self.decoder.run(None, decoder_feed)[0]
+        step_logits = logits[0, -1, :]
+
+        # Look across the Whisper language token slice [50259 .. 50357]
+        # or fallback to EN_TOKEN if out of range
+        lang_slice = step_logits[50259:50358]
+        if len(lang_slice) > 0:
+            best_idx = int(np.argmax(lang_slice))
+            return 50259 + best_idx
+        return EN_TOKEN
+
     def transcribe_window(
         self,
         audio_30s: np.ndarray,
         offset_ms: int = 0,
         max_tokens: int = 128,
+        language: str = "auto",
     ) -> list[SpeechSegment]:
         """Transcribe a 30-second audio window and return timestamped segments."""
         if len(audio_30s) == 0:
@@ -150,8 +208,14 @@ class WhisperTranscriber:
         encoder_outputs = self.encoder.run(None, encoder_inputs)
         hidden_states = encoder_outputs[0]
 
-        # 2. Autoregressive Greedy Decoding
-        current_tokens = [SOT_TOKEN, EN_TOKEN, TRANSCRIBE_TOKEN]
+        # 2. Resolve Language Token
+        if language in ("auto", "detect", None, ""):
+            lang_token = self.detect_language(hidden_states)
+        else:
+            lang_token = get_language_token(language, self.tokenizer)
+
+        # 3. Autoregressive Greedy Decoding
+        current_tokens = [SOT_TOKEN, lang_token, TRANSCRIBE_TOKEN]
         collected_logprobs: list[float] = []
         segments: list[SpeechSegment] = []
         active_start_ms = offset_ms
@@ -245,6 +309,7 @@ class WhisperTranscriber:
         self,
         audio: np.ndarray,
         chunk_len_sec: int = 30,
+        language: str = "auto",
     ) -> list[SpeechSegment]:
         """Transcribe arbitrary duration 16kHz audio array."""
         if len(audio) == 0:
@@ -256,7 +321,7 @@ class WhisperTranscriber:
         for offset in range(0, len(audio), chunk_samples):
             chunk = audio[offset : offset + chunk_samples]
             offset_ms = int((offset / 16000.0) * 1000)
-            window_segments = self.transcribe_window(chunk, offset_ms=offset_ms)
+            window_segments = self.transcribe_window(chunk, offset_ms=offset_ms, language=language)
             all_segments.extend(window_segments)
 
         return all_segments

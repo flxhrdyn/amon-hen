@@ -49,7 +49,9 @@ We welcome community pull requests and design proposals for the following milest
   * [x] Transcribe speech on CPU using lightweight Whisper-Tiny ONNX (`src/amonhen/whisper.py`).
   * [x] Store timestamped speech segments in SQLite FTS5 with BM25 ranking (`src/amonhen/store.py`).
   * [x] Hybrid retrieval merging visual vector search and spoken dialogue matching (`src/amonhen/pipeline.py`).
-* **Status:** Completed (Released in `v0.1.15`).
+  * [x] Multilingual speech transcription & auto-language detection (`--language auto|id|en|ja|...`).
+* **Status:** Completed (Released in `v0.1.21`).
+
 
 
 ---

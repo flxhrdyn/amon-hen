@@ -82,7 +82,10 @@ Options:
 - `--fps FLOAT`: Target extraction rate before gating (default: `1.0`).
 - `--sampler [fixed|adaptive]`: Frame selection strategy (default: `fixed`).
 - `--embed-dedup FLOAT`: Cosine similarity threshold to skip semantically identical frames (e.g. `0.98`).
+- `--language CODE`: Spoken language for Whisper transcription (`auto` [default], `id`, `en`, `ja`, `es`, `fr`, etc.).
+- `--no-audio`: Disable speech transcription to index visual frames only.
 - `--db PATH`: Custom index database location (default: `~/.amonhen/index.db`).
+
 
 ### 3. One-Shot Search
 Search directly from shell scripts or pipelines across visual action scenes and spoken dialogue:

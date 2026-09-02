@@ -208,6 +208,32 @@ def test_stats_reports_totals(tmp_path, sample_video):
     assert payload["frames"] > 0
 
 
+def test_cut_command_missing_file_fails(tmp_path):
+    out = tmp_path / "clip.mp4"
+    result = runner.invoke(
+        app, ["cut", "nonexistent.mp4", "--start", "0", "--end", "5", "-o", str(out)]
+    )
+    assert result.exit_code != 0
+
+
+def test_index_with_language_option(tmp_path, sample_video, monkeypatch):
+    import amonhen.cli as cli
+
+    captured_kwargs = {}
+
+    def mock_index_videos(*args, **kwargs):
+        captured_kwargs.update(kwargs)
+        from amonhen.pipeline import IndexResult
+
+        return IndexResult(videos=1, frames_decoded=10, frames_kept=5, elapsed_s=0.1)
+
+    monkeypatch.setattr(cli, "index_videos", mock_index_videos)
+    db = tmp_path / "index.db"
+    res = runner.invoke(app, ["index", sample_video, "--db", str(db), "--language", "id"])
+    assert res.exit_code == 0
+    assert captured_kwargs.get("language") == "id"
+
+
 def test_search_on_an_empty_index_exits_cleanly(tmp_path):
     db = tmp_path / "empty.db"
 

@@ -103,6 +103,7 @@ def index_videos(
     force: bool = False,
     text_encoder=None,
     transcriber=None,
+    language: str = "auto",
 ) -> IndexResult:
 
     reporter = reporter or NullReporter()
@@ -191,7 +192,7 @@ def index_videos(
         if transcriber is not None:
             pcm = extract_audio_pcm(path)
             if pcm is not None:
-                speech_segs = transcriber.transcribe(pcm)
+                speech_segs = transcriber.transcribe(pcm, language=language)
                 if speech_segs:
                     store.add_speech_segments(video_id, speech_segs)
 

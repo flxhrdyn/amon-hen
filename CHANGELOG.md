@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.21] - 2026-09-02
+
+### Added
+* **Multilingual Speech Recognition & Auto-Detection:** Added `--language` (`-l`) CLI option and engine support for 99+ spoken languages in Whisper-Tiny ONNX (e.g. `id` for Indonesian, `ja` for Japanese, `en` for English, `es` for Spanish, or `auto` for automatic language detection from audio).
+* **Language Name Aliases:** Supported natural language names (`indonesian`, `japanese`, `spanish`, `french`, `german`, `malay`, `sundanese`, etc.) automatically normalized to ISO 639-1 tokens.
+
 ## [0.1.20] - 2026-09-02
+
 
 ### Enhanced
 * **Two-Tone Score Bar Contrast:** Enabled distinct two-tone styling for visual score bars in TUI: filled blocks (`█`) glow in bright Starlight Blue while unfilled background blocks (`░`) render in subtle dark slate, preventing optical glare.
