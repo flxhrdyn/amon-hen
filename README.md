@@ -10,7 +10,8 @@
 
 A fast, lightweight command-line tool and Python library for natural language moment retrieval across local video files. Runs entirely on CPU without discrete GPUs, background daemons, or cloud dependencies.
 
-![Amon Hen Demo](https://raw.githubusercontent.com/flxhrdyn/amon-hen/main/demo/demo.gif)
+![Amon Hen Demo](demo/demo.gif)
+
 
 ---
 
