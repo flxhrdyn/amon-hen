@@ -11,10 +11,10 @@ from amonhen import __version__
 from amonhen.theme import (
     BLUE,
     BLUE_BOLD,
+    DIM,
     MUTED,
     RESET,
     WHITE,
-    format_score_bar,
     render_banner,
 )
 
@@ -227,20 +227,18 @@ def build_demo_gif():
     r_pad1 = " " * max(1, cols - len(r_left1) - len(r_right1))
     q_line1 = f"{BLUE_BOLD}>{RESET} {query_1}{r_pad1}{MUTED}{r_right1}{RESET}"
 
-    bar_1 = format_score_bar(0.310, width=10)
-    bar_2 = format_score_bar(0.310, width=10)
-
     body_results_1 = initial_body + [
         q_line1,
         "",
-        f"{BLUE_BOLD}#1   00:03:56.0 -> 00:04:52.0{RESET}              {BLUE}[{bar_1}] 0.310{RESET}",
+        f"{BLUE_BOLD}#1   00:03:56.0 -> 00:04:52.0{RESET}              {DIM}[{BLUE_BOLD}███{DIM}░░░░░░░] {BLUE_BOLD}0.310{RESET}",
         f"{MUTED}File: battle-of-amon-hen.webm   Peak: 00:04:30.0{RESET}",
         f"{BLUE}=> Action: Type /open 1 to play moment (or /cut 1 to export){RESET}",
         "",
-        f"{WHITE}#2   00:02:32.0 -> 00:02:56.0{RESET}              {BLUE}[{bar_2}] 0.310{RESET}",
+        f"{WHITE}#2   00:02:32.0 -> 00:02:56.0{RESET}              {DIM}[{BLUE}███{DIM}░░░░░░░] {BLUE}0.310{RESET}",
         f"{MUTED}File: battle-of-amon-hen.webm   Peak: 00:02:45.0{RESET}",
         "",
     ]
+
     frames.append(
         render_tui_frame(
             banner_start,
@@ -329,17 +327,14 @@ def build_demo_gif():
     r_pad2 = " " * max(1, cols - len(r_left2) - len(r_right2))
     q_line2 = f"{BLUE_BOLD}>{RESET} {query_2}{r_pad2}{MUTED}{r_right2}{RESET}"
 
-    bar_cctv1 = format_score_bar(0.261, width=10)
-    bar_cctv2 = format_score_bar(0.247, width=10)
-
     body_results_2 = body_open + [
         q_line2,
         "",
-        f"{BLUE_BOLD}#1   00:00:37.0 -> 00:01:06.0{RESET}              {BLUE}[{bar_cctv1}] 0.261{RESET}",
+        f"{BLUE_BOLD}#1   00:00:37.0 -> 00:01:06.0{RESET}              {DIM}[{BLUE_BOLD}███{DIM}░░░░░░░] {BLUE_BOLD}0.261{RESET}",
         f"{MUTED}File: cctv-people-demo.webm   Peak: 00:00:48.0{RESET}",
         f"{BLUE}=> Action: Type /open 1 to play moment (or /cut 1 to export){RESET}",
         "",
-        f"{WHITE}#2   00:00:04.0 -> 00:00:19.0{RESET}              {BLUE}[{bar_cctv2}] 0.247{RESET}",
+        f"{WHITE}#2   00:00:04.0 -> 00:00:19.0{RESET}              {DIM}[{BLUE}██{DIM}░░░░░░░░] {BLUE}0.247{RESET}",
         f"{MUTED}File: cctv-people-demo.webm   Peak: 00:00:12.0{RESET}",
         "",
     ]
