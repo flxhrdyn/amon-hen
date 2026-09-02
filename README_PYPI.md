@@ -57,15 +57,19 @@ amon-hen index /path/to/videos/ --sampler adaptive
 
 ### 3. Search Moments
 ```bash
-# Search using natural language
+# Search visual actions or spoken dialogue (Battle of Amon Hen)
+amon-hen search "swords fight warriors in forest"
+
+# Search real-world surveillance events (CCTV footage)
 amon-hen search "a person holding an umbrella"
 ```
 
 ### 4. Extract Video Clip
 ```bash
 # Extract matching segment into a standalone video clip
-amon-hen cut video.mp4 --start 00:00:37 --end 00:01:06 -o match.mp4
+amon-hen cut amon-hen-speech-demo.webm --start 00:03:56 --end 00:04:52 -o battle_climax.mp4
 ```
+
 
 ---
 

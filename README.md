@@ -83,16 +83,30 @@ Options:
 - `--db PATH`: Custom index database location (default: `~/.amonhen/index.db`).
 
 ### 3. One-Shot Search
-Search directly from shell scripts or pipelines across both visual scenes and spoken dialogue:
+Search directly from shell scripts or pipelines across visual action scenes and spoken dialogue:
 
 ```bash
+# Primary Demo: Search battle actions or spoken lines in Battle of Amon Hen
+amon-hen search "swords fight warriors in forest"
+```
+
+Output:
+```text
+ 1. 00:03:56.0 - 00:04:52.0  0.310  amon-hen-speech-demo.webm
+    💬 "I'm a little bit"
+ 2. 00:02:32.0 - 00:02:56.0  0.310  amon-hen-speech-demo.webm
+ 3. 00:01:52.0               0.281  amon-hen-speech-demo.webm
+    💬 "I'll give you a good time."
+```
+
+```bash
+# Real-world Surveillance Use: Search pedestrians or events across CCTV footage
 amon-hen search "a person holding an umbrella"
 ```
 
 Output:
 ```text
  1. 00:00:37.0 - 00:01:06.0  0.261  cctv-people-demo.webm
-    💬 "There is someone with an umbrella walking past"
  2. 00:00:04.0 - 00:00:19.0  0.247  cctv-people-demo.webm
  3. 00:00:24.0 - 00:00:32.0  0.227  cctv-people-demo.webm
 ```
@@ -111,11 +125,12 @@ Extract matching moments or specific time ranges into standalone clips:
 
 ```bash
 # Lossless stream copy (< 0.2s, no re-encoding)
-amon-hen cut video.mp4 --start 00:00:37 --end 00:01:06 -o match.mp4
+amon-hen cut amon-hen-speech-demo.webm --start 00:03:56 --end 00:04:52 -o battle_climax.mp4
 
 # Frame-accurate re-encoded export
-amon-hen cut video.mp4 -s 75.5 -e 90.0 --reencode -o clip.mp4
+amon-hen cut cctv-people-demo.webm -s 37.0 -e 66.0 --reencode -o umbrella_moment.mp4
 ```
+
 
 
 ### 5. Inspect Index and Statistics

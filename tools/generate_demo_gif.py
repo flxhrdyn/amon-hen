@@ -20,7 +20,6 @@ from amonhen.theme import (
 FONT_PATH = "C:/Windows/Fonts/cascadiamono.ttf"
 FONT_SIZE = 14
 
-# Exact True Dark + Starlight Blue palette from authentic Windows Terminal / TUI session
 BG_COLOR = "#0c0c0e"
 HEADER_BAR_COLOR = "#18181c"
 TAB_ACTIVE_COLOR = "#0c0c0e"
@@ -28,10 +27,8 @@ BLUE_COLOR = "#82aaff"  # Starlight Blue
 WHITE_COLOR = "#ffffff"  # Pure White
 MUTED_COLOR = "#8a90a0"  # Readable Muted Slate
 DIVIDER_COLOR = "#2a2e3d"  # Subtle Horizontal Divider Line
-DOT_CLOSE = "#e81123"
 
 OUT_PATH = Path("demo/demo.gif")
-
 ANSI_RE = re.compile(r"\x1b\[([0-9;]+)m")
 
 
@@ -70,8 +67,8 @@ def render_tui_frame(
     footer_text: str,
     cols: int,
     cursor: bool = True,
-    width_px: int = 836,
-    height_px: int = 540,
+    width_px: int = 860,
+    height_px: int = 560,
 ) -> Image.Image:
     img = Image.new("RGB", (width_px, height_px), color=BG_COLOR)
     draw = ImageDraw.Draw(img)
@@ -81,226 +78,138 @@ def render_tui_frame(
     except Exception:
         font = ImageFont.load_default()
 
-    # Draw Windows Terminal Title Bar
+    # Title Bar
     title_bar_height = 36
     draw.rectangle([0, 0, width_px, title_bar_height], fill=HEADER_BAR_COLOR)
 
     # Active Tab
-    tab_w = 180
+    tab_w = 190
     draw.rectangle([10, 6, 10 + tab_w, title_bar_height], fill=TAB_ACTIVE_COLOR)
-    # Terminal tab title
     tab_title = f">_ amon-hen v{__version__}"
     draw.text((22, 11), tab_title, font=font, fill="#c0caf5")
 
-    # Windows-style window buttons on top right
+    # Window buttons
     draw.text((width_px - 85, 10), "─", font=font, fill="#999999")
     draw.rectangle([width_px - 55, 13, width_px - 45, 23], outline="#999999", width=1)
     draw.text((width_px - 25, 9), "✕", font=font, fill="#999999")
 
     # Content layout
-    pad_x = 18
-    current_y = title_bar_height + 12
-    line_h = 20
+    pad_x = 24
+    curr_y = title_bar_height + 16
+    line_h = 19
 
-    # 1. Render Header Banner (Themed Box with Eagle Silhouette)
-    for banner_line in banner_text.split("\n"):
-        spans = parse_ansi_line(banner_line)
-        x = pad_x
-        for span_text, span_color in spans:
-            draw.text((x, current_y), span_text, font=font, fill=span_color)
-            x += font.getlength(span_text)
-        current_y += line_h
+    # 1. Render Banner
+    for raw_line in banner_text.splitlines():
+        spans = parse_ansi_line(raw_line)
+        curr_x = pad_x
+        for text, color in spans:
+            draw.text((curr_x, curr_y), text, font=font, fill=color)
+            bbox = draw.textbbox((curr_x, curr_y), text, font=font)
+            curr_x += bbox[2] - bbox[0]
+        curr_y += line_h
 
-    current_y += 10
+    curr_y += 8
 
-    # 2. Render Scrollback Body
-    body_max_y = height_px - 70
-    for bline in body_lines[-14:]:
-        if current_y > body_max_y:
-            break
-        spans = parse_ansi_line(bline)
-        x = pad_x
-        for span_text, span_color in spans:
-            draw.text((x, current_y), span_text, font=font, fill=span_color)
-            x += font.getlength(span_text)
-        current_y += line_h
+    # 2. Render Body
+    visible_body = body_lines[-12:]
+    for raw_line in visible_body:
+        spans = parse_ansi_line(raw_line)
+        curr_x = pad_x
+        for text, color in spans:
+            draw.text((curr_x, curr_y), text, font=font, fill=color)
+            bbox = draw.textbbox((curr_x, curr_y), text, font=font)
+            curr_x += bbox[2] - bbox[0]
+        curr_y += line_h
 
-    # 3. Render Textbox (Top divider + prompt + Bottom divider)
-    box_y = height_px - 54
-    divider_str = "─" * cols
-    draw.text((pad_x, box_y - 18), divider_str, font=font, fill=DIVIDER_COLOR)
+    # 3. Render Input Prompt Area
+    prompt_y = height_px - 72
+    div_line = "─" * cols
+    draw.text((pad_x, prompt_y - 20), div_line, font=font, fill=DIVIDER_COLOR)
 
-    prompt_prefix = "> "
-    draw.text((pad_x, box_y), prompt_prefix, font=font, fill=BLUE_COLOR)
-    prefix_w = font.getlength(prompt_prefix)
+    prompt_prefix = "Search> "
+    draw.text((pad_x, prompt_y), prompt_prefix, font=font, fill=BLUE_COLOR)
+    prefix_w = draw.textbbox((pad_x, prompt_y), prompt_prefix, font=font)[2] - pad_x
 
-    draw.text((pad_x + prefix_w, box_y), prompt_input, font=font, fill=WHITE_COLOR)
-    input_w = font.getlength(prompt_input) if prompt_input else 0
+    draw.text((pad_x + prefix_w, prompt_y), prompt_input, font=font, fill=WHITE_COLOR)
+    input_w = draw.textbbox((pad_x + prefix_w, prompt_y), prompt_input, font=font)[2] - (
+        pad_x + prefix_w
+    )
 
     if cursor:
-        cur_x = pad_x + prefix_w + input_w + 2
-        draw.rectangle([cur_x, box_y + 2, cur_x + 8, box_y + 16], fill=BLUE_COLOR)
+        cursor_x = pad_x + prefix_w + input_w + 1
+        draw.rectangle([cursor_x, prompt_y + 2, cursor_x + 8, prompt_y + 16], fill=BLUE_COLOR)
 
-    draw.text((pad_x, box_y + 18), divider_str, font=font, fill=DIVIDER_COLOR)
+    draw.text((pad_x, prompt_y + 22), div_line, font=font, fill=DIVIDER_COLOR)
 
-    # 4. Render Footer
-    footer_y = height_px - 16
-    spans = parse_ansi_line(footer_text)
-    x = pad_x
-    for span_text, span_color in spans:
-        draw.text((x, footer_y), span_text, font=font, fill=span_color)
-        x += font.getlength(span_text)
+    # 4. Render Footer Shortcuts
+    footer_y = height_px - 24
+    draw.text((pad_x, footer_y), footer_text, font=font, fill=MUTED_COLOR)
 
     return img
 
 
-def build_demo_gif() -> None:
+def build_demo_gif():
+    cols = 96
+    width_px = 860
+    height_px = 560
+
+    banner_start = render_banner(
+        videos_count=2,
+        total_frames=441,
+        model_id="mobileclip2-s0",
+        width=cols,
+        force_color=True,
+        use_unicode=True,
+    )
+
+    footer = (
+        "Shortcuts: [Enter] Search  [/open <n>] Play moment  [/cut <n>] Export clip  [/exit] Quit"
+    )
+
     frames: list[Image.Image] = []
     durations: list[int] = []
 
-    cols = 100
-    pad_x = 18
-    width_px = int(cols * 8.0 + 2 * pad_x)
-    height_px = 540
-
-    banner_0 = render_banner(
-        model_id="mobileclip2-s0",
-        videos_count=0,
-        total_frames=0,
-        dir_path="~/videos/demo",
-        width=cols,
-        use_unicode=True,
-        force_color=True,
-    )
-    banner_1 = render_banner(
-        model_id="mobileclip2-s0",
-        videos_count=1,
-        total_frames=142,
-        dir_path="~/videos/demo",
-        width=cols,
-        use_unicode=True,
-        force_color=True,
-    )
-
-    left = "[Enter] Submit  ·  /index <dir>  ·  /open <id>  ·  /cut <id>  ·  /exit"
-    right = "MOBILECLIP2-S0 · CPU"
-    pad = " " * max(1, cols - len(left) - len(right))
-    footer = f"{MUTED}{left}{pad}{right}{RESET}"
-
+    # Scene 1: Initial Start
     initial_body = [
-        f"{MUTED}Type a query in plain English to search your indexed videos.{RESET}",
-        "",
-        f"{MUTED}  /index <path>   index new videos{RESET}",
-        f"{MUTED}  /open <id>      play a result{RESET}",
-        f"{MUTED}  /help           show all commands{RESET}",
-    ]
-
-    # Scene 1: Initial Screen (1.2s)
-    f = render_tui_frame(
-        banner_0,
-        initial_body,
-        "",
-        footer,
-        cols,
-        cursor=True,
-        width_px=width_px,
-        height_px=height_px,
-    )
-    frames.append(f)
-    durations.append(1200)
-
-    # Scene 2: Type `/index demo/cctv-people-demo.webm`
-    cmd_index = "/index demo/cctv-people-demo.webm"
-    for i in range(1, len(cmd_index) + 1):
-        f = render_tui_frame(
-            banner_0,
-            initial_body,
-            cmd_index[:i],
-            footer,
-            cols,
-            cursor=True,
-            width_px=width_px,
-            height_px=height_px,
-        )
-        frames.append(f)
-        durations.append(40)
-
-    # Pause before enter
-    frames.append(
-        render_tui_frame(
-            banner_0,
-            initial_body,
-            cmd_index,
-            footer,
-            cols,
-            cursor=False,
-            width_px=width_px,
-            height_px=height_px,
-        )
-    )
-    durations.append(400)
-
-    # Scene 3: Progress animation
-    body_indexing = [
-        f"{BLUE_BOLD}>{RESET} {cmd_index}",
+        f"{BLUE_BOLD}* The Seat of Seeing is awake.{RESET} Describe any scene or spoken words.",
         "",
     ]
-    for p in [0.15, 0.40, 0.70, 0.95]:
-        filled = int(30 * p)
-        bar = "█" * filled + "░" * (30 - filled)
-        prog_line = f"* Gazing cctv-people-demo.webm... [{BLUE}{bar}{RESET}]"
-        f = render_tui_frame(
-            banner_0,
-            body_indexing + [prog_line],
-            "",
-            footer,
-            cols,
-            cursor=False,
-            width_px=width_px,
-            height_px=height_px,
+    for _ in range(2):
+        frames.append(
+            render_tui_frame(
+                banner_start,
+                initial_body,
+                "",
+                footer,
+                cols,
+                cursor=True,
+                width_px=width_px,
+                height_px=height_px,
+            )
         )
-        frames.append(f)
-        durations.append(350)
+        durations.append(400)
 
-    # Finish indexing
-    body_after_index = [
-        f"{BLUE_BOLD}>{RESET} {cmd_index}",
-        f"{BLUE_BOLD}* Unveiled 1 video(s) into database (Index: 1 videos, 142 frames).{RESET}",
-        "",
-    ]
-    f = render_tui_frame(
-        banner_1,
-        body_after_index,
-        "",
-        footer,
-        cols,
-        cursor=True,
-        width_px=width_px,
-        height_px=height_px,
-    )
-    frames.append(f)
-    durations.append(800)
-
-    # Scene 4: Type search query `a person holding an umbrella`
-    query_1 = "a person holding an umbrella"
+    # Scene 2: Type first search query `swords fight warriors in forest` (LOTR scene)
+    query_1 = "swords fight warriors in forest"
     for i in range(1, len(query_1) + 1):
-        f = render_tui_frame(
-            banner_1,
-            body_after_index,
-            query_1[:i],
-            footer,
-            cols,
-            cursor=True,
-            width_px=width_px,
-            height_px=height_px,
+        frames.append(
+            render_tui_frame(
+                banner_start,
+                initial_body,
+                query_1[:i],
+                footer,
+                cols,
+                cursor=True,
+                width_px=width_px,
+                height_px=height_px,
+            )
         )
-        frames.append(f)
-        durations.append(40)
+        durations.append(35)
 
     frames.append(
         render_tui_frame(
-            banner_1,
-            body_after_index,
+            banner_start,
+            initial_body,
             query_1,
             footer,
             cols,
@@ -309,67 +218,138 @@ def build_demo_gif() -> None:
             height_px=height_px,
         )
     )
-    durations.append(400)
+    durations.append(350)
 
-    # Scene 5: Display search results
-    r_left = f"> {query_1}"
-    r_right = "Saw in 18ms"
-    r_pad = " " * max(1, cols - len(r_left) - len(r_right))
-    query_line = f"{BLUE_BOLD}>{RESET} {query_1}{r_pad}{MUTED}{r_right}{RESET}"
+    # Scene 3: Display results for `swords fight warriors in forest`
+    r_left1 = f"> {query_1}"
+    r_right1 = "Saw in 21ms"
+    r_pad1 = " " * max(1, cols - len(r_left1) - len(r_right1))
+    q_line1 = f"{BLUE_BOLD}>{RESET} {query_1}{r_pad1}{MUTED}{r_right1}{RESET}"
 
-    body_results_1 = body_after_index + [
-        query_line,
+    body_results_1 = initial_body + [
+        q_line1,
         "",
-        f"{BLUE_BOLD}#1   00:00:37.0 -> 00:01:06.0{RESET}              {BLUE}[████████░░] 0.261{RESET}",
-        f"{MUTED}File: cctv-people-demo.webm   Peak: 00:00:48.0{RESET}",
+        f"{BLUE_BOLD}#1   00:03:56.0 -> 00:04:52.0{RESET}              {BLUE}[██████████] 0.310{RESET}",
+        f"{MUTED}File: amon-hen-speech-demo.webm   Peak: 00:04:30.0{RESET}",
         f"{BLUE}=> Action: Type /open 1 to play moment (or /cut 1 to export){RESET}",
         "",
-        f"{WHITE}#2   00:00:02.0 -> 00:00:14.0{RESET}              {BLUE}[█████░░░░░] 0.174{RESET}",
-        f"{MUTED}File: cctv-people-demo.webm   Peak: 00:00:07.0{RESET}",
+        f"{WHITE}#2   00:02:32.0 -> 00:02:56.0{RESET}              {BLUE}[██████████] 0.310{RESET}",
+        f"{MUTED}File: amon-hen-speech-demo.webm   Peak: 00:02:45.0{RESET}",
         "",
     ]
-    f = render_tui_frame(
-        banner_1,
-        body_results_1,
-        "",
-        footer,
-        cols,
-        cursor=True,
-        width_px=width_px,
-        height_px=height_px,
-    )
-    frames.append(f)
-    durations.append(2500)
-
-    # Scene 6: Type `/open 1`
-    cmd_open = "/open 1"
-    for i in range(1, len(cmd_open) + 1):
-        f = render_tui_frame(
-            banner_1,
+    frames.append(
+        render_tui_frame(
+            banner_start,
             body_results_1,
-            cmd_open[:i],
+            "",
             footer,
             cols,
             cursor=True,
             width_px=width_px,
             height_px=height_px,
         )
-        frames.append(f)
-        durations.append(50)
+    )
+    durations.append(2200)
 
-    # Execute /open 1
+    # Scene 4: Type `/open 1` to play clip
+    cmd_open = "/open 1"
+    for i in range(1, len(cmd_open) + 1):
+        frames.append(
+            render_tui_frame(
+                banner_start,
+                body_results_1,
+                cmd_open[:i],
+                footer,
+                cols,
+                cursor=True,
+                width_px=width_px,
+                height_px=height_px,
+            )
+        )
+        durations.append(45)
+
     body_open = body_results_1 + [
         f"{BLUE_BOLD}>{RESET} {cmd_open}",
-        f"{BLUE_BOLD}=> Launching media player at 00:48.0 (cctv-people-demo.webm)...{RESET}",
+        f"{BLUE_BOLD}=> Launching media player at 00:04:30.0 (amon-hen-speech-demo.webm)...{RESET}",
         "",
     ]
-    f = render_tui_frame(
-        banner_1, body_open, "", footer, cols, cursor=True, width_px=width_px, height_px=height_px
+    frames.append(
+        render_tui_frame(
+            banner_start,
+            body_open,
+            "",
+            footer,
+            cols,
+            cursor=True,
+            width_px=width_px,
+            height_px=height_px,
+        )
     )
-    frames.append(f)
-    durations.append(2000)
+    durations.append(1800)
 
-    # Save animated GIF
+    # Scene 5: Type second search query `a person holding an umbrella` (CCTV real-world use)
+    query_2 = "a person holding an umbrella"
+    for i in range(1, len(query_2) + 1):
+        frames.append(
+            render_tui_frame(
+                banner_start,
+                body_open,
+                query_2[:i],
+                footer,
+                cols,
+                cursor=True,
+                width_px=width_px,
+                height_px=height_px,
+            )
+        )
+        durations.append(35)
+
+    frames.append(
+        render_tui_frame(
+            banner_start,
+            body_open,
+            query_2,
+            footer,
+            cols,
+            cursor=False,
+            width_px=width_px,
+            height_px=height_px,
+        )
+    )
+    durations.append(350)
+
+    # Scene 6: Display results for CCTV query
+    r_left2 = f"> {query_2}"
+    r_right2 = "Saw in 19ms"
+    r_pad2 = " " * max(1, cols - len(r_left2) - len(r_right2))
+    q_line2 = f"{BLUE_BOLD}>{RESET} {query_2}{r_pad2}{MUTED}{r_right2}{RESET}"
+
+    body_results_2 = body_open + [
+        q_line2,
+        "",
+        f"{BLUE_BOLD}#1   00:00:37.0 -> 00:01:06.0{RESET}              {BLUE}[████████░░] 0.261{RESET}",
+        f"{MUTED}File: cctv-people-demo.webm   Peak: 00:00:48.0{RESET}",
+        f"{BLUE}=> Action: Type /open 1 to play moment (or /cut 1 to export){RESET}",
+        "",
+        f"{WHITE}#2   00:00:04.0 -> 00:00:19.0{RESET}              {BLUE}[████████░░] 0.247{RESET}",
+        f"{MUTED}File: cctv-people-demo.webm   Peak: 00:00:12.0{RESET}",
+        "",
+    ]
+    frames.append(
+        render_tui_frame(
+            banner_start,
+            body_results_2,
+            "",
+            footer,
+            cols,
+            cursor=True,
+            width_px=width_px,
+            height_px=height_px,
+        )
+    )
+    durations.append(2600)
+
+    # Save GIF
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     frames[0].save(
         OUT_PATH,

@@ -1,43 +1,43 @@
 # Demo
 
-`cctv-people-demo.webm` is a public CCTV-style clip used to try AmonHen end to end
-against real footage, not just synthetic test fixtures. Encoded as VP9/webm, scaled
-to 854px wide, audio dropped, to keep the file smaller in the repo.
+This folder contains two curated sample video clips to try Amon Hen end-to-end:
 
-Source: https://youtu.be/GJNjaRJWVP8
+1. **`amon-hen-speech-demo.webm` (Primary Demo):**
+   * *Battle of Amon Hen* (Lord of the Rings: The Fellowship of the Ring, 4:59 full scene).
+   * Contains dynamic visual action (sword fights, archers, warriors in forest) and spoken dialogue for hybrid audio & speech retrieval.
+   * Source: https://youtu.be/3FWR0frTBn8
+2. **`cctv-people-demo.webm` (Surveillance & Desktop Search):**
+   * Real-world CCTV street footage for testing pedestrian, umbrella, and vehicle scene retrieval.
+   * Source: https://youtu.be/GJNjaRJWVP8
 
-## Try it
+## Try It
 
-### Interactive TUI Mode:
+### 1. Interactive TUI Mode:
 ```bash
 amon-hen
 # Inside TUI:
-# /index demo/cctv-people-demo.webm
-# a person holding an umbrella
+# swords fight warriors in forest
 # /open 1
+# a person holding an umbrella
 ```
 
-### CLI One-Shot Search:
+### 2. CLI One-Shot Search:
 ```bash
-amon-hen index demo/cctv-people-demo.webm --sampler adaptive --db demo/index.db
+# Index both demo clips
+amon-hen index demo/ --sampler adaptive --db demo/index.db
+
+# Search battle scenes (Amon Hen)
+amon-hen search "swords fight warriors in forest" --db demo/index.db
+amon-hen search "archer shooting bow" --db demo/index.db
+
+# Search spoken dialogue (Whisper FTS5)
+amon-hen search "good time" --db demo/index.db
+
+# Search real-world surveillance events (CCTV)
 amon-hen search "a person holding an umbrella" --db demo/index.db
 amon-hen search "a car passing by" --db demo/index.db
 ```
 
-Real output from this clip:
+`demo/index.db` is generated locally and gitignored — rerun `index` to recreate it at any time.
 
-```text
-$ amon-hen index demo/cctv-people-demo.webm --sampler adaptive --db demo/index.db
-Indexed 1 video(s), 49 frames in 2.7s
-
-$ amon-hen search "a person holding an umbrella" --db demo/index.db
- 1. 00:00:37.0 - 00:01:06.0  0.261  cctv-people-demo.webm
- 2. 00:00:02.0 - 00:00:14.0  0.174  cctv-people-demo.webm
-
-$ amon-hen search "a car passing by" --db demo/index.db
- 1. 00:00:24.0 - 00:00:32.0  0.227  cctv-people-demo.webm
- 2. 00:00:04.0 - 00:00:19.0  0.218  cctv-people-demo.webm
-```
-
-`demo/index.db` is generated locally and gitignored - rerun `index` to recreate it.
 
