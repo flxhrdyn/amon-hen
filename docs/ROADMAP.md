@@ -45,11 +45,12 @@ We welcome community pull requests and design proposals for the following milest
 ### 3. Speech & Audio Search Integration (Whisper ONNX)
 * **Goal:** Enable hybrid search across both visual video content and spoken speech.
 * **Scope:**
-  * Extract audio track using `imageio-ffmpeg`.
-  * Transcribe speech on CPU using lightweight Whisper ONNX (e.g. Whisper-Tiny or Whisper-Base INT8).
-  * Store timestamped text segments in SQLite FTS5 (Full-Text Search).
-  * Hybrid query routing: detect whether search query is visual or spoken dialogue.
-* **Status:** Planned.
+  * [x] Extract audio track directly into memory using `imageio-ffmpeg` (`src/amonhen/audio.py`).
+  * [x] Transcribe speech on CPU using lightweight Whisper-Tiny ONNX (`src/amonhen/whisper.py`).
+  * [x] Store timestamped speech segments in SQLite FTS5 with BM25 ranking (`src/amonhen/store.py`).
+  * [x] Hybrid retrieval merging visual vector search and spoken dialogue matching (`src/amonhen/pipeline.py`).
+* **Status:** Completed (Released in `v0.1.15`).
+
 
 ---
 

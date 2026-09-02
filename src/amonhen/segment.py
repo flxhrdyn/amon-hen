@@ -21,6 +21,8 @@ class Segment:
     best_ts_ms: int
     score: float
     frame_count: int
+    spoken_text: str | None = None
+    match_type: str = "visual"
 
 
 def merge_hits(

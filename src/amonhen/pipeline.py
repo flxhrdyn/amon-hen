@@ -16,6 +16,7 @@ from pathlib import Path
 import numpy as np
 
 from amonhen import decode
+from amonhen.audio import extract_audio_pcm
 from amonhen.model_registry import DEFAULT_MODEL, get_model
 from amonhen.progress import NullReporter, Reporter
 from amonhen.sample import Sampler, build_sampler
@@ -101,7 +102,9 @@ def index_videos(
     reporter: Reporter | None = None,
     force: bool = False,
     text_encoder=None,
+    transcriber=None,
 ) -> IndexResult:
+
     reporter = reporter or NullReporter()
     reason = _sampler_for(config).reason
     config_hash = _index_config_hash(config)
@@ -184,7 +187,16 @@ def index_videos(
             reporter.frame_progress(decoded, stored, frame.ts_ms)
 
         stored += flush(video_id, pending_images, pending_ts, last_embedding)
+
+        if transcriber is not None:
+            pcm = extract_audio_pcm(path)
+            if pcm is not None:
+                speech_segs = transcriber.transcribe(pcm)
+                if speech_segs:
+                    store.add_speech_segments(video_id, speech_segs)
+
         store.mark_complete(video_id)
+
         baseline = compute_video_baseline(store, video_id, text_encoder=text_encoder)
         if baseline is not None:
             store.set_score_baseline(video_id, baseline)
@@ -246,23 +258,99 @@ def search(
     max_gap_ms: int = 4000,
     min_score: float | None = None,
     calibrate: bool = True,
+    mode: str = "hybrid",
 ) -> list[Segment]:
-    vector = text_encoder.embed(query)
-    candidate_k = max(limit * 8, 32)
-    hits = store.search_vector(vector, limit=candidate_k)
+    visual_segments: list[Segment] = []
 
-    if not hits:
-        return []
+    if mode in ("visual", "hybrid"):
+        vector = text_encoder.embed(query)
+        candidate_k = max(limit * 8, 32)
+        hits = store.search_vector(vector, limit=candidate_k)
 
-    baselines = store.get_score_baselines() if calibrate else {}
+        if hits:
+            baselines = store.get_score_baselines() if calibrate else {}
+            filtered_hits = []
+            for hit in hits:
+                threshold = min_score
+                if threshold is None and calibrate:
+                    threshold = baselines.get(hit.video_id)
+                if threshold is not None and hit.score < threshold:
+                    continue
+                filtered_hits.append(hit)
+            visual_segments = merge_hits(filtered_hits, max_gap_ms=max_gap_ms, limit=limit * 2)
 
-    filtered_hits = []
-    for hit in hits:
-        threshold = min_score
-        if threshold is None and calibrate:
-            threshold = baselines.get(hit.video_id)
-        if threshold is not None and hit.score < threshold:
-            continue
-        filtered_hits.append(hit)
+    speech_matches = store.search_speech(query, limit=limit) if mode in ("speech", "hybrid") else []
 
-    return merge_hits(filtered_hits, max_gap_ms=max_gap_ms, limit=limit)
+    if not speech_matches:
+        final_segments = []
+        for vseg in visual_segments:
+            speech_subs = store.get_speech_segments_for_range(
+                vseg.video_id, vseg.start_ms, vseg.end_ms
+            )
+            if speech_subs:
+                combined_text = " ... ".join(s.text for s in speech_subs)
+                final_segments.append(
+                    Segment(
+                        video_id=vseg.video_id,
+                        video_path=vseg.video_path,
+                        start_ms=vseg.start_ms,
+                        end_ms=vseg.end_ms,
+                        best_ts_ms=vseg.best_ts_ms,
+                        score=vseg.score,
+                        frame_count=vseg.frame_count,
+                        spoken_text=combined_text,
+                        match_type=vseg.match_type,
+                    )
+                )
+            else:
+                final_segments.append(vseg)
+        return final_segments[:limit]
+
+    combined: list[Segment] = []
+    matched_speech_ids = set()
+
+    for vseg in visual_segments:
+        overlapping_speech = [
+            sm
+            for sm in speech_matches
+            if sm.video_id == vseg.video_id
+            and not (sm.end_ms < vseg.start_ms or sm.start_ms > vseg.end_ms)
+        ]
+        if overlapping_speech:
+            combined_text = " ... ".join(sm.text for sm in overlapping_speech)
+            combined.append(
+                Segment(
+                    video_id=vseg.video_id,
+                    video_path=vseg.video_path,
+                    start_ms=min(vseg.start_ms, min(sm.start_ms for sm in overlapping_speech)),
+                    end_ms=max(vseg.end_ms, max(sm.end_ms for sm in overlapping_speech)),
+                    best_ts_ms=vseg.best_ts_ms,
+                    score=min(1.0, vseg.score * 1.25),
+                    frame_count=vseg.frame_count,
+                    spoken_text=combined_text,
+                    match_type="hybrid",
+                )
+            )
+            for sm in overlapping_speech:
+                matched_speech_ids.add((sm.video_id, sm.start_ms))
+        else:
+            combined.append(vseg)
+
+    for sm in speech_matches:
+        if (sm.video_id, sm.start_ms) not in matched_speech_ids:
+            combined.append(
+                Segment(
+                    video_id=sm.video_id,
+                    video_path=sm.video_path,
+                    start_ms=sm.start_ms,
+                    end_ms=sm.end_ms,
+                    best_ts_ms=(sm.start_ms + sm.end_ms) // 2,
+                    score=0.40,
+                    frame_count=0,
+                    spoken_text=sm.text,
+                    match_type="speech",
+                )
+            )
+
+    combined.sort(key=lambda s: s.score, reverse=True)
+    return combined[:limit]

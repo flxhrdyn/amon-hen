@@ -165,6 +165,9 @@ def search(
     calibrate: bool = typer.Option(
         True, "--calibrate/--no-calibrate", help="Use statistical score baseline calibration."
     ),
+    mode: str = typer.Option(
+        "hybrid", "--mode", help="Retrieval mode: hybrid (visual + speech), visual, or speech."
+    ),
     model: str = typer.Option(DEFAULT_MODEL.model_id, "--model", help="Model id."),
     json: bool = typer.Option(False, "--json", help="Emit JSON to stdout."),
 ) -> None:
@@ -179,6 +182,7 @@ def search(
             max_gap_ms=int(merge_gap * 1000),
             min_score=min_score,
             calibrate=calibrate,
+            mode=mode,
         )
     finally:
         store.close()
@@ -196,6 +200,8 @@ def search(
                             "best_ts_ms": seg.best_ts_ms,
                             "score": round(seg.score, 4),
                             "frame_count": seg.frame_count,
+                            "spoken_text": seg.spoken_text,
+                            "match_type": seg.match_type,
                         }
                         for seg in segments
                     ],
@@ -217,6 +223,8 @@ def search(
         else:
             time_str = f"{theme.format_timestamp(seg.start_ms):23}"
         typer.echo(f"{position:>2}. {time_str}  {seg.score:.3f}  {name}")
+        if seg.spoken_text:
+            typer.echo(f'    💬 "{seg.spoken_text}"')
 
 
 @app.command()

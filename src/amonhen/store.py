@@ -41,6 +41,23 @@ class Hit:
 
 
 @dataclass(frozen=True)
+class SpeechSegment:
+    start_ms: int
+    end_ms: int
+    text: str
+
+
+@dataclass(frozen=True)
+class SpeechMatch:
+    video_id: int
+    video_path: str
+    start_ms: int
+    end_ms: int
+    text: str
+    rank_score: float
+
+
+@dataclass(frozen=True)
 class VideoRow:
     id: int
     path: str
@@ -115,6 +132,22 @@ class Store:
             );
 
             CREATE INDEX IF NOT EXISTS idx_frame_video ON frame(video_id, ts_ms);
+
+            CREATE TABLE IF NOT EXISTS speech_segment (
+                id INTEGER PRIMARY KEY,
+                video_id INTEGER NOT NULL REFERENCES video(id) ON DELETE CASCADE,
+                start_ms INTEGER NOT NULL,
+                end_ms INTEGER NOT NULL,
+                text TEXT NOT NULL
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_speech_video ON speech_segment(video_id, start_ms);
+
+            CREATE VIRTUAL TABLE IF NOT EXISTS speech_fts USING fts5(
+                text,
+                content=speech_segment,
+                content_rowid=id
+            );
             """
         )
 
@@ -298,8 +331,108 @@ class Store:
             (video_id,),
         )
         cur.execute("DELETE FROM frame WHERE video_id = ?", (video_id,))
+        cur.execute(
+            """
+            DELETE FROM speech_fts
+            WHERE rowid IN (SELECT id FROM speech_segment WHERE video_id = ?)
+            """,
+            (video_id,),
+        )
+        cur.execute("DELETE FROM speech_segment WHERE video_id = ?", (video_id,))
+
         cur.execute("DELETE FROM video WHERE id = ?", (video_id,))
         self._conn.commit()
+
+    def add_speech_segments(self, video_id: int, segments: list[SpeechSegment]) -> None:
+        if not segments:
+            return
+        cur = self._conn.cursor()
+        for seg in segments:
+            cur.execute(
+                """
+                INSERT INTO speech_segment (video_id, start_ms, end_ms, text)
+                VALUES (?, ?, ?, ?)
+                """,
+                (video_id, seg.start_ms, seg.end_ms, seg.text),
+            )
+            seg_id = cur.lastrowid
+            cur.execute(
+                """
+                INSERT INTO speech_fts (rowid, text)
+                VALUES (?, ?)
+                """,
+                (seg_id, seg.text),
+            )
+        self._conn.commit()
+
+    def search_speech(self, query: str, limit: int = 10) -> list[SpeechMatch]:
+        clean_query = query.strip().replace('"', '""')
+        if not clean_query:
+            return []
+        cur = self._conn.cursor()
+        try:
+            rows = cur.execute(
+                """
+                SELECT s.video_id, v.path, s.start_ms, s.end_ms, s.text, f.rank AS bm25_score
+                FROM speech_fts f
+                JOIN speech_segment s ON f.rowid = s.id
+                JOIN video v ON s.video_id = v.id
+                WHERE speech_fts MATCH ?
+                ORDER BY f.rank
+                LIMIT ?
+                """,
+                (f'"{clean_query}"', limit),
+            ).fetchall()
+        except sqlite3.OperationalError:
+            # Fallback for complex/partial tokens
+            try:
+                rows = cur.execute(
+                    """
+                    SELECT s.video_id, v.path, s.start_ms, s.end_ms, s.text, f.rank AS bm25_score
+                    FROM speech_fts f
+                    JOIN speech_segment s ON f.rowid = s.id
+                    JOIN video v ON s.video_id = v.id
+                    WHERE speech_fts MATCH ?
+                    ORDER BY f.rank
+                    LIMIT ?
+                    """,
+                    (clean_query, limit),
+                ).fetchall()
+            except sqlite3.OperationalError:
+                return []
+
+        return [
+            SpeechMatch(
+                video_id=int(r["video_id"]),
+                video_path=str(r["path"]),
+                start_ms=int(r["start_ms"]),
+                end_ms=int(r["end_ms"]),
+                text=str(r["text"]),
+                rank_score=float(r["bm25_score"]),
+            )
+            for r in rows
+        ]
+
+    def get_speech_segments_for_range(
+        self, video_id: int, start_ms: int, end_ms: int
+    ) -> list[SpeechSegment]:
+        rows = self._conn.execute(
+            """
+            SELECT start_ms, end_ms, text
+            FROM speech_segment
+            WHERE video_id = ? AND start_ms <= ? AND end_ms >= ?
+            ORDER BY start_ms ASC
+            """,
+            (video_id, end_ms, start_ms),
+        ).fetchall()
+        return [
+            SpeechSegment(
+                start_ms=int(r["start_ms"]),
+                end_ms=int(r["end_ms"]),
+                text=str(r["text"]),
+            )
+            for r in rows
+        ]
 
     def list_videos(self) -> list[VideoRow]:
         rows = self._conn.execute(

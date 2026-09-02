@@ -82,6 +82,7 @@ def format_segment_results(segments: list[Segment], width: int | None = None) ->
         bar_str = f"[{bar}] {seg.score:.3f}"
         highlight = i == 1
 
+        speech_line = f'\n{WHITE}💬 "{seg.spoken_text}"{RESET}' if seg.spoken_text else ""
         if highlight:
             header = (
                 f"{BLUE_BOLD}#{i}   {time_str:<23}{RESET}              {BLUE_BOLD}{bar_str}{RESET}"
@@ -90,11 +91,11 @@ def format_segment_results(segments: list[Segment], width: int | None = None) ->
             action = (
                 f"{BLUE}=> Action: Type /open {i} to play moment (or /cut {i} to export){RESET}"
             )
-            blocks.append(f"{header}\n{meta}\n{action}")
+            blocks.append(f"{header}\n{meta}{speech_line}\n{action}")
         else:
             header = f"{WHITE}#{i}   {time_str:<23}{RESET}              {BLUE}{bar_str}{RESET}"
             meta = f"{MUTED}File: {name}   Peak: {peak_str}{RESET}"
-            blocks.append(f"{header}\n{meta}")
+            blocks.append(f"{header}\n{meta}{speech_line}")
 
     return "\n\n".join(blocks)
 

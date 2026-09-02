@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.15] - 2026-09-02
+
+### Added
+* **Hybrid Audio & Speech Retrieval (Whisper-Tiny ONNX + SQLite FTS5):**
+  * In-memory 16kHz mono audio extraction from videos via FFmpeg (`src/amonhen/audio.py`).
+  * Autoregressive speech recognition and timestamped segment transcription with Whisper-Tiny ONNX (`src/amonhen/whisper.py`).
+  * High-speed full-text indexing and BM25 ranking with SQLite FTS5 (`src/amonhen/store.py`).
+  * Hybrid search engine merging visual semantic vector hits with spoken dialogue cues (`src/amonhen/pipeline.py`).
+  * Speech dialogue rendering (`💬 "..."`) across CLI and interactive TUI results.
+
 ## [0.1.14] - 2026-08-31
+
 
 ### Enhanced
 * **Full Responsive Terminal Auto-Resize:** Banner header, divider lines, and footer shortcuts now adapt smoothly to any terminal width (from narrow 50-col to ultra-wide displays) with zero gap or wrapping overflow.
