@@ -103,11 +103,21 @@ store.close()
 
 ---
 
+## Capabilities & Known Limitations
+
+* **Visual Semantic Search (MobileCLIP2):** Strong zero-shot recognition for objects, actions, settings, spatial arrangements, and characters. Adding descriptive context (e.g. `"Aragorn with sword"` vs `"Aragorn"`) maximizes cosine similarity and avoids domain noise.
+* **Speech-to-Text (Whisper-Tiny ONNX):** Indexes clean spoken dialogue across speeches, podcasts, lectures, and vlogs. It is **not** an acoustic sound-effects classifier. Low-confidence dialogue on heavy orchestral soundtracks is automatically filtered to prevent hallucinations.
+* **Lossless Stream Cut:** Sub-second extraction aligns to nearest container keyframes; use `--reencode` for exact frame-level cuts.
+
+---
+
 ## Resources & Links
 
 * **GitHub Repository:** [https://github.com/flxhrdyn/amon-hen](https://github.com/flxhrdyn/amon-hen)
 * **CLI User Manual:** [https://github.com/flxhrdyn/amon-hen/blob/main/docs/CLI_GUIDE.md](https://github.com/flxhrdyn/amon-hen/blob/main/docs/CLI_GUIDE.md)
 * **Python API Documentation:** [https://github.com/flxhrdyn/amon-hen/blob/main/docs/PYTHON_API.md](https://github.com/flxhrdyn/amon-hen/blob/main/docs/PYTHON_API.md)
+
 * **Project Roadmap:** [https://github.com/flxhrdyn/amon-hen/blob/main/docs/ROADMAP.md](https://github.com/flxhrdyn/amon-hen/blob/main/docs/ROADMAP.md)
-* **Hugging Face Model Hub:** [https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)
+* **Hugging Face Model Hub:** [https://huggingface.co/flxhrdyn/mobileclip2-s0-onnx](https://huggingface.co/flxhrdyn/mobileclip2-s0-onnx)
+
 * **License:** MIT License

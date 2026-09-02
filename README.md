@@ -6,7 +6,7 @@
 [![PyPI](https://img.shields.io/pypi/v/amon-hen?color=blue)](https://pypi.org/project/amon-hen/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-Models-orange.svg)](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)
+[![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-Models-orange.svg)](https://huggingface.co/flxhrdyn/mobileclip2-s0-onnx)
 
 A fast, lightweight command-line tool and Python library for natural language moment retrieval across local video files. Runs entirely on CPU without discrete GPUs, background daemons, or cloud dependencies.
 
@@ -19,13 +19,12 @@ A fast, lightweight command-line tool and Python library for natural language mo
 Finding specific moments across long video archives typically requires either high-end GPUs to run large multimodal models or naive per-second extraction that produces thousands of redundant frames and bloated vector stores.
 
 Amon Hen bridges this gap by combining:
-- **MobileCLIP2 ([`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)):** CPU-optimized visual-semantic embeddings (512 dimensions) running on a hybrid FP32-vision + INT8-quantized text pipeline (approx. 105 MB total RAM footprint).
-- **Whisper-Tiny ONNX Speech Recognition:** In-memory audio extraction and local CPU speech transcription with timestamped dialogue segments.
+- **MobileCLIP2 ([`flxhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/flxhrdyn/mobileclip2-s0-onnx)):** CPU-optimized visual-semantic embeddings (512 dimensions) running on a hybrid FP32-vision + INT8-quantized text pipeline (approx. 105 MB total RAM footprint).
+- **Whisper-Tiny ONNX Speech Recognition:** In-memory audio extraction and local CPU speech transcription with timestamped dialogue segments and hallucination confidence filters.
 - **SQLite FTS5 + `sqlite-vec` Hybrid Retrieval:** Combines semantic vector search with BM25 full-text dialogue matching in a single embedded SQLite database.
 - **Three-Gate Adaptive Sampler:** Filters near-duplicate frames via perceptual hashing, drops blurry frames via Laplacian variance, and eliminates semantic duplicates before storage.
 - **Temporal Segment Merging:** Aggregates contiguous high-similarity frames into coherent time intervals (`start - end`) with peak representative timestamps.
 - **Statistical Score Calibration:** Computes empirical text-to-image noise baselines per video to eliminate false positive results on unmatched queries.
-
 
 ---
 
@@ -39,7 +38,8 @@ uv tool install amon-hen
 pipx install amon-hen
 ```
 
-On first invocation of `index` or `search`, the official CPU-optimized model artifacts (approx. 105 MB total) are downloaded automatically from [`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx) to `~/.amonhen/models/`. You can pre-fetch them manually:
+On first invocation of `index` or `search`, the official CPU-optimized model artifacts (approx. 105 MB total) are downloaded automatically from [`flxhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/flxhrdyn/mobileclip2-s0-onnx) to `~/.amonhen/models/`. You can pre-fetch them manually:
+
 
 
 ```bash
@@ -240,16 +240,26 @@ Measured on CPU (4 threads) using ONNX Runtime with official [`felixhrdyn/mobile
 
 ---
 
-## Capabilities and Scope
+## Capabilities, Scope & Known Limitations
 
-### What Amon Hen matches
-- **Objects and Entities:** e.g., "a red car", "a person wearing a helmet", "a dog on grass".
-- **Visual Attributes and Settings:** e.g., "dark warehouse interior", "rainy street at night", "white whiteboard".
-- **Spatial Compositions:** e.g., "two people sitting at a table", "a truck next to a building".
+### What Amon Hen Matches Well
+- **Visual Objects & Entities:** e.g., `"a red car"`, `"a person wearing a helmet"`, `"a dog running on grass"`.
+- **Atmospheric Settings & Lighting:** e.g., `"dark warehouse interior"`, `"rainy street at night"`, `"forest with sunlight"`.
+- **Spatial Compositions & Actions:** e.g., `"two people sitting at a table"`, `"swords fight warriors in forest"`, `"archer shooting bow"`.
+- **Clean Spoken Dialogue (Whisper + FTS5):** Speeches, interviews, tutorials, podcasts, lectures, and vlogs where speech is intelligible.
 
-### What Amon Hen does not match
-- **Fine-grained Actions over Time:** Single-frame CLIP representations do not capture temporal sequence dependencies like "a person entering and then immediately leaving the room".
-- **Complex Causal Reasoning:** Queries requiring narrative comprehension across extended scene cuts.
+### Known Limitations & Modality Boundaries
+1. **Speech vs. Acoustic Effects:**
+   * Amon Hen uses **Whisper-Tiny ONNX** for *speech-to-text* dialogue indexing.
+   * It is **not** an acoustic sound-effects classifier: searching for `"sound of explosion"` or `"gunfire sound"` will not match audio acoustic signatures (though it will match visual explosions/firearms).
+2. **Cinematic Soundtracks & Low SNR Dialogue:**
+   * In cinematic action scenes with heavy orchestral brass music, loud explosions, or shouting drowning out whispered lines, speech confidence filters (`avg_lp >= -1.0`) automatically reject uncertain transcripts to prevent hallucinations. Visual semantic search serves as the primary retrieval modality for such footage.
+3. **Fine-Grained Named Entities vs. Descriptive Queries:**
+   * Ultra-compact vision models (`MobileCLIP2-S0`, ~12M parameters) generalize visual concepts and broad scenes exceptionally well. For specific fictional or rare named entities, adding descriptive context (e.g. `"Aragorn with sword"` vs. `"Aragorn"`) significantly improves cosine similarity and avoids broad domain ambiguity.
+4. **Temporal Action Sequences:**
+   * Frame-level contrastive representations do not model multi-step sequential dependencies (e.g., `"a person entering a room and then immediately exiting"`).
+5. **Lossless Stream Cut Precision:**
+   * Sub-second stream copy cutting (`amon-hen cut`) aligns to the video container's nearest keyframe (I-frame). For frame-accurate millisecond cuts, use the `--reencode` flag.
 
 ---
 
@@ -261,13 +271,15 @@ Measured on CPU (4 threads) using ONNX Runtime with official [`felixhrdyn/mobile
 
 ---
 
-## Roadmap & Future Milestones
+## Roadmap & Milestones
 
-- [x] **v0.1.0 (Core Release):** CPU-native MobileCLIP2 ONNX inference, SQLite vector store, 3-gate adaptive sampler, segment merging, and interactive TUI.
+- [x] **v0.1.0 (Core Engine):** CPU-native MobileCLIP2 ONNX inference, SQLite vector store, 3-gate adaptive sampler, segment merging, and interactive TUI.
 - [x] **Instant Video Moment Exporter (`amon-hen cut` & `/cut`):** Sub-second lossless clip extraction using FFmpeg stream copying and optional frame-accurate re-encoding (released in v0.1.2).
-- [ ] **Multi-Model Support:** Distribution and CLI support for larger `MobileCLIP2-S2` models and custom ONNX weights.
-- [ ] **Spoken Audio Search:** Whisper ONNX transcription with SQLite FTS5 for hybrid dialogue and visual search.
+- [x] **Multi-Model Distribution:** Official ONNX export tools, dynamic INT8 quantization, and support for `MobileCLIP2-S0` and `MobileCLIP2-S2` on Hugging Face Hub (released in v0.1.14).
+- [x] **Spoken Audio & Dialogue Search:** Local CPU Whisper-Tiny ONNX transcription, hallucination suppression, and SQLite FTS5 BM25 hybrid ranking (released in v0.1.18).
 - [ ] **Local Web UI (`amon-hen serve`):** Browser-based visual video scrubber and timeline heatmap.
+- [ ] **Directory Watcher (`amon-hen watch`):** Background filesystem watcher for automated auto-indexing.
+
 
 See [ROADMAP.md](docs/ROADMAP.md) for full milestone details and contribution guides.
 
