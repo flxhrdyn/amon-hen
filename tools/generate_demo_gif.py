@@ -18,7 +18,6 @@ from amonhen.theme import (
     render_banner,
 )
 
-
 FONT_PATH = "C:/Windows/Fonts/cascadiamono.ttf"
 FONT_SIZE = 14
 

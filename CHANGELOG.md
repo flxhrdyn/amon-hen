@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.19] - 2026-09-02
+
+### Fixed
+* **TUI Score Bar Unicode Rendering:** Fixed fallback bug in `format_score_bar` on Windows terminals to consistently render crisp Unicode block characters (`[███░░░░░░░]`) instead of ASCII dashes (`[===-------]`).
+
 ## [0.1.18] - 2026-09-02
+
 
 ### Fixed
 * **Whisper Audio Hallucination Suppression:** Implemented average log-probability confidence thresholding (`avg_lp >= -1.0`) and n-gram repetition filtering in `WhisperTranscriber`, preventing false dialogue hallucinations on instrumental music, battle sound effects, and silent scenes.

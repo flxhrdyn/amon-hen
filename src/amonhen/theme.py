@@ -52,15 +52,12 @@ def format_timestamp(ts_ms: int) -> str:
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds // 100}"
 
 
-def format_score_bar(score: float, width: int = 10) -> str:
+def format_score_bar(score: float, width: int = 10, plain: bool = False) -> str:
     clamped = max(0.0, min(1.0, score))
     filled = int(round(clamped * width))
-    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
-    try:
-        "█".encode(encoding)
-        return "█" * filled + "░" * (width - filled)
-    except (UnicodeEncodeError, LookupError):
+    if plain:
         return "=" * filled + "-" * (width - filled)
+    return "█" * filled + "░" * (width - filled)
 
 
 THRONE_BANNER = [
