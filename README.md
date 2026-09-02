@@ -75,16 +75,25 @@ Within the interactive session:
 Index a single file or an entire directory:
 
 ```bash
+# Index with adaptive motion sampling and automatic speech language detection
 amon-hen index /path/to/videos/ --sampler adaptive
+
+# Index videos with specific spoken language (e.g. Indonesian or Japanese)
+amon-hen index ceramah.mp4 --language id
+amon-hen index anime_scene.mp4 --language ja
+
+# Index visual frames only (disable speech recognition)
+amon-hen index cctv_recording.mp4 --no-audio
 ```
 
 Options:
 - `--fps FLOAT`: Target extraction rate before gating (default: `1.0`).
 - `--sampler [fixed|adaptive]`: Frame selection strategy (default: `fixed`).
 - `--embed-dedup FLOAT`: Cosine similarity threshold to skip semantically identical frames (e.g. `0.98`).
-- `--language CODE`: Spoken language for Whisper transcription (`auto` [default], `id`, `en`, `ja`, `es`, `fr`, etc.).
+- `--language CODE`: Spoken language for Whisper transcription (`auto` [default], `id`, `en`, `ja`, `es`, `fr`, `de`, `zh`, `ko`, etc.).
 - `--no-audio`: Disable speech transcription to index visual frames only.
 - `--db PATH`: Custom index database location (default: `~/.amonhen/index.db`).
+
 
 
 ### 3. One-Shot Search

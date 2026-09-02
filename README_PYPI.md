@@ -51,9 +51,17 @@ Supports instant search queries, history navigation (`↑`/`↓`), `/open <n>` t
 
 ### 2. Index Videos
 ```bash
-# Index a video or entire folder with adaptive motion sampling
+# Index with adaptive motion sampling and automatic speech language detection
 amon-hen index /path/to/videos/ --sampler adaptive
+
+# Index videos with specific spoken language (e.g. Indonesian or Japanese)
+amon-hen index ceramah.mp4 --language id
+amon-hen index anime_scene.mp4 --language ja
+
+# Index visual frames only (disable speech recognition)
+amon-hen index cctv_recording.mp4 --no-audio
 ```
+
 
 ### 3. Search Moments
 ```bash
