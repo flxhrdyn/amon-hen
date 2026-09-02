@@ -16,6 +16,7 @@ from amonhen.segment import Segment
 from amonhen.theme import (
     BLUE,
     BLUE_BOLD,
+    DIM,
     MUTED,
     RESET,
     WHITE,
@@ -78,22 +79,23 @@ def format_segment_results(segments: list[Segment], width: int | None = None) ->
         time_str = f"{t0} -> {t1}" if seg.start_ms < seg.end_ms else f"{t0}              "
         peak_str = format_timestamp(seg.best_ts_ms)
 
-        bar = format_score_bar(seg.score, width=10)
-        bar_str = f"[{bar}] {seg.score:.3f}"
+        bar = format_score_bar(seg.score, width=10, colorize=True)
+        score_val_str = (
+            f"{BLUE_BOLD}{seg.score:.3f}{RESET}" if i == 1 else f"{BLUE}{seg.score:.3f}{RESET}"
+        )
+        bar_str = f"{DIM}[{RESET}{bar}{DIM}]{RESET} {score_val_str}"
         highlight = i == 1
 
         speech_line = f'\n{WHITE}💬 "{seg.spoken_text}"{RESET}' if seg.spoken_text else ""
         if highlight:
-            header = (
-                f"{BLUE_BOLD}#{i}   {time_str:<23}{RESET}              {BLUE_BOLD}{bar_str}{RESET}"
-            )
+            header = f"{BLUE_BOLD}#{i}   {time_str:<23}{RESET}              {bar_str}"
             meta = f"{MUTED}File: {name}   Peak: {peak_str}{RESET}"
             action = (
                 f"{BLUE}=> Action: Type /open {i} to play moment (or /cut {i} to export){RESET}"
             )
             blocks.append(f"{header}\n{meta}{speech_line}\n{action}")
         else:
-            header = f"{WHITE}#{i}   {time_str:<23}{RESET}              {BLUE}{bar_str}{RESET}"
+            header = f"{WHITE}#{i}   {time_str:<23}{RESET}              {bar_str}"
             meta = f"{MUTED}File: {name}   Peak: {peak_str}{RESET}"
             blocks.append(f"{header}\n{meta}{speech_line}")
 

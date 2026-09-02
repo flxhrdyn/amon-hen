@@ -8,7 +8,21 @@ from pathlib import Path
 
 from amonhen import __version__
 
+# Auto-reconfigure standard output and error to UTF-8 on Windows to ensure
+# Unicode blocks (█, ░) and emojis render safely without cp1252 charmap errors.
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 # Fixed truecolor palette so the TUI looks the same regardless of the
+
 # user's terminal color scheme, instead of the 16-color ANSI codes whose
 # actual hue depends on that scheme.
 BLUE = "\033[38;2;130;170;255m"
@@ -52,12 +66,17 @@ def format_timestamp(ts_ms: int) -> str:
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds // 100}"
 
 
-def format_score_bar(score: float, width: int = 10, plain: bool = False) -> str:
+def format_score_bar(
+    score: float, width: int = 10, plain: bool = False, colorize: bool = False
+) -> str:
     clamped = max(0.0, min(1.0, score))
     filled = int(round(clamped * width))
+    unfilled = width - filled
     if plain:
-        return "=" * filled + "-" * (width - filled)
-    return "█" * filled + "░" * (width - filled)
+        return "=" * filled + "-" * unfilled
+    if colorize and not is_color_disabled():
+        return f"{BLUE}{'█' * filled}{DIM}{'░' * unfilled}{RESET}"
+    return "█" * filled + "░" * unfilled
 
 
 THRONE_BANNER = [

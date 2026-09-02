@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.20] - 2026-09-02
+
+### Enhanced
+* **Two-Tone Score Bar Contrast:** Enabled distinct two-tone styling for visual score bars in TUI: filled blocks (`█`) glow in bright Starlight Blue while unfilled background blocks (`░`) render in subtle dark slate, preventing optical glare.
+* **Auto UTF-8 Output Reconfigure:** Module-level automatic UTF-8 stream reconfigure on Windows to ensure zero charmap encoding crashes.
+
 ## [0.1.19] - 2026-09-02
+
 
 ### Fixed
 * **TUI Score Bar Unicode Rendering:** Fixed fallback bug in `format_score_bar` on Windows terminals to consistently render crisp Unicode block characters (`[███░░░░░░░]`) instead of ASCII dashes (`[===-------]`).
