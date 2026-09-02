@@ -11,7 +11,6 @@ from amonhen import __version__
 from amonhen.theme import (
     BLUE,
     BLUE_BOLD,
-    DIM,
     MUTED,
     RESET,
     WHITE,
@@ -61,6 +60,37 @@ def parse_ansi_line(line: str) -> list[tuple[str, str]]:
     return spans
 
 
+def draw_span_text(
+    draw: ImageDraw.ImageDraw,
+    img: Image.Image,
+    x: float,
+    y: int,
+    text: str,
+    font: ImageFont.ImageFont,
+    color: str,
+) -> float:
+    if "░" in text:
+        char_w = 8.42
+        for ch in text:
+            if ch == "░":
+                r = int(color[1:3], 16)
+                g = int(color[3:5], 16)
+                b = int(color[5:7], 16)
+                for py in range(y + 2, y + 15):
+                    for px in range(int(x), int(x + 8)):
+                        if (px + py) % 2 == 0 and px % 2 == 0:
+                            img.putpixel((px, py), (r, g, b))
+                x += char_w
+            else:
+                draw.text((x, y), ch, font=font, fill=color)
+                bbox = draw.textbbox((x, y), ch, font=font)
+                x += max(char_w, bbox[2] - bbox[0])
+        return x
+    draw.text((x, y), text, font=font, fill=color)
+    bbox = draw.textbbox((x, y), text, font=font)
+    return x + (bbox[2] - bbox[0])
+
+
 def render_tui_frame(
     banner_text: str,
     body_lines: list[str],
@@ -102,11 +132,9 @@ def render_tui_frame(
     # 1. Render Banner
     for raw_line in banner_text.splitlines():
         spans = parse_ansi_line(raw_line)
-        curr_x = pad_x
+        curr_x = float(pad_x)
         for text, color in spans:
-            draw.text((curr_x, curr_y), text, font=font, fill=color)
-            bbox = draw.textbbox((curr_x, curr_y), text, font=font)
-            curr_x += bbox[2] - bbox[0]
+            curr_x = draw_span_text(draw, img, curr_x, curr_y, text, font, color)
         curr_y += line_h
 
     curr_y += 8
@@ -115,11 +143,9 @@ def render_tui_frame(
     visible_body = body_lines[-12:]
     for raw_line in visible_body:
         spans = parse_ansi_line(raw_line)
-        curr_x = pad_x
+        curr_x = float(pad_x)
         for text, color in spans:
-            draw.text((curr_x, curr_y), text, font=font, fill=color)
-            bbox = draw.textbbox((curr_x, curr_y), text, font=font)
-            curr_x += bbox[2] - bbox[0]
+            curr_x = draw_span_text(draw, img, curr_x, curr_y, text, font, color)
         curr_y += line_h
 
     # 3. Render Input Prompt Area
@@ -142,8 +168,8 @@ def render_tui_frame(
 
     draw.text((pad_x, prompt_y + 22), div_line, font=font, fill=DIVIDER_COLOR)
 
-    # 4. Render Footer Shortcuts
-    footer_y = height_px - 24
+    # 4. Render Footer
+    footer_y = height_px - 28
     draw.text((pad_x, footer_y), footer_text, font=font, fill=MUTED_COLOR)
 
     return img
@@ -230,11 +256,11 @@ def build_demo_gif():
     body_results_1 = initial_body + [
         q_line1,
         "",
-        f"{BLUE_BOLD}#1   00:03:56.0 -> 00:04:52.0{RESET}              {DIM}[{BLUE_BOLD}███{DIM}░░░░░░░] {BLUE_BOLD}0.310{RESET}",
+        f"{BLUE_BOLD}#1   00:03:56.0 -> 00:04:52.0{RESET}              {BLUE_BOLD}[███░░░░░░░] 0.310{RESET}",
         f"{MUTED}File: battle-of-amon-hen.webm   Peak: 00:04:30.0{RESET}",
         f"{BLUE}=> Action: Type /open 1 to play moment (or /cut 1 to export){RESET}",
         "",
-        f"{WHITE}#2   00:02:32.0 -> 00:02:56.0{RESET}              {DIM}[{BLUE}███{DIM}░░░░░░░] {BLUE}0.310{RESET}",
+        f"{WHITE}#2   00:02:32.0 -> 00:02:56.0{RESET}              {BLUE}[███░░░░░░░] 0.310{RESET}",
         f"{MUTED}File: battle-of-amon-hen.webm   Peak: 00:02:45.0{RESET}",
         "",
     ]
@@ -330,11 +356,11 @@ def build_demo_gif():
     body_results_2 = body_open + [
         q_line2,
         "",
-        f"{BLUE_BOLD}#1   00:00:37.0 -> 00:01:06.0{RESET}              {DIM}[{BLUE_BOLD}███{DIM}░░░░░░░] {BLUE_BOLD}0.261{RESET}",
+        f"{BLUE_BOLD}#1   00:00:37.0 -> 00:01:06.0{RESET}              {BLUE_BOLD}[███░░░░░░░] 0.261{RESET}",
         f"{MUTED}File: cctv-people-demo.webm   Peak: 00:00:48.0{RESET}",
         f"{BLUE}=> Action: Type /open 1 to play moment (or /cut 1 to export){RESET}",
         "",
-        f"{WHITE}#2   00:00:04.0 -> 00:00:19.0{RESET}              {DIM}[{BLUE}██{DIM}░░░░░░░░] {BLUE}0.247{RESET}",
+        f"{WHITE}#2   00:00:04.0 -> 00:00:19.0{RESET}              {BLUE}[██░░░░░░░░] 0.247{RESET}",
         f"{MUTED}File: cctv-people-demo.webm   Peak: 00:00:12.0{RESET}",
         "",
     ]
