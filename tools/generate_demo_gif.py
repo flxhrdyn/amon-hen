@@ -11,6 +11,7 @@ from amonhen import __version__
 from amonhen.theme import (
     BLUE,
     BLUE_BOLD,
+    DIM,
     MUTED,
     RESET,
     WHITE,
@@ -229,14 +230,15 @@ def build_demo_gif():
     body_results_1 = initial_body + [
         q_line1,
         "",
-        f"{BLUE_BOLD}#1   00:03:56.0 -> 00:04:52.0{RESET}              {BLUE}[██████████] 0.310{RESET}",
+        f"{BLUE_BOLD}#1   00:03:56.0 -> 00:04:52.0{RESET}              {DIM}[{BLUE_BOLD}███{DIM}░░░░░░░] {BLUE_BOLD}0.310{RESET}",
         f"{MUTED}File: battle-of-amon-hen.webm   Peak: 00:04:30.0{RESET}",
         f"{BLUE}=> Action: Type /open 1 to play moment (or /cut 1 to export){RESET}",
         "",
-        f"{WHITE}#2   00:02:32.0 -> 00:02:56.0{RESET}              {BLUE}[██████████] 0.310{RESET}",
+        f"{WHITE}#2   00:02:32.0 -> 00:02:56.0{RESET}              {DIM}[{BLUE}███{DIM}░░░░░░░] {BLUE}0.310{RESET}",
         f"{MUTED}File: battle-of-amon-hen.webm   Peak: 00:02:45.0{RESET}",
         "",
     ]
+
     frames.append(
         render_tui_frame(
             banner_start,
@@ -328,14 +330,15 @@ def build_demo_gif():
     body_results_2 = body_open + [
         q_line2,
         "",
-        f"{BLUE_BOLD}#1   00:00:37.0 -> 00:01:06.0{RESET}              {BLUE}[████████░░] 0.261{RESET}",
+        f"{BLUE_BOLD}#1   00:00:37.0 -> 00:01:06.0{RESET}              {DIM}[{BLUE_BOLD}███{DIM}░░░░░░░] {BLUE_BOLD}0.261{RESET}",
         f"{MUTED}File: cctv-people-demo.webm   Peak: 00:00:48.0{RESET}",
         f"{BLUE}=> Action: Type /open 1 to play moment (or /cut 1 to export){RESET}",
         "",
-        f"{WHITE}#2   00:00:04.0 -> 00:00:19.0{RESET}              {BLUE}[████████░░] 0.247{RESET}",
+        f"{WHITE}#2   00:00:04.0 -> 00:00:19.0{RESET}              {DIM}[{BLUE}██{DIM}░░░░░░░░] {BLUE}0.247{RESET}",
         f"{MUTED}File: cctv-people-demo.webm   Peak: 00:00:12.0{RESET}",
         "",
     ]
+
     frames.append(
         render_tui_frame(
             banner_start,
