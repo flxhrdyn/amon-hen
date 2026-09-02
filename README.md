@@ -3,10 +3,11 @@
 > *"From the Seat of Seeing, no moment remains hidden."*
 
 [![CI](https://github.com/flxhrdyn/amon-hen/actions/workflows/ci.yml/badge.svg)](https://github.com/flxhrdyn/amon-hen/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/amon-hen?color=blue)](https://pypi.org/project/amon-hen/)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![PyPI](https://img.shields.io/pypi/v/amon-hen?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/amon-hen/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-Models-orange.svg)](https://huggingface.co/flxhrdyn/mobileclip2-s0-onnx)
+[![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-Models-orange.svg?logo=huggingface&logoColor=white)](https://huggingface.co/flxhrdyn/mobileclip2-s0-onnx)
+
 
 A fast, lightweight command-line tool and Python library for natural language moment retrieval across local video files. Runs entirely on CPU without discrete GPUs, background daemons, or cloud dependencies.
 
