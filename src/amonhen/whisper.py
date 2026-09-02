@@ -176,6 +176,12 @@ class WhisperTranscriber:
 
             current_tokens.append(next_token)
 
+            # Prevent hallucination loops during instrumental/silent sections
+            if len(current_tokens) >= 8 and current_tokens[-4:] == current_tokens[-8:-4]:
+                break
+            if len(current_tokens) >= 5 and len(set(current_tokens[-4:])) == 1:
+                break
+
             # Check for timestamp tokens (token >= FIRST_TIMESTAMP_TOKEN)
             # Each timestamp token step is 20ms (0.02s)
             if next_token >= FIRST_TIMESTAMP_TOKEN:

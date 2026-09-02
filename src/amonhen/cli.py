@@ -14,8 +14,18 @@ output can be piped.
 from __future__ import annotations
 
 import json as jsonlib
+import logging
 import sys
 from pathlib import Path
+
+if sys.platform == "win32":
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 import typer
 
@@ -25,6 +35,9 @@ from amonhen.pipeline import IndexConfig, index_videos
 from amonhen.pipeline import search as run_search
 from amonhen.progress import NullReporter
 from amonhen.store import IncompatibleIndexError, Store
+
+logger = logging.getLogger("amonhen")
+
 
 app = typer.Typer(
     add_completion=False,
@@ -50,7 +63,20 @@ def _embed_dim_for(model_id: str) -> int:
     return get_model(model_id).embed_dim
 
 
+def _build_transcriber(enabled: bool = True):
+    if not enabled:
+        return None
+    try:
+        from amonhen.whisper import WhisperTranscriber
+
+        return WhisperTranscriber.from_pretrained()
+    except Exception as error:
+        logger.warning(f"Could not load Whisper speech transcriber: {error}")
+        return None
+
+
 def _open_store(db: Path, model_id: str) -> Store:
+
     try:
         return Store(db, embed_dim=_embed_dim_for(model_id))
     except IncompatibleIndexError as error:
@@ -100,6 +126,9 @@ def index(
         "Off by default; the right value depends on resolution and content.",
     ),
     model: str = typer.Option(DEFAULT_MODEL.model_id, "--model", help="Model id."),
+    with_audio: bool = typer.Option(
+        True, "--with-audio/--no-audio", help="Transcribe speech with Whisper ONNX."
+    ),
     force: bool = typer.Option(False, "--force", help="Re-index even if unchanged."),
     json: bool = typer.Option(False, "--json", help="Emit JSON to stdout."),
 ) -> None:
@@ -126,7 +155,9 @@ def index(
             NullReporter(),
             force=force,
             text_encoder=_build_text_encoder(model),
+            transcriber=_build_transcriber(with_audio),
         )
+
     finally:
         store.close()
 

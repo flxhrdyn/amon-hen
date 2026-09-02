@@ -38,6 +38,7 @@ def stub_encoders(monkeypatch):
 
     monkeypatch.setattr(cli, "_build_image_encoder", lambda model_id: StubEncoder())
     monkeypatch.setattr(cli, "_build_text_encoder", lambda model_id: StubTextEncoder())
+    monkeypatch.setattr(cli, "_build_transcriber", lambda enabled=True: None)
     monkeypatch.setattr(cli, "_embed_dim_for", lambda model_id: DIM)
 
 
