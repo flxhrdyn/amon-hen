@@ -1,2 +1,3 @@
-__version__ = "0.1.16"
+"""AmonHen: local, CPU-only video moment retrieval."""
 
+__version__ = "0.1.16"
