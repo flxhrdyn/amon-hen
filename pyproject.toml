@@ -1,7 +1,8 @@
 [project]
 name = "amon-hen"
-version = "0.1.16"
+version = "0.1.17"
 description = "Local, CPU-only video moment retrieval from the command line"
+
 
 
 

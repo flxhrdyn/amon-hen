@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.17] - 2026-09-02
+
+### Enhanced
+* **Battle of Amon Hen Demo Integration:** Added full 5-minute video and audio sample clip (`battle-of-amon-hen.webm`) for testing visual actions and Whisper speech retrieval.
+* **Windows Unicode Console Fix:** Auto-reconfigured standard output and error streams to UTF-8 on Windows terminals.
+* **Whisper Repetition Guard:** Added hallucination loop detector during silent/instrumental audio sections.
+
 ## [0.1.15] - 2026-09-02
+
 
 ### Added
 * **Hybrid Audio & Speech Retrieval (Whisper-Tiny ONNX + SQLite FTS5):**
