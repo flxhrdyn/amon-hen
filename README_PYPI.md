@@ -67,8 +67,9 @@ amon-hen search "a person holding an umbrella"
 ### 4. Extract Video Clip
 ```bash
 # Extract matching segment into a standalone video clip
-amon-hen cut amon-hen-speech-demo.webm --start 00:03:56 --end 00:04:52 -o battle_climax.mp4
+amon-hen cut battle-of-amon-hen.webm --start 00:03:56 --end 00:04:52 -o battle_climax.mp4
 ```
+
 
 
 ---

@@ -230,11 +230,11 @@ def build_demo_gif():
         q_line1,
         "",
         f"{BLUE_BOLD}#1   00:03:56.0 -> 00:04:52.0{RESET}              {BLUE}[██████████] 0.310{RESET}",
-        f"{MUTED}File: amon-hen-speech-demo.webm   Peak: 00:04:30.0{RESET}",
+        f"{MUTED}File: battle-of-amon-hen.webm   Peak: 00:04:30.0{RESET}",
         f"{BLUE}=> Action: Type /open 1 to play moment (or /cut 1 to export){RESET}",
         "",
         f"{WHITE}#2   00:02:32.0 -> 00:02:56.0{RESET}              {BLUE}[██████████] 0.310{RESET}",
-        f"{MUTED}File: amon-hen-speech-demo.webm   Peak: 00:02:45.0{RESET}",
+        f"{MUTED}File: battle-of-amon-hen.webm   Peak: 00:02:45.0{RESET}",
         "",
     ]
     frames.append(
@@ -270,9 +270,10 @@ def build_demo_gif():
 
     body_open = body_results_1 + [
         f"{BLUE_BOLD}>{RESET} {cmd_open}",
-        f"{BLUE_BOLD}=> Launching media player at 00:04:30.0 (amon-hen-speech-demo.webm)...{RESET}",
+        f"{BLUE_BOLD}=> Launching media player at 00:04:30.0 (battle-of-amon-hen.webm)...{RESET}",
         "",
     ]
+
     frames.append(
         render_tui_frame(
             banner_start,

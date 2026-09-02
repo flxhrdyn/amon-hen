@@ -92,10 +92,10 @@ amon-hen search "swords fight warriors in forest"
 
 Output:
 ```text
- 1. 00:03:56.0 - 00:04:52.0  0.310  amon-hen-speech-demo.webm
+ 1. 00:03:56.0 - 00:04:52.0  0.310  battle-of-amon-hen.webm
     💬 "I'm a little bit"
- 2. 00:02:32.0 - 00:02:56.0  0.310  amon-hen-speech-demo.webm
- 3. 00:01:52.0               0.281  amon-hen-speech-demo.webm
+ 2. 00:02:32.0 - 00:02:56.0  0.310  battle-of-amon-hen.webm
+ 3. 00:01:52.0               0.281  battle-of-amon-hen.webm
     💬 "I'll give you a good time."
 ```
 
@@ -125,11 +125,12 @@ Extract matching moments or specific time ranges into standalone clips:
 
 ```bash
 # Lossless stream copy (< 0.2s, no re-encoding)
-amon-hen cut amon-hen-speech-demo.webm --start 00:03:56 --end 00:04:52 -o battle_climax.mp4
+amon-hen cut battle-of-amon-hen.webm --start 00:03:56 --end 00:04:52 -o battle_climax.mp4
 
 # Frame-accurate re-encoded export
 amon-hen cut cctv-people-demo.webm -s 37.0 -e 66.0 --reencode -o umbrella_moment.mp4
 ```
+
 
 
 

@@ -2,8 +2,9 @@
 
 This folder contains two curated sample video clips to try Amon Hen end-to-end:
 
-1. **`amon-hen-speech-demo.webm` (Primary Demo):**
+1. **`battle-of-amon-hen.webm` (Primary Demo):**
    * *Battle of Amon Hen* (Lord of the Rings: The Fellowship of the Ring, 4:59 full scene).
+
    * Contains dynamic visual action (sword fights, archers, warriors in forest) and spoken dialogue for hybrid audio & speech retrieval.
    * Source: https://youtu.be/3FWR0frTBn8
 2. **`cctv-people-demo.webm` (Surveillance & Desktop Search):**
