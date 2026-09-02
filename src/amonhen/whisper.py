@@ -152,8 +152,8 @@ class WhisperTranscriber:
 
         # 2. Autoregressive Greedy Decoding
         current_tokens = [SOT_TOKEN, EN_TOKEN, TRANSCRIBE_TOKEN]
+        collected_logprobs: list[float] = []
         segments: list[SpeechSegment] = []
-
         active_start_ms = offset_ms
         collected_text_tokens: list[int] = []
 
@@ -169,12 +169,17 @@ class WhisperTranscriber:
             }
 
             logits = self.decoder.run(None, decoder_feed)[0]
-            next_token = int(np.argmax(logits[0, -1, :]))
+            step_logits = logits[0, -1, :]
+            log_softmax = step_logits - (
+                np.max(step_logits) + np.log(np.sum(np.exp(step_logits - np.max(step_logits))))
+            )
+            next_token = int(np.argmax(step_logits))
 
             if next_token == EOT_TOKEN:
                 break
 
             current_tokens.append(next_token)
+            collected_logprobs.append(float(log_softmax[next_token]))
 
             # Prevent hallucination loops during instrumental/silent sections
             if len(current_tokens) >= 8 and current_tokens[-4:] == current_tokens[-8:-4]:
@@ -188,7 +193,18 @@ class WhisperTranscriber:
                 ts_ms = offset_ms + int((next_token - FIRST_TIMESTAMP_TOKEN) * 20)
                 if collected_text_tokens:
                     text = self.tokenizer.decode(collected_text_tokens).strip()
-                    if text:
+                    avg_lp = (
+                        sum(collected_logprobs) / len(collected_logprobs)
+                        if collected_logprobs
+                        else -999.0
+                    )
+                    words = text.split()
+                    is_valid = (
+                        bool(text)
+                        and avg_lp >= -1.0
+                        and (len(words) < 3 or (len(set(words)) / len(words)) >= 0.6)
+                    )
+                    if is_valid:
                         segments.append(
                             SpeechSegment(
                                 start_ms=active_start_ms,
@@ -197,6 +213,7 @@ class WhisperTranscriber:
                             )
                         )
                     collected_text_tokens = []
+                    collected_logprobs = []
                 active_start_ms = ts_ms
             else:
                 collected_text_tokens.append(next_token)
@@ -204,7 +221,16 @@ class WhisperTranscriber:
         # Flush any trailing text tokens
         if collected_text_tokens:
             text = self.tokenizer.decode(collected_text_tokens).strip()
-            if text:
+            avg_lp = (
+                sum(collected_logprobs) / len(collected_logprobs) if collected_logprobs else -999.0
+            )
+            words = text.split()
+            is_valid = (
+                bool(text)
+                and avg_lp >= -1.0
+                and (len(words) < 3 or (len(set(words)) / len(words)) >= 0.6)
+            )
+            if is_valid:
                 segments.append(
                     SpeechSegment(
                         start_ms=active_start_ms,

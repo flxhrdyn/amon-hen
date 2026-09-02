@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.18] - 2026-09-02
+
+### Fixed
+* **Whisper Audio Hallucination Suppression:** Implemented average log-probability confidence thresholding (`avg_lp >= -1.0`) and n-gram repetition filtering in `WhisperTranscriber`, preventing false dialogue hallucinations on instrumental music, battle sound effects, and silent scenes.
+
 ## [0.1.17] - 2026-09-02
+
 
 ### Enhanced
 * **Battle of Amon Hen Demo Integration:** Added full 5-minute video and audio sample clip (`battle-of-amon-hen.webm`) for testing visual actions and Whisper speech retrieval.

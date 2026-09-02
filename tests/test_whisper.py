@@ -41,7 +41,7 @@ def test_whisper_transcriber_decodes_tokens_with_mock_sessions():
         nonlocal call_count
         logits = np.zeros((1, 1, 51865), dtype=np.float32)
         target_token = tokens[call_count] if call_count < len(tokens) else 50257
-        logits[0, 0, target_token] = 10.0
+        logits[0, 0, target_token] = 30.0
         call_count += 1
         return [logits]
 
