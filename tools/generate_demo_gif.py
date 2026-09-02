@@ -71,15 +71,16 @@ def draw_span_text(
 ) -> float:
     if "░" in text:
         char_w = 8.42
+        r = int(color[1:3], 16)
+        g = int(color[3:5], 16)
+        b = int(color[5:7], 16)
         for ch in text:
             if ch == "░":
-                r = int(color[1:3], 16)
-                g = int(color[3:5], 16)
-                b = int(color[5:7], 16)
-                for py in range(y + 2, y + 15):
-                    for px in range(int(x), int(x + 8)):
-                        if (px + py) % 2 == 0 and px % 2 == 0:
-                            img.putpixel((px, py), (r, g, b))
+                sx = int(x)
+                for py in range(y + 3, y + 15, 2):
+                    for px in range(sx, sx + 8, 2):
+                        if ((px - sx) // 2 + (py - (y + 3)) // 2) % 2 == 0:
+                            draw.rectangle([px, py, px + 1, py + 1], fill=(r, g, b))
                 x += char_w
             else:
                 draw.text((x, y), ch, font=font, fill=color)
