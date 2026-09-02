@@ -312,3 +312,43 @@ def test_cli_cut_command_invalid_timestamps_fails(sample_video):
         ["cut", sample_video, "--start", "10", "--end", "5"],
     )
     assert result.exit_code != 0
+
+
+def test_cli_search_speech_and_hybrid_modes(tmp_path, sample_video, monkeypatch):
+    import amonhen.cli as cli
+    from amonhen.segment import Segment
+
+    db = tmp_path / "index.db"
+    runner.invoke(app, ["index", sample_video, "--db", str(db)])
+
+    # Mock run_search to return hybrid segment with spoken text
+    def mock_run_search(*args, **kwargs):
+        return [
+            Segment(
+                video_id=1,
+                video_path="/path/to/sample.mp4",
+                start_ms=1000,
+                end_ms=5000,
+                best_ts_ms=3000,
+                score=0.85,
+                frame_count=4,
+                spoken_text="Hello world speech test",
+                match_type=kwargs.get("mode", "hybrid"),
+            )
+        ]
+
+    monkeypatch.setattr(cli, "run_search", mock_run_search)
+
+    # Test human readable text with dialogue
+    res = runner.invoke(app, ["search", "hello", "--db", str(db), "--mode", "hybrid"])
+    assert res.exit_code == 0
+    assert '💬 "Hello world speech test"' in res.stdout
+
+    # Test JSON output
+    res_json = runner.invoke(
+        app, ["search", "hello", "--db", str(db), "--mode", "speech", "--json"]
+    )
+    assert res_json.exit_code == 0
+    data = json.loads(res_json.stdout)
+    assert data["results"][0]["spoken_text"] == "Hello world speech test"
+    assert data["results"][0]["match_type"] == "speech"

@@ -20,10 +20,12 @@ Finding specific moments across long video archives typically requires either hi
 
 Amon Hen bridges this gap by combining:
 - **MobileCLIP2 ([`felixhrdyn/mobileclip2-s0-onnx`](https://huggingface.co/felixhrdyn/mobileclip2-s0-onnx)):** CPU-optimized visual-semantic embeddings (512 dimensions) running on a hybrid FP32-vision + INT8-quantized text pipeline (approx. 105 MB total RAM footprint).
+- **Whisper-Tiny ONNX Speech Recognition:** In-memory audio extraction and local CPU speech transcription with timestamped dialogue segments.
+- **SQLite FTS5 + `sqlite-vec` Hybrid Retrieval:** Combines semantic vector search with BM25 full-text dialogue matching in a single embedded SQLite database.
 - **Three-Gate Adaptive Sampler:** Filters near-duplicate frames via perceptual hashing, drops blurry frames via Laplacian variance, and eliminates semantic duplicates before storage.
 - **Temporal Segment Merging:** Aggregates contiguous high-similarity frames into coherent time intervals (`start - end`) with peak representative timestamps.
 - **Statistical Score Calibration:** Computes empirical text-to-image noise baselines per video to eliminate false positive results on unmatched queries.
-- **Embedded Vector Database:** Stores vectors in local SQLite databases via `sqlite-vec`.
+
 
 ---
 
@@ -81,25 +83,28 @@ Options:
 - `--db PATH`: Custom index database location (default: `~/.amonhen/index.db`).
 
 ### 3. One-Shot Search
-Search directly from shell scripts or pipelines:
+Search directly from shell scripts or pipelines across both visual scenes and spoken dialogue:
 
 ```bash
 amon-hen search "a person holding an umbrella"
 ```
 
 Output:
-```
+```text
  1. 00:00:37.0 - 00:01:06.0  0.261  cctv-people-demo.webm
+    💬 "There is someone with an umbrella walking past"
  2. 00:00:04.0 - 00:00:19.0  0.247  cctv-people-demo.webm
  3. 00:00:24.0 - 00:00:32.0  0.227  cctv-people-demo.webm
 ```
 
 Options:
+- `--mode [hybrid|visual|speech]`: Retrieval strategy (default: `hybrid`).
 - `-k, --limit INTEGER`: Maximum number of segments returned (default: `10`).
 - `--merge-gap FLOAT`: Maximum gap in seconds between candidate frames to merge into one segment (default: `4.0`).
 - `--min-score FLOAT`: Explicit cosine similarity threshold override.
 - `--no-calibrate`: Disable automatic statistical baseline filtering.
 - `--json`: Output raw structured JSON to `stdout` (human logs go to `stderr`).
+
 
 ### 4. Extract Video Segment
 Extract matching moments or specific time ranges into standalone clips:

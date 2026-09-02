@@ -12,11 +12,13 @@ A fast, lightweight CLI and Python library for natural language video moment ret
 
 ## Key Highlights
 
-* **100% CPU Execution:** Powered by Apple's MobileCLIP2 architecture and ONNX Runtime.
+* **100% CPU Execution:** Powered by Apple's MobileCLIP2 architecture, Whisper-Tiny ONNX, and ONNX Runtime.
+* **Hybrid Visual & Speech Retrieval:** Simultaneously retrieves moments based on visual semantics and spoken dialogue.
 * **Low Footprint:** Hybrid FP32-vision + INT8-quantized text pipeline (approx. 105 MB RAM).
-* **Zero Infrastructure:** Embedded vector database via SQLite and `sqlite-vec` (single `.db` file).
+* **Zero Infrastructure:** Embedded vector database and full-text index via SQLite, `sqlite-vec`, and FTS5 (single `.db` file).
 * **High Throughput:** 3-gate adaptive motion sampler achieving 4.8x to 18.5x realtime indexing speed.
 * **Temporal Grouping:** Merges consecutive matching frames into start-end timestamp intervals.
+
 
 ---
 

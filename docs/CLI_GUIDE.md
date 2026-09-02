@@ -57,8 +57,13 @@ amon-hen index footage.mp4 --db /path/to/custom_index.db
 Retrieve relevant video moments using natural language:
 
 ```bash
-# Basic natural language search
+# Basic natural language search (searches visual scenes + spoken dialogue)
 amon-hen search "a dog running on green grass"
+
+# Specific retrieval mode: hybrid (default), visual-only, or speech-only
+amon-hen search "hello everyone" --mode speech
+amon-hen search "red sports car" --mode visual
+amon-hen search "presentation slides" --mode hybrid
 
 # Return top 5 results (default: 10)
 amon-hen search "person entering red car" --limit 5
@@ -72,6 +77,7 @@ amon-hen search "night driving scene" --min-score 0.22
 # Output machine-readable JSON (useful for piping into scripts/tools)
 amon-hen search "forklift lifting crate" --json
 ```
+
 
 ---
 
